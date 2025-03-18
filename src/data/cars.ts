@@ -92,7 +92,7 @@ export const cars: Car[] = [
     features: [
       {
         icon: "monitor",
-        title: "56" Hyperscreen",
+        title: "56\" Hyperscreen",
         description: "Futuristic dashboard"
       },
       {
