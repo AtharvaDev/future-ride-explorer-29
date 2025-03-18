@@ -153,9 +153,21 @@ const CarSection: React.FC<CarSectionProps> = ({
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">₹{pricePerKm}/km mileage fee</p>
             </div>
-            <Link to={`/booking/${id}`} className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center">
+            <a 
+              href="#booking" 
+              className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center"
+              onClick={(e) => {
+                e.preventDefault();
+                const bookingSection = document.getElementById('booking');
+                // Add class to force show the booking section
+                const event = new CustomEvent('showBookingSection');
+                window.dispatchEvent(event);
+                // Use hash navigation
+                window.location.hash = 'booking';
+              }}
+            >
               Book Now
-            </Link>
+            </a>
           </div>
         </div>
       </div>
