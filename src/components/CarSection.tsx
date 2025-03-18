@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface CarFeature {
   icon: string;
@@ -152,9 +153,9 @@ const CarSection: React.FC<CarSectionProps> = ({
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">₹{pricePerKm}/km mileage fee</p>
             </div>
-            <a href="#booking" className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center">
+            <Link to={`/booking/${id}`} className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center">
               Book Now
-            </a>
+            </Link>
           </div>
         </div>
       </div>
