@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check, Mail, Phone, User, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import gsap from 'gsap';
 import { toast } from 'sonner';
+import { auth, googleProvider } from '@/config/firebase';
+import { signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth';
 
 // Define the form schema
 const contactFormSchema = z.object({
@@ -32,7 +34,8 @@ interface ContactStepProps {
   onSubmit: (data: ContactFormData) => void;
   defaultValues?: ContactFormData;
   googleSignedIn: boolean;
-  onGoogleSignIn: () => void;
+  onGoogleSignIn: (user: FirebaseUser) => void;
+  onGoogleSignOut: () => void;
 }
 
 const ContactStep: React.FC<ContactStepProps> = ({ 
@@ -44,12 +47,66 @@ const ContactStep: React.FC<ContactStepProps> = ({
     address: "",
   },
   googleSignedIn,
-  onGoogleSignIn
+  onGoogleSignIn,
+  onGoogleSignOut
 }) => {
   const contactForm = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues
   });
+  
+  useEffect(() => {
+    // Listen for auth state changes
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in
+        contactForm.setValue('name', user.displayName || '');
+        contactForm.setValue('email', user.email || '');
+      }
+    });
+    
+    // Clean up subscription
+    return () => unsubscribe();
+  }, [contactForm]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      // Animate button
+      gsap.to('.google-btn', {
+        scale: 0.95,
+        duration: 0.1,
+        yoyo: true,
+        repeat: 1
+      });
+      
+      // Show loading toast
+      toast.loading('Connecting to Google...');
+      
+      // Attempt to sign in with Google
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // If successful, update form fields and trigger the onGoogleSignIn callback
+      if (result.user) {
+        onGoogleSignIn(result.user);
+        toast.success('Signed in with Google successfully!');
+      }
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      toast.error('Google sign-in failed. Please try again.');
+    }
+  };
+
+  const handleGoogleSignOut = async () => {
+    try {
+      await signOut(auth);
+      onGoogleSignOut();
+      contactForm.reset(defaultValues);
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error('Failed to sign out. Please try again.');
+    }
+  };
 
   return (
     <div className="step-container space-y-6">
@@ -65,7 +122,7 @@ const ContactStep: React.FC<ContactStepProps> = ({
           <Button 
             className="w-full google-btn flex items-center justify-center space-x-2" 
             variant="outline"
-            onClick={onGoogleSignIn}
+            onClick={handleGoogleSignIn}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" className="w-4 h-4">
               <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
@@ -77,14 +134,24 @@ const ContactStep: React.FC<ContactStepProps> = ({
 
       {googleSignedIn && (
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center">
-              <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center">
+                <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="font-medium">Signed in with Google</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Your Google account details have been pre-filled.</p>
+              </div>
             </div>
-            <div>
-              <p className="font-medium">Signed in with Google</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Your Google account details have been pre-filled.</p>
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleGoogleSignOut}
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
       )}

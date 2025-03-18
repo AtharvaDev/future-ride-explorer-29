@@ -4,6 +4,7 @@ import { Car } from '@/data/cars';
 import { format, addDays, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import gsap from 'gsap';
+import { User as FirebaseUser } from 'firebase/auth';
 
 // Import our new components
 import ProgressSteps, { BookingStep } from './booking/ProgressSteps';
@@ -26,6 +27,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ car }) => {
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [googleSignedIn, setGoogleSignedIn] = useState(false);
+  const [googleUser, setGoogleUser] = useState<FirebaseUser | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   // Calculate the number of days and total cost
@@ -58,23 +60,27 @@ const BookingForm: React.FC<BookingFormProps> = ({ car }) => {
   }, [currentStep]);
 
   // Handle Google Sign In
-  const handleGoogleSignIn = () => {
-    // Animate button
-    gsap.to('.google-btn', {
-      scale: 0.95,
-      duration: 0.1,
-      yoyo: true,
-      repeat: 1
-    });
+  const handleGoogleSignIn = (user: FirebaseUser) => {
+    setGoogleUser(user);
+    setGoogleSignedIn(true);
     
-    // Simulate loading
-    toast.loading('Connecting to Google...');
-    
-    // Simulate Google auth
-    setTimeout(() => {
-      setGoogleSignedIn(true);
-      toast.success('Signed in with Google');
-    }, 1500);
+    // Pre-fill contact details if available from Google account
+    if (user.displayName || user.email) {
+      setBookingDetails(prev => ({ 
+        ...prev, 
+        contact: {
+          ...prev?.contact,
+          name: user.displayName || prev?.contact?.name || '',
+          email: user.email || prev?.contact?.email || '',
+        } 
+      }));
+    }
+  };
+
+  // Handle Google Sign Out
+  const handleGoogleSignOut = () => {
+    setGoogleUser(null);
+    setGoogleSignedIn(false);
   };
 
   // Handle contact form submission
@@ -190,6 +196,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ car }) => {
           onSubmit={handleContactSubmit}
           googleSignedIn={googleSignedIn}
           onGoogleSignIn={handleGoogleSignIn}
+          onGoogleSignOut={handleGoogleSignOut}
           defaultValues={bookingDetails?.contact}
         />
       )}
