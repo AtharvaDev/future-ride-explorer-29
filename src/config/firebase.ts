@@ -3,14 +3,14 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
-// Replace with your actual Firebase config from Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyBGMHmWtPbwzH4lFPiOJbxTjkgQxMoPo9I",
-  authDomain: "car-rental-demo-app.firebaseapp.com",
-  projectId: "car-rental-demo-app",
-  storageBucket: "car-rental-demo-app.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abc123def456ghi789jkl"
+  apiKey: "AIzaSyAA1rXy0rdsq-I6JS18dOxqeX_Ba0DlyCs",
+  authDomain: "chauffeur-driven-car.firebaseapp.com",
+  projectId: "chauffeur-driven-car",
+  storageBucket: "chauffeur-driven-car.firebasestorage.app",
+  messagingSenderId: "116391754783",
+  appId: "1:116391754783:web:2a37c4663c05efb434e92a",
+  measurementId: "G-ZFWSFCHY50"
 };
 
 // Initialize Firebase
