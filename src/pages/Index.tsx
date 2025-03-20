@@ -24,7 +24,7 @@ const Index = () => {
       
       <Hero />
       
-      <div className="py-20 bg-gray-50 dark:bg-gray-900/30">
+      <div id="fleet" className="py-20 bg-gray-50 dark:bg-gray-900/30">
         <div className="container mx-auto px-4 text-center mb-16">
           <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Premium Fleet
@@ -51,6 +51,18 @@ const Index = () => {
           index={index}
         />
       ))}
+      
+      <div id="pricing" className="py-20">
+        {/* Pricing section content */}
+      </div>
+      
+      <div id="about" className="py-20 bg-gray-50 dark:bg-gray-900/30">
+        {/* About section content */}
+      </div>
+      
+      <div id="contact" className="py-20">
+        {/* Contact section content */}
+      </div>
       
       <Footer />
     </div>
