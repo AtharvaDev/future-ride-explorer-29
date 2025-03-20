@@ -50,13 +50,13 @@ export const cars: Car[] = [
     ]
   },
   {
-    id: "porsche-taycan",
-    model: "Porsche",
-    title: "Taycan Turbo S",
-    description: "The Porsche Taycan combines the brand's sports car DNA with electric performance. It's the ultimate expression of driving passion in the electric age.",
-    pricePerDay: 12999,
-    pricePerKm: 18,
-    image: "https://images.unsplash.com/photo-1608985346777-c0cb7552185b",
+    id: "toyota-crysta",
+    model: "Toyota",
+    title: "Toyota Innova Crysta",
+    description: "The Crysta offers a large cabin, seating for up to eight people, and plenty of storage options across all three rows.",
+    pricePerDay: 2500,
+    pricePerKm: 20,
+    image: "https://www.vhv.rs/dpng/d/606-6065475_toyota-innova-crysta-png-transparent-png.png",
     color: "#ec4899",
     features: [
       {
