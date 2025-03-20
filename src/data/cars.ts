@@ -1,4 +1,5 @@
 
+import { Hycross } from "./Images/Hycross.webp";
 export interface Car {
   id: string;
   model: string;
@@ -18,12 +19,12 @@ export interface Car {
 export const cars: Car[] = [
   {
     id: "tesla-model-s",
-    model: "Tesla",
-    title: "Model S Plaid",
-    description: "Experience the future of electric vehicles with the Tesla Model S Plaid. Blazing speed, luxury interior, and cutting-edge technology.",
-    pricePerDay: 9999,
-    pricePerKm: 14,
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651809",
+    model: "Toyota",
+    title: "Toyota Innova Hycross",
+    description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality."
+    pricePerDay: 3000,
+    pricePerKm: 25,
+    image: {Hycross},
     color: "#3b82f6",
     features: [
       {
