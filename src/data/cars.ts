@@ -82,38 +82,6 @@ export const cars: Car[] = [
     ]
   },
   {
-    id: "mercedes-eqs",
-    model: "Mercedes",
-    title: "EQS 580",
-    description: "The Mercedes EQS redefines electric luxury with its stunning Hyperscreen, exceptional comfort, and smooth, silent performance.",
-    pricePerDay: 8999,
-    pricePerKm: 12,
-    image: "https://images.unsplash.com/photo-1622545523644-ce7d07252a8e",
-    color: "#8b5cf6",
-    features: [
-      {
-        icon: "monitor",
-        title: "56\" Hyperscreen",
-        description: "Futuristic dashboard"
-      },
-      {
-        icon: "music",
-        title: "Burmester 3D Sound",
-        description: "Audiophile experience"
-      },
-      {
-        icon: "sun",
-        title: "HEPA Filtration",
-        description: "Medical-grade air quality"
-      },
-      {
-        icon: "umbrella",
-        title: "Comfort Doors",
-        description: "Automatic opening & closing"
-      }
-    ]
-  },
-  {
     id: "porsche-taycan",
     model: "Porsche",
     title: "Taycan Turbo S",
