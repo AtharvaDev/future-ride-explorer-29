@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface CarFeature {
   icon: string;
@@ -38,6 +37,7 @@ const CarSection: React.FC<CarSectionProps> = ({
   const sectionRef = useRef<HTMLDivElement>(null);
   const carImageRef = useRef<HTMLImageElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -67,7 +67,7 @@ const CarSection: React.FC<CarSectionProps> = ({
         });
       },
       {
-        threshold: 0.3, // Trigger when 30% of the section is visible
+        threshold: 0.3,
         rootMargin: '-10% 0px',
       }
     );
@@ -153,21 +153,12 @@ const CarSection: React.FC<CarSectionProps> = ({
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">₹{pricePerKm}/km mileage fee</p>
             </div>
-            <a 
-              href="#booking" 
+            <button 
               className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center"
-              onClick={(e) => {
-                e.preventDefault();
-                const bookingSection = document.getElementById('booking');
-                // Add class to force show the booking section
-                const event = new CustomEvent('showBookingSection');
-                window.dispatchEvent(event);
-                // Use hash navigation
-                window.location.hash = 'booking';
-              }}
+              onClick={() => navigate(`/booking/${id}`)}
             >
               Book Now
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -1,44 +1,20 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import CarSection from '@/components/CarSection';
-import BookingSection from '@/components/BookingSection';
 import Footer from '@/components/Footer';
 import { cars } from '@/data/cars';
 import { setupScrollAnimations } from '@/utils/scroll-observer';
 
 const Index = () => {
-  const [showBooking, setShowBooking] = useState(false);
-  
   useEffect(() => {
     // Set up scroll animations when component mounts
     const cleanupAnimations = setupScrollAnimations();
     
-    // Show booking section when hash changes or when custom event is triggered
-    const handleHashChange = () => {
-      if (window.location.hash === '#booking') {
-        setShowBooking(true);
-      }
-    };
-    
-    // Listen for the custom event from the Book Now button
-    const handleShowBooking = () => {
-      setShowBooking(true);
-    };
-    
-    // Check initial hash
-    handleHashChange();
-    
-    // Add event listeners
-    window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener('showBookingSection', handleShowBooking);
-    
     // Clean up event listeners when component unmounts
     return () => {
       cleanupAnimations();
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('showBookingSection', handleShowBooking);
     };
   }, []);
 
@@ -75,8 +51,6 @@ const Index = () => {
           index={index}
         />
       ))}
-      
-      {showBooking && <BookingSection />}
       
       <Footer />
     </div>
