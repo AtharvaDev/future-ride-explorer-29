@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -85,6 +86,11 @@ const CarSection: React.FC<CarSectionProps> = ({
 
   const isEven = index % 2 === 0;
 
+  const handleBookNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/booking/${id}`);
+  };
+
   return (
     <div
       id={id}
@@ -155,7 +161,7 @@ const CarSection: React.FC<CarSectionProps> = ({
             </div>
             <button 
               className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center"
-              onClick={() => navigate(`/booking/${id}`)}
+              onClick={handleBookNow}
             >
               Book Now
             </button>

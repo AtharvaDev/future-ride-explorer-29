@@ -52,14 +52,6 @@ const Index = () => {
         />
       ))}
       
-      <div id="pricing" className="py-20">
-        {/* Pricing section content */}
-      </div>
-      
-      <div id="about" className="py-20 bg-gray-50 dark:bg-gray-900/30">
-        {/* About section content */}
-      </div>
-      
       <div id="contact" className="py-20">
         {/* Contact section content */}
       </div>

@@ -44,8 +44,6 @@ const Navbar = () => {
   const navigationLinks = [
     { name: "Home", href: "/" },
     { name: "Fleet", href: "#fleet" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "About", href: "#about" },
   ];
 
   const handleNavigation = (href: string) => {
