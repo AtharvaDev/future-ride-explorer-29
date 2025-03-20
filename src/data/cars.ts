@@ -21,7 +21,7 @@ export const cars: Car[] = [
     id: "tesla-model-s",
     model: "Toyota",
     title: "Toyota Innova Hycross",
-    description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality."
+    description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality.",
     pricePerDay: 3000,
     pricePerKm: 25,
     image: "https://images.unsplash.com/photo-1617788138017-80ad40651809",
