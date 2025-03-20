@@ -18,7 +18,7 @@ export interface Car {
 
 export const cars: Car[] = [
   {
-    id: "tesla-model-s",
+    id: "toyota-model-s",
     model: "Toyota",
     title: "Toyota Innova Hycross",
     description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality.",
@@ -46,38 +46,6 @@ export const cars: Car[] = [
         icon: "cpu",
         title: "Autopilot",
         description: "Advanced driver assistance"
-      }
-    ]
-  },
-  {
-    id: "lucid-air",
-    model: "Lucid",
-    title: "Air Dream Edition",
-    description: "The Lucid Air combines luxury with electric performance. With its sleek design and impressive range, it's the perfect car for those who demand the best.",
-    pricePerDay: 11999,
-    pricePerKm: 16,
-    image: "https://images.unsplash.com/photo-1621008149226-7a4fa10952fb",
-    color: "#6366f1",
-    features: [
-      {
-        icon: "battery",
-        title: "832 km Range",
-        description: "Best-in-class distance"
-      },
-      {
-        icon: "zap",
-        title: "1,111 HP",
-        description: "Unmatched performance"
-      },
-      {
-        icon: "monitor",
-        title: "Glass Cockpit",
-        description: "Immersive displays"
-      },
-      {
-        icon: "wifi",
-        title: "OTA Updates",
-        description: "Always improving"
       }
     ]
   },
