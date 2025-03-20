@@ -24,7 +24,7 @@ export const cars: Car[] = [
     description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality.",
     pricePerDay: 3000,
     pricePerKm: 25,
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651809",
+    image: "https://ackodrive-assets.ackodrive.com/media/test_Qppr44b.png",
     color: "#3b82f6",
     features: [
       {
