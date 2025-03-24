@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { fadeInLeft, fadeInRight, createHoverAnimation } from '@/utils/animations';
+import { createRepeatingScrollAnimation, createStaggerScrollAnimation } from '@/utils/scroll-animations';
 
 interface CarFeature {
   icon: string;
@@ -42,64 +43,81 @@ const CarSection: React.FC<CarSectionProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const pricingRef = useRef<HTMLDivElement>(null);
+  
   const navigate = useNavigate();
-
   const isEven = index % 2 === 0;
 
   useEffect(() => {
     // Set initial states for animations
     gsap.set([carImageRef.current, contentRef.current], { opacity: 0 });
-    featureRefs.current.forEach(el => el && gsap.set(el, { opacity: 0, y: 20 }));
+    featureRefs.current.forEach(el => el && gsap.set(el, { opacity: 0 }));
     
-    // Intersection Observer for scroll-triggered animations
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Animate car image and content when they come into view
-            if (carImageRef.current) {
-              gsap.to(carImageRef.current, {
-                opacity: 1,
-                scale: 1,
-                duration: 0.8,
-                ease: "power2.out",
-                clearProps: "all"
-              });
-            }
-            
-            if (contentRef.current) {
-              if (isEven) {
-                fadeInLeft(contentRef.current, 0.3);
-              } else {
-                fadeInRight(contentRef.current, 0.3);
-              }
-            }
-            
-            // Stagger animation for features
-            featureRefs.current.forEach((el, i) => {
-              if (el) {
-                gsap.to(el, {
-                  opacity: 1,
-                  y: 0,
-                  duration: 0.5,
-                  delay: 0.4 + (i * 0.1),
-                  ease: "power2.out"
-                });
-              }
-            });
-            
-            observer.unobserve(entry.target);
-          }
+    // Apply repeating scroll animations instead of one-time animations
+    if (carImageRef.current) {
+      createRepeatingScrollAnimation(carImageRef.current, {
+        animation: 'scale',
+        duration: 0.8,
+        start: 'top 80%',
+        end: 'bottom 20%',
+      });
+    }
+    
+    if (contentRef.current) {
+      createRepeatingScrollAnimation(contentRef.current, {
+        animation: isEven ? 'fadeLeft' : 'fadeRight',
+        duration: 0.8,
+        start: 'top 80%',
+        end: 'bottom 20%',
+      });
+    }
+    
+    if (badgeRef.current) {
+      createRepeatingScrollAnimation(badgeRef.current, {
+        animation: 'fadeIn',
+        duration: 0.6,
+        start: 'top 85%',
+      });
+    }
+    
+    if (titleRef.current) {
+      createRepeatingScrollAnimation(titleRef.current, {
+        animation: 'fadeUp',
+        duration: 0.7,
+        start: 'top 85%',
+      });
+    }
+    
+    if (descriptionRef.current) {
+      createRepeatingScrollAnimation(descriptionRef.current, {
+        animation: 'fadeUp',
+        duration: 0.7,
+        start: 'top 85%',
+      });
+    }
+    
+    if (pricingRef.current) {
+      createRepeatingScrollAnimation(pricingRef.current, {
+        animation: 'fadeUp',
+        duration: 0.7,
+        start: 'top 90%',
+      });
+    }
+    
+    // Create staggered animations for features
+    if (featureRefs.current.length > 0 && featureRefs.current[0]?.parentElement) {
+      const elements = featureRefs.current.filter(el => el !== null) as Element[];
+      if (elements.length > 0) {
+        createStaggerScrollAnimation(elements, {
+          animation: 'fadeUp',
+          staggerAmount: 0.1,
+          duration: 0.5,
+          start: 'top 85%',
         });
-      },
-      {
-        threshold: 0.25,
-        rootMargin: '-10% 0px',
       }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
     }
 
     // Add hover animation to button
@@ -109,9 +127,6 @@ const CarSection: React.FC<CarSectionProps> = ({
     }
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
       if (buttonCleanup) {
         buttonCleanup();
       }
@@ -161,11 +176,27 @@ const CarSection: React.FC<CarSectionProps> = ({
             isEven ? "md:justify-self-start" : "md:justify-self-end"
           )}
         >
-          <div className="badge inline-block mb-4 px-3 py-1 rounded-full" style={{ backgroundColor: `${color}20`, color: color }}>
+          <div 
+            ref={badgeRef}
+            className="badge inline-block mb-4 px-3 py-1 rounded-full" 
+            style={{ backgroundColor: `${color}20`, color: color }}
+          >
             <span className="text-sm font-medium">{model}</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
+          
+          <h2 
+            ref={titleRef}
+            className="text-3xl md:text-4xl font-bold mb-4"
+          >
+            {title}
+          </h2>
+          
+          <p 
+            ref={descriptionRef}
+            className="text-gray-600 dark:text-gray-300 mb-6"
+          >
+            {description}
+          </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {features.slice(0, 4).map((feature, idx) => (
@@ -185,7 +216,10 @@ const CarSection: React.FC<CarSectionProps> = ({
             ))}
           </div>
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div 
+            ref={pricingRef}
+            className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6"
+          >
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Starting at</p>
               <div className="flex items-end gap-1">

@@ -1,5 +1,4 @@
 
-import { Hycross } from "./Images/Hycross.webp";
 export interface Car {
   id: string;
   model: string;

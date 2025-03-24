@@ -6,6 +6,7 @@ import CarSection from '@/components/CarSection';
 import Footer from '@/components/Footer';
 import { cars } from '@/data/cars';
 import { initPageAnimations } from '@/utils/animations';
+import { initScrollAnimations } from '@/utils/scroll-animations';
 import gsap from 'gsap';
 
 const Index = () => {
@@ -14,6 +15,9 @@ const Index = () => {
   useEffect(() => {
     // Initialize all animations
     initPageAnimations();
+    
+    // Initialize scroll-triggered animations
+    initScrollAnimations();
     
     // Animate the fleet section header when it comes into view
     if (headerRef.current) {
@@ -56,11 +60,27 @@ const Index = () => {
       
       <div id="fleet" className="py-20 bg-gray-50 dark:bg-gray-900/30">
         <div ref={headerRef} className="container mx-auto px-4 text-center mb-16">
-          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+          <div 
+            className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
+            data-scroll="fadeIn"
+            data-duration="0.6"
+          >
             Premium Fleet
           </div>
-          <h2 className="text-4xl font-bold mb-4">Discover Our Exceptional Vehicles</h2>
-          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <h2 
+            className="text-4xl font-bold mb-4"
+            data-scroll="fadeUp"
+            data-duration="0.7"
+            data-delay="0.1"
+          >
+            Discover Our Exceptional Vehicles
+          </h2>
+          <p 
+            className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+            data-scroll="fadeUp"
+            data-duration="0.7"
+            data-delay="0.2"
+          >
             Browse through our collection of cutting-edge vehicles offering unparalleled comfort, performance, and technology.
           </p>
         </div>
