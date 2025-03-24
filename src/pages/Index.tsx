@@ -1,21 +1,51 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import CarSection from '@/components/CarSection';
 import Footer from '@/components/Footer';
 import { cars } from '@/data/cars';
-import { setupScrollAnimations } from '@/utils/scroll-observer';
+import { initPageAnimations } from '@/utils/animations';
+import gsap from 'gsap';
 
 const Index = () => {
+  const headerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Set up scroll animations when component mounts
-    const cleanupAnimations = setupScrollAnimations();
+    // Initialize all animations
+    initPageAnimations();
     
-    // Clean up event listeners when component unmounts
-    return () => {
-      cleanupAnimations();
-    };
+    // Animate the fleet section header when it comes into view
+    if (headerRef.current) {
+      gsap.set(headerRef.current, { opacity: 0, y: 30 });
+      
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              gsap.to(headerRef.current, {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: "power2.out"
+              });
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+        }
+      );
+      
+      observer.observe(headerRef.current);
+      
+      return () => {
+        if (headerRef.current) {
+          observer.unobserve(headerRef.current);
+        }
+      };
+    }
   }, []);
 
   return (
@@ -25,7 +55,7 @@ const Index = () => {
       <Hero />
       
       <div id="fleet" className="py-20 bg-gray-50 dark:bg-gray-900/30">
-        <div className="container mx-auto px-4 text-center mb-16">
+        <div ref={headerRef} className="container mx-auto px-4 text-center mb-16">
           <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Premium Fleet
           </div>

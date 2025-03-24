@@ -2,7 +2,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
+import { fadeInLeft, fadeInRight, createHoverAnimation } from '@/utils/animations';
 
 interface CarFeature {
   icon: string;
@@ -38,37 +40,60 @@ const CarSection: React.FC<CarSectionProps> = ({
   const sectionRef = useRef<HTMLDivElement>(null);
   const carImageRef = useRef<HTMLImageElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
 
+  const isEven = index % 2 === 0;
+
   useEffect(() => {
+    // Set initial states for animations
+    gsap.set([carImageRef.current, contentRef.current], { opacity: 0 });
+    featureRefs.current.forEach(el => el && gsap.set(el, { opacity: 0, y: 20 }));
+    
+    // Intersection Observer for scroll-triggered animations
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            // Animate car image and content when they come into view
             if (carImageRef.current) {
-              carImageRef.current.classList.add('animate-scale-up');
-              carImageRef.current.style.opacity = '1';
+              gsap.to(carImageRef.current, {
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                ease: "power2.out",
+                clearProps: "all"
+              });
             }
+            
             if (contentRef.current) {
-              contentRef.current.classList.add('animate-slide-up');
-              contentRef.current.style.opacity = '1';
+              if (isEven) {
+                fadeInLeft(contentRef.current, 0.3);
+              } else {
+                fadeInRight(contentRef.current, 0.3);
+              }
             }
-            entry.target.classList.add('active');
-          } else {
-            if (carImageRef.current) {
-              carImageRef.current.classList.remove('animate-scale-up');
-              carImageRef.current.style.opacity = '0';
-            }
-            if (contentRef.current) {
-              contentRef.current.classList.remove('animate-slide-up');
-              contentRef.current.style.opacity = '0';
-            }
-            entry.target.classList.remove('active');
+            
+            // Stagger animation for features
+            featureRefs.current.forEach((el, i) => {
+              if (el) {
+                gsap.to(el, {
+                  opacity: 1,
+                  y: 0,
+                  duration: 0.5,
+                  delay: 0.4 + (i * 0.1),
+                  ease: "power2.out"
+                });
+              }
+            });
+            
+            observer.unobserve(entry.target);
           }
         });
       },
       {
-        threshold: 0.3,
+        threshold: 0.25,
         rootMargin: '-10% 0px',
       }
     );
@@ -77,14 +102,21 @@ const CarSection: React.FC<CarSectionProps> = ({
       observer.observe(sectionRef.current);
     }
 
+    // Add hover animation to button
+    let buttonCleanup: (() => void) | null = null;
+    if (buttonRef.current) {
+      buttonCleanup = createHoverAnimation(buttonRef.current);
+    }
+
     return () => {
       if (sectionRef.current) {
         observer.unobserve(sectionRef.current);
       }
+      if (buttonCleanup) {
+        buttonCleanup();
+      }
     };
-  }, []);
-
-  const isEven = index % 2 === 0;
+  }, [isEven]);
 
   const handleBookNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,8 +146,8 @@ const CarSection: React.FC<CarSectionProps> = ({
               ref={carImageRef}
               src={image}
               alt={`${model} ${title}`}
-              className="relative z-10 w-full h-auto object-contain opacity-0 transition-all duration-1000"
-              style={{ transitionDelay: `${index * 100}ms` }}
+              className="relative z-10 w-full h-auto object-contain transition-all duration-1000"
+              style={{ transform: 'scale(0.92)' }}
             />
             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-4/5 h-12 bg-black/10 blur-xl rounded-full"></div>
           </div>
@@ -124,11 +156,10 @@ const CarSection: React.FC<CarSectionProps> = ({
         <div 
           ref={contentRef}
           className={cn(
-            "col-span-1 opacity-0 transition-all duration-1000 max-w-lg",
+            "col-span-1 transition-all duration-1000 max-w-lg",
             isEven ? "md:order-2" : "md:order-1",
             isEven ? "md:justify-self-start" : "md:justify-self-end"
           )}
-          style={{ transitionDelay: `${(index * 100) + 300}ms` }}
         >
           <div className="badge inline-block mb-4 px-3 py-1 rounded-full" style={{ backgroundColor: `${color}20`, color: color }}>
             <span className="text-sm font-medium">{model}</span>
@@ -138,7 +169,11 @@ const CarSection: React.FC<CarSectionProps> = ({
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {features.slice(0, 4).map((feature, idx) => (
-              <div key={idx} className="flex items-start gap-2">
+              <div 
+                key={idx} 
+                className="flex items-start gap-2"
+                ref={el => featureRefs.current[idx] = el}
+              >
                 <div className="flex-shrink-0 mt-1">
                   <Check className="h-5 w-5 text-primary" />
                 </div>
@@ -160,7 +195,8 @@ const CarSection: React.FC<CarSectionProps> = ({
               <p className="text-sm text-gray-500 dark:text-gray-400">₹{pricePerKm}/km mileage fee</p>
             </div>
             <button 
-              className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 text-center"
+              ref={buttonRef}
+              className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all duration-300 hover:shadow-lg hover:bg-primary/90 text-center"
               onClick={handleBookNow}
             >
               Book Now
