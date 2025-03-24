@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -24,7 +24,17 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
+  // We'll wrap this in a try/catch to handle cases where the component is not inside a Router
+  let navigate;
+  let location;
+  
+  try {
+    navigate = useNavigate();
+    location = useLocation();
+  } catch (error) {
+    // Router hooks not available, we'll handle navigation differently
+  }
+  
   const navbarRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
   const menuItemsRef = useRef<HTMLLIElement[]>([]);
@@ -115,7 +125,7 @@ const Navbar = () => {
       setMobileMenuOpen(false);
     }
     
-    if (href.startsWith('#') && window.location.pathname === '/') {
+    if (href.startsWith('#') && (window.location.pathname === '/' || !location)) {
       const element = document.getElementById(href.substring(1));
       if (element) {
         gsap.to(window, {
@@ -127,8 +137,11 @@ const Navbar = () => {
           ease: "power2.inOut"
         });
       }
-    } else {
+    } else if (navigate) {
       navigate(href);
+    } else {
+      // Fallback for when Router is not available
+      window.location.href = href;
     }
   };
 
@@ -149,6 +162,12 @@ const Navbar = () => {
               ref={logoRef}
               to="/" 
               className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-80 transition-all duration-300 hover:scale-105"
+              onClick={(e) => {
+                if (!navigate) {
+                  e.preventDefault();
+                  handleNavigation('/');
+                }
+              }}
             >
               FutureRide
             </Link>
@@ -170,7 +189,10 @@ const Navbar = () => {
                         navigationMenuTriggerStyle(),
                         "transition-all duration-300 hover:scale-105"
                       )}
-                      onClick={() => handleNavigation(link.href)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavigation(link.href);
+                      }}
                     >
                       {link.name}
                     </NavigationMenuLink>
