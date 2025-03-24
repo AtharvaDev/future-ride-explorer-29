@@ -56,7 +56,7 @@ export const cars: Car[] = [
     description: "The Crysta offers a large cabin, seating for up to eight people, and plenty of storage options across all three rows.",
     pricePerDay: 2500,
     pricePerKm: 20,
-    image: "https://www.vhv.rs/dpng/d/606-6065475_toyota-innova-crysta-png-transparent-png.png",
+    image: "https://ackodrive-assets.ackodrive.com/media/test_Qppr44b.png",
     color: "#ec4899",
     features: [
       {
