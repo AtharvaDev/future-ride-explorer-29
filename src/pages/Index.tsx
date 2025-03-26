@@ -26,21 +26,6 @@ const Index = () => {
       {/* Add FleetSection here before the individual CarSections */}
       <FleetSection cars={cars} />
       
-      {cars.map((car, index) => (
-        <CarSection
-          key={car.id}
-          id={car.id}
-          model={car.model}
-          title={car.title}
-          description={car.description}
-          pricePerDay={car.pricePerDay}
-          pricePerKm={car.pricePerKm}
-          image={car.image}
-          color={car.color}
-          features={car.features}
-          index={index}
-        />
-      ))}
       
       <div id="contact" className="py-20">
         {/* Contact section content */}

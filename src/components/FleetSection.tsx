@@ -4,6 +4,7 @@ import { Car } from '@/data/cars';
 import { Card, CardContent } from '@/components/ui/card';
 import gsap from 'gsap';
 import { createRepeatingScrollAnimation } from '@/utils/scroll-animations';
+import CarSection from './CarSection';
 
 interface FleetSectionProps {
   cars: Car[];
@@ -107,6 +108,20 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
         >
           {cars.map((car, index) => (
+            <div>
+            <CarSection
+              key={car.id}
+              id={car.id}
+              model={car.model}
+              title={car.title}
+              description={car.description}
+              pricePerDay={car.pricePerDay}
+              pricePerKm={car.pricePerKm}
+              image={car.image}
+              color={car.color}
+              features={car.features}
+              index={index}
+            />
             <Card 
               key={car.id} 
               ref={el => cardRefs.current[index] = el}
@@ -147,6 +162,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
                 </div>
               </CardContent>
             </Card>
+            </div>
           ))}
         </div>
       </div>
