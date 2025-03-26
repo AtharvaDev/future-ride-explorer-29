@@ -9,11 +9,16 @@ import { toast } from 'sonner';
 import gsap from 'gsap';
 import { Card } from '@/components/ui/card';
 import CarSection from '@/components/CarSection';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Loader, Play } from 'lucide-react';
 
 const BookingPage = () => {
   const { carId } = useParams();
   const navigate = useNavigate();
   const [selectedCar, setSelectedCar] = useState(cars[0]);
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Find the selected car based on URL param
@@ -54,23 +59,33 @@ const BookingPage = () => {
     };
   }, [carId]);
 
+  const handleWatchVideo = () => {
+    setLoading(true);
+    setVideoOpen(true);
+    
+    // Simulate video loading for 1.5 seconds
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <Card>
-          <CarSection
-              key={selectedCar.id}
-              id={selectedCar.id}
-              model={selectedCar.model}
-              title={selectedCar.title}
-              description={selectedCar.description}
-              pricePerDay={selectedCar.pricePerDay}
-              pricePerKm={selectedCar.pricePerKm}
-              image={selectedCar.image}
-              color={selectedCar.color}
-              features={selectedCar.features}
-              index={carId}
-            />
+        <CarSection
+          key={selectedCar.id}
+          id={selectedCar.id}
+          model={selectedCar.model}
+          title={selectedCar.title}
+          description={selectedCar.description}
+          pricePerDay={selectedCar.pricePerDay}
+          pricePerKm={selectedCar.pricePerKm}
+          image={selectedCar.image}
+          color={selectedCar.color}
+          features={selectedCar.features}
+          index={carId}
+        />
       </Card>
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-12">
@@ -93,7 +108,7 @@ const BookingPage = () => {
                 <h2 className="text-2xl font-bold mb-2">{selectedCar.model} {selectedCar.title}</h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">{selectedCar.description}</p>
                 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-4">
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Starting at</p>
                     <div className="flex items-end gap-1">
@@ -102,6 +117,18 @@ const BookingPage = () => {
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">₹{selectedCar.pricePerKm}/km mileage fee</p>
                   </div>
+                  
+                  {selectedCar.video && (
+                    <Button 
+                      onClick={handleWatchVideo}
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-2"
+                    >
+                      <Play className="h-4 w-4" />
+                      <span>Watch Video</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -112,6 +139,34 @@ const BookingPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Video Dialog */}
+      <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedCar.title}</DialogTitle>
+          </DialogHeader>
+          <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader className="h-12 w-12 animate-spin text-primary" />
+                  <p className="text-gray-100">Loading video...</p>
+                </div>
+              </div>
+            ) : (
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${selectedCar.video?.split('v=')[1]?.split('&')[0]}`}
+                title={selectedCar.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

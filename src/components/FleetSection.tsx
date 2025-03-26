@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
 import { Card, CardContent } from '@/components/ui/card';
 import gsap from 'gsap';
 import { createRepeatingScrollAnimation } from '@/utils/scroll-animations';
 import CarSection from './CarSection';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Loader, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FleetSectionProps {
   cars: Car[];
@@ -14,6 +17,9 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   const navigate = useNavigate();
   const fleetGridRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Set initial opacity to 0 for all cards
@@ -74,6 +80,18 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
     navigate(`/booking/${carId}`);
   };
 
+  const handleViewDetails = (e: React.MouseEvent, car: Car) => {
+    e.stopPropagation(); // Prevent card click from triggering
+    setSelectedCar(car);
+    setLoading(true);
+    setVideoOpen(true);
+    
+    // Simulate video loading for 1.5 seconds
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+  };
+
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900/30" id="fleet">
       <div className="container mx-auto px-4">
@@ -108,52 +126,85 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
         >
           {cars.map((car, index) => (
-            <div>
-            
-            <Card 
-              key={car.id} 
-              ref={el => cardRefs.current[index] = el}
-              className="overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => handleCarClick(car.id)}
-            >
-              <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
-                <div 
-                  className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                ></div>
-                <img 
-                  src={car.image} 
-                  alt={car.title} 
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: car.color }}></span>
-                    <span className="text-white text-sm font-medium">Learn more</span>
+            <div key={car.id}>
+              <Card 
+                ref={el => cardRefs.current[index] = el}
+                className="overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer"
+                onClick={() => handleCarClick(car.id)}
+              >
+                <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  ></div>
+                  <img 
+                    src={car.image} 
+                    alt={car.title} 
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: car.color }}></span>
+                      <span className="text-white text-sm font-medium">Learn more</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="text-xl font-bold mb-1">{car.title.split(' ').slice(1).join(' ')}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{car.model}</p>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">From</p>
-                    <p className="text-lg font-bold">₹{car.pricePerKm}/km</p>
+                <CardContent className="p-4">
+                  <h3 className="text-xl font-bold mb-1">{car.title.split(' ').slice(1).join(' ')}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{car.model}</p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">From</p>
+                      <p className="text-lg font-bold">₹{car.pricePerKm}/km</p>
+                    </div>
+                    <div>
+                      <Button 
+                        onClick={(e) => handleViewDetails(e, car)} 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center gap-1 text-primary group-hover:translate-x-1 transition-transform duration-300"
+                      >
+                        <span className="text-sm font-medium">View details</span>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3.33325 8H12.6666" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M8 3.33337L12.6667 8.00004L8 12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-primary group-hover:translate-x-1 transition-transform duration-300">
-                    <span className="text-sm font-medium">View details</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3.33325 8H12.6666" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M8 3.33337L12.6667 8.00004L8 12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Video Dialog */}
+      <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedCar?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader className="h-12 w-12 animate-spin text-primary" />
+                  <p className="text-gray-100">Loading video...</p>
+                </div>
+              </div>
+            ) : (
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${selectedCar?.video?.split('v=')[1]?.split('&')[0]}`}
+                title={selectedCar?.title || "Toyota Video"}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

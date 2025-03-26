@@ -1,4 +1,3 @@
-
 export interface Car {
   id: string;
   model: string;
@@ -8,6 +7,7 @@ export interface Car {
   pricePerKm: number;
   image: string;
   color: string;
+  video?: string;
   features: {
     icon: string;
     title: string;
@@ -25,6 +25,7 @@ export const cars: Car[] = [
     pricePerKm: 25,
     image: "https://ackodrive-assets.ackodrive.com/media/test_Qppr44b.png",
     color: "#3b82f6",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "bolt",
@@ -57,6 +58,7 @@ export const cars: Car[] = [
     pricePerKm: 20,
     image: "https://ackodrive-assets.ackodrive.com/media/test_Qppr44b.png",
     color: "#ec4899",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "zap",
@@ -89,6 +91,7 @@ export const cars: Car[] = [
     pricePerKm: 15,
     image: "public/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png",
     color: "#dc2626",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "zap",
@@ -121,6 +124,7 @@ export const cars: Car[] = [
     pricePerKm: 18,
     image: "public/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png",
     color: "#ea580c",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "shield",
@@ -153,6 +157,7 @@ export const cars: Car[] = [
     pricePerKm: 19,
     image: "public/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png",
     color: "#2563eb",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "maximize",
@@ -185,6 +190,7 @@ export const cars: Car[] = [
     pricePerKm: 20,
     image: "public/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png",
     color: "#0ea5e9",
+    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
     features: [
       {
         icon: "battery-charging",
