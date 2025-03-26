@@ -7,6 +7,8 @@ import Footer from '@/components/Footer';
 import BookingForm from '@/components/BookingForm';
 import { toast } from 'sonner';
 import gsap from 'gsap';
+import { Card } from '@/components/ui/card';
+import CarSection from '@/components/CarSection';
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -55,7 +57,21 @@ const BookingPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      
+      <Card>
+          <CarSection
+              key={selectedCar.id}
+              id={selectedCar.id}
+              model={selectedCar.model}
+              title={selectedCar.title}
+              description={selectedCar.description}
+              pricePerDay={selectedCar.pricePerDay}
+              pricePerKm={selectedCar.pricePerKm}
+              image={selectedCar.image}
+              color={selectedCar.color}
+              features={selectedCar.features}
+              index={carId}
+            />
+      </Card>
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-12">
           <h1 className="text-4xl font-bold mb-10 text-center page-title">

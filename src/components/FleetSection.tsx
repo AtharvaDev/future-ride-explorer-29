@@ -109,19 +109,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         >
           {cars.map((car, index) => (
             <div>
-            <CarSection
-              key={car.id}
-              id={car.id}
-              model={car.model}
-              title={car.title}
-              description={car.description}
-              pricePerDay={car.pricePerDay}
-              pricePerKm={car.pricePerKm}
-              image={car.image}
-              color={car.color}
-              features={car.features}
-              index={index}
-            />
+            
             <Card 
               key={car.id} 
               ref={el => cardRefs.current[index] = el}
