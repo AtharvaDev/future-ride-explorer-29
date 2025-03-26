@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import CarSection from '@/components/CarSection';
+import FleetSection from '@/components/FleetSection'; // Add import for the new component
 import Footer from '@/components/Footer';
 import { cars } from '@/data/cars';
 import { initPageAnimations } from '@/utils/animations';
@@ -58,7 +59,10 @@ const Index = () => {
       
       <Hero />
       
-      <div id="fleet" className="py-20 bg-gray-50 dark:bg-gray-900/30">
+      {/* Add FleetSection here before the individual CarSections */}
+      <FleetSection cars={cars} />
+      
+      <div id="fleet-details" className="py-20 bg-gray-50 dark:bg-gray-900/30">
         <div ref={headerRef} className="container mx-auto px-4 text-center mb-16">
           <div 
             className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
