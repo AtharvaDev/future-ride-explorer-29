@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,7 +22,7 @@ interface CarSectionProps {
   image: string;
   color: string;
   features: CarFeature[];
-  index: number;
+  index: string | number;
 }
 
 const CarSection: React.FC<CarSectionProps> = ({
@@ -49,14 +48,14 @@ const CarSection: React.FC<CarSectionProps> = ({
   const pricingRef = useRef<HTMLDivElement>(null);
   
   const navigate = useNavigate();
-  const isEven = index % 2 === 0;
+  const isEven = typeof index === 'number' 
+    ? index % 2 === 0 
+    : parseInt(index as string, 10) % 2 === 0;
 
   useEffect(() => {
-    // Set initial states for animations
     gsap.set([carImageRef.current, contentRef.current], { opacity: 0 });
     featureRefs.current.forEach(el => el && gsap.set(el, { opacity: 0 }));
     
-    // Apply repeating scroll animations instead of one-time animations
     if (carImageRef.current) {
       createRepeatingScrollAnimation(carImageRef.current, {
         animation: 'scale',
@@ -107,7 +106,6 @@ const CarSection: React.FC<CarSectionProps> = ({
       });
     }
     
-    // Create staggered animations for features
     if (featureRefs.current.length > 0 && featureRefs.current[0]?.parentElement) {
       const elements = featureRefs.current.filter(el => el !== null) as Element[];
       if (elements.length > 0) {
@@ -120,7 +118,6 @@ const CarSection: React.FC<CarSectionProps> = ({
       }
     }
 
-    // Add hover animation to button
     let buttonCleanup: (() => void) | null = null;
     if (buttonRef.current) {
       buttonCleanup = createHoverAnimation(buttonRef.current);

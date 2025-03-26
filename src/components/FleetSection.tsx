@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -20,6 +21,9 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   const [videoOpen, setVideoOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLIFrameElement>(null);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Set initial opacity to 0 for all cards
@@ -76,20 +80,57 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
     }
   }, []);
 
-  const handleCarClick = (carId: string) => {
-    navigate(`/booking/${carId}`);
+  useEffect(() => {
+    // Clean up timer when component unmounts
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Handle actual redirection after video plays
+    if (videoOpen && selectedCar && !loading) {
+      // Clear any existing timer
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+      
+      // Set a new timer to redirect after 5 seconds
+      redirectTimerRef.current = setTimeout(() => {
+        setVideoOpen(false);
+        navigate(`/booking/${selectedCar.id}`);
+      }, 5000);
+    }
+    
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, [videoOpen, selectedCar, loading, navigate]);
+
+  const handleCarClick = (car: Car) => {
+    if (car.video) {
+      setSelectedCar(car);
+      setLoading(true);
+      setVideoOpen(true);
+      setIsFullscreen(true);
+      
+      // Simulate video loading for 1 second
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    } else {
+      // If there's no video, navigate directly
+      navigate(`/booking/${car.id}`);
+    }
   };
 
   const handleViewDetails = (e: React.MouseEvent, car: Car) => {
     e.stopPropagation(); // Prevent card click from triggering
-    setSelectedCar(car);
-    setLoading(true);
-    setVideoOpen(true);
-    
-    // Simulate video loading for 1.5 seconds
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    navigate(`/booking/${car.id}`);
   };
 
   return (
@@ -130,7 +171,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
               <Card 
                 ref={el => cardRefs.current[index] = el}
                 className="overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer"
-                onClick={() => handleCarClick(car.id)}
+                onClick={() => handleCarClick(car)}
               >
                 <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
                   <div 
@@ -141,10 +182,17 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
                     alt={car.title} 
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                   />
+                  {car.video && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-black/30 rounded-full p-3">
+                        <Play className="h-10 w-10 text-white" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: car.color }}></span>
-                      <span className="text-white text-sm font-medium">Learn more</span>
+                      <span className="text-white text-sm font-medium">{car.video ? 'Watch video' : 'Learn more'}</span>
                     </div>
                   </div>
                 </div>
@@ -179,12 +227,22 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
       </div>
 
       {/* Video Dialog */}
-      <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{selectedCar?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
+      <Dialog 
+        open={videoOpen} 
+        onOpenChange={(open) => {
+          setVideoOpen(open);
+          if (!open && redirectTimerRef.current) {
+            clearTimeout(redirectTimerRef.current);
+          }
+        }}
+      >
+        <DialogContent className={isFullscreen ? "sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none" : "sm:max-w-4xl"}>
+          {!isFullscreen && (
+            <DialogHeader>
+              <DialogTitle>{selectedCar?.title}</DialogTitle>
+            </DialogHeader>
+          )}
+          <div className={isFullscreen ? "w-full h-full bg-black relative" : "w-full h-[60vh] bg-black relative rounded-md overflow-hidden"}>
             {loading ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -194,8 +252,9 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
               </div>
             ) : (
               <iframe
+                ref={videoRef}
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${selectedCar?.video?.split('v=')[1]?.split('&')[0]}`}
+                src={`https://www.youtube.com/embed/${selectedCar?.video?.split('v=')[1]?.split('&')[0]}?autoplay=1&mute=0`}
                 title={selectedCar?.title || "Toyota Video"}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

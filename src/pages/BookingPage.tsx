@@ -84,7 +84,7 @@ const BookingPage = () => {
           image={selectedCar.image}
           color={selectedCar.color}
           features={selectedCar.features}
-          index={carId}
+          index={carId || "0"} // Fix: Convert to string explicitly
         />
       </Card>
       <main className="flex-grow">
