@@ -32,7 +32,10 @@ const BookingPage = () => {
       }
     }
 
-    // GSAP animations for page entry
+    // Scroll to top of page when component mounts
+    window.scrollTo(0, 0);
+
+    // GSAP animations for page entry - but without any scrolling effects
     const tl = gsap.timeline();
     tl.from('.page-title', {
       y: -50,
