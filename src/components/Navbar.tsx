@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Car, Home, Phone, Shield } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   NavigationMenu,
@@ -17,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import gsap from 'gsap';
 
@@ -24,6 +25,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  
   // We'll wrap this in a try/catch to handle cases where the component is not inside a Router
   let navigate;
   let location;
@@ -116,8 +118,10 @@ const Navbar = () => {
   }, [mobileMenuOpen]);
 
   const navigationLinks = [
-    { name: "Home", href: "/" },
-    { name: "Fleet", href: "#fleet" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "Fleet", href: "#fleet", icon: Car },
+    { name: "Contact", href: "#contact", icon: Phone },
+    { name: "Admin", href: "/admin", icon: Shield },
   ];
 
   const handleNavigation = (href: string) => {
@@ -145,13 +149,16 @@ const Navbar = () => {
     }
   };
 
+  // Check if we're on the admin page
+  const isAdminPage = location?.pathname === '/admin';
+
   return (
     <header 
       ref={navbarRef}
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
-        scrolled 
-          ? "py-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20" 
+        scrolled || isAdminPage
+          ? "py-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm" 
           : "py-5 bg-transparent"
       )}
     >
@@ -161,7 +168,7 @@ const Navbar = () => {
             <Link 
               ref={logoRef}
               to="/" 
-              className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-80 transition-all duration-300 hover:scale-105"
+              className="text-2xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-80 transition-all duration-300 hover:scale-105"
               onClick={(e) => {
                 if (!navigate) {
                   e.preventDefault();
@@ -169,7 +176,8 @@ const Navbar = () => {
                 }
               }}
             >
-              FutureRide
+              <Car className="h-6 w-6 text-blue-600" />
+              <span>FutureRide</span>
             </Link>
           </div>
           
@@ -187,13 +195,18 @@ const Navbar = () => {
                     <NavigationMenuLink
                       className={cn(
                         navigationMenuTriggerStyle(),
-                        "transition-all duration-300 hover:scale-105"
+                        "transition-all duration-300 hover:scale-105 flex items-center gap-2",
+                        (location?.pathname === link.href || 
+                         (location?.pathname === '/' && link.href.startsWith('#')))
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : ""
                       )}
                       onClick={(e) => {
                         e.preventDefault();
                         handleNavigation(link.href);
                       }}
                     >
+                      <link.icon className="h-4 w-4" />
                       {link.name}
                     </NavigationMenuLink>
                   </NavigationMenuItem>
@@ -207,9 +220,10 @@ const Navbar = () => {
             <Button 
               ref={contactButtonRef}
               onClick={() => handleNavigation('#contact')}
-              className="bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105 hover:shadow-md"
+              variant="default"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
             >
-              Contact
+              Book Now
             </Button>
           </div>
           
@@ -229,22 +243,24 @@ const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-[200px] mt-2 dropdown-menu-content"
+                className="w-56 mt-2 dropdown-menu-content rounded-xl p-2"
               >
                 {navigationLinks.map((link) => (
                   <DropdownMenuItem 
                     key={link.name}
-                    className="cursor-pointer transition-all duration-200 hover:scale-105 hover:pl-5"
+                    className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary/10 rounded-lg flex items-center gap-2 p-3"
                     onClick={() => handleNavigation(link.href)}
                   >
+                    <link.icon className="h-4 w-4" />
                     {link.name}
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                  className="cursor-pointer bg-primary/10 text-primary hover:bg-primary/20 mt-2 transition-all duration-200 hover:scale-105"
+                  className="cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 mt-2 transition-all duration-200 rounded-lg p-3 flex justify-center"
                   onClick={() => handleNavigation('#contact')}
                 >
-                  Contact
+                  Book Now
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
