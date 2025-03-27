@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { cars } from '@/data/cars';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BookingForm from '@/components/BookingForm';
@@ -12,28 +11,38 @@ import CarSection from '@/components/CarSection';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader, Play } from 'lucide-react';
+import { getAllCars, getCarById } from '@/services/carService';
+import { useQuery } from '@tanstack/react-query';
+import { Car } from '@/data/cars';
 
 const BookingPage = () => {
   const { carId } = useParams();
   const navigate = useNavigate();
-  const [selectedCar, setSelectedCar] = useState(cars[0]);
   const [videoOpen, setVideoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Find the selected car based on URL param
-    if (carId) {
-      const car = cars.find(car => car.id === carId);
-      if (car) {
-        setSelectedCar(car);
-      } else {
-        toast.error("Car not found, redirecting to default options");
-        setSelectedCar(cars[0]);
-      }
-    }
+  // Fetch all cars
+  const { data: cars = [], isLoading: carsLoading } = useQuery({
+    queryKey: ['cars'],
+    queryFn: getAllCars
+  });
 
+  // Determine the selected car based on the URL param
+  const selectedCar = carId 
+    ? cars.find(car => car.id === carId) || (cars.length > 0 ? cars[0] : null)
+    : cars.length > 0 ? cars[0] : null;
+
+  useEffect(() => {
     // Scroll to top of page when component mounts
     window.scrollTo(0, 0);
+
+    // If we have a carId but couldn't find the car, show an error
+    if (carId && cars.length > 0 && !cars.find(car => car.id === carId)) {
+      toast.error("Car not found, redirecting to default options");
+      if (cars.length > 0) {
+        navigate(`/booking/${cars[0].id}`);
+      }
+    }
 
     // GSAP animations for page entry - but without any scrolling effects
     const tl = gsap.timeline();
@@ -60,7 +69,7 @@ const BookingPage = () => {
     return () => {
       tl.kill();
     };
-  }, [carId]);
+  }, [carId, cars, navigate]);
 
   const handleWatchVideo = () => {
     setLoading(true);
@@ -71,6 +80,21 @@ const BookingPage = () => {
       setLoading(false);
     }, 1500);
   };
+
+  if (carsLoading || !selectedCar) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader className="h-12 w-12 animate-spin text-primary" />
+            <p>Loading car data...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

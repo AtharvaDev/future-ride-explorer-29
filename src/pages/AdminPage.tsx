@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { cars as initialCars, Car } from '@/data/cars';
+import { Car } from '@/data/cars';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { PlusCircle, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import gsap from 'gsap';
+import { getAllCars, saveCar, deleteCar } from '@/services/carService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Form validation schema
 const carFormSchema = z.object({
@@ -72,11 +74,49 @@ const carFormSchema = z.object({
 type CarFormValues = z.infer<typeof carFormSchema>;
 
 const AdminPage = () => {
-  const [cars, setCars] = useState<Car[]>(initialCars);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [carToDelete, setCarToDelete] = useState<Car | null>(null);
+  const queryClient = useQueryClient();
+
+  // Fetch cars data
+  const { 
+    data: cars = [], 
+    isLoading, 
+    isError,
+    error
+  } = useQuery({
+    queryKey: ['cars'],
+    queryFn: getAllCars
+  });
+
+  // Mutations for car operations
+  const saveCarMutation = useMutation({
+    mutationFn: saveCar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cars'] });
+      setIsDialogOpen(false);
+      form.reset();
+    },
+    onError: (error) => {
+      console.error('Error saving car:', error);
+      toast.error('Failed to save car');
+    }
+  });
+
+  const deleteCarMutation = useMutation({
+    mutationFn: deleteCar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cars'] });
+      setDeleteConfirmOpen(false);
+      setCarToDelete(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting car:', error);
+      toast.error('Failed to delete car');
+    }
+  });
 
   // Initialize form
   const form = useForm<CarFormValues>({
@@ -160,14 +200,8 @@ const AdminPage = () => {
   // Actually delete the car
   const deleteCar = () => {
     if (carToDelete) {
-      const updatedCars = cars.filter(car => car.id !== carToDelete.id);
-      setCars(updatedCars);
+      deleteCarMutation.mutate(carToDelete.id);
       toast.success(`${carToDelete.title} deleted successfully`);
-      setDeleteConfirmOpen(false);
-      setCarToDelete(null);
-      
-      // In a real application, you would also save to database/localStorage here
-      // localStorage.setItem('cars', JSON.stringify(updatedCars));
     }
   };
 
@@ -175,13 +209,13 @@ const AdminPage = () => {
   const onSubmit = (data: CarFormValues) => {
     if (editingCar) {
       // Update existing car
-      const updatedCars = cars.map(car => car.id === editingCar.id ? {
-        ...car,
+      const updatedCar: Car = {
+        ...editingCar,
         ...data,
-        features: car.features // Keep the original features
-      } : car);
+        features: editingCar.features // Keep the original features
+      };
       
-      setCars(updatedCars);
+      saveCarMutation.mutate(updatedCar);
       toast.success(`${data.title} updated successfully`);
     } else {
       // Create new car with default features and ensure all required properties are included
@@ -219,17 +253,44 @@ const AdminPage = () => {
         ]
       };
       
-      setCars([...cars, newCar]);
+      saveCarMutation.mutate(newCar);
       toast.success(`${data.title} created successfully`);
     }
-    
-    // Close dialog and reset form
-    setIsDialogOpen(false);
-    form.reset();
-    
-    // In a real application, you would also save to database/localStorage here
-    // localStorage.setItem('cars', JSON.stringify(updatedCars));
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader className="h-12 w-12 animate-spin text-primary" />
+            <p>Loading car data...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (isError) {
+    console.error("Error fetching cars:", error);
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Data</h2>
+            <p className="mb-6">There was an error loading the car data. Please try again later.</p>
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['cars'] })}>
+              Retry
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -242,6 +303,7 @@ const AdminPage = () => {
             <Button 
               onClick={handleAddCar} 
               className="flex items-center gap-2 admin-card"
+              disabled={saveCarMutation.isPending}
             >
               <PlusCircle className="h-4 w-4" />
               Add New Car
@@ -287,6 +349,7 @@ const AdminPage = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditCar(car)}
+                            disabled={saveCarMutation.isPending}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -294,6 +357,7 @@ const AdminPage = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeleteConfirm(car)}
+                            disabled={deleteCarMutation.isPending}
                             className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -476,8 +540,18 @@ const AdminPage = () => {
               </div>
 
               <DialogFooter>
-                <Button type="submit">
-                  {editingCar ? "Save Changes" : "Add Car"}
+                <Button 
+                  type="submit"
+                  disabled={saveCarMutation.isPending}
+                >
+                  {saveCarMutation.isPending ? (
+                    <>
+                      <Loader className="h-4 w-4 mr-2 animate-spin" />
+                      {editingCar ? "Saving..." : "Adding..."}
+                    </>
+                  ) : (
+                    editingCar ? "Save Changes" : "Add Car"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -499,6 +573,7 @@ const AdminPage = () => {
               variant="outline"
               onClick={() => setDeleteConfirmOpen(false)}
               className="flex items-center gap-2"
+              disabled={deleteCarMutation.isPending}
             >
               <XCircle className="h-4 w-4" />
               Cancel
@@ -507,9 +582,19 @@ const AdminPage = () => {
               variant="destructive"
               onClick={deleteCar}
               className="flex items-center gap-2"
+              disabled={deleteCarMutation.isPending}
             >
-              <CheckCircle className="h-4 w-4" />
-              Delete
+              {deleteCarMutation.isPending ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Delete
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
