@@ -8,7 +8,8 @@ import {
   setDoc, 
   deleteDoc, 
   query, 
-  orderBy 
+  orderBy,
+  getDoc
 } from 'firebase/firestore';
 
 const CARS_COLLECTION = 'cars';
@@ -34,17 +35,14 @@ export const getAllCars = async (): Promise<Car[]> => {
 // Get a specific car by ID
 export const getCarById = async (id: string): Promise<Car | null> => {
   try {
-    const carsQuery = query(collection(db, CARS_COLLECTION));
-    const querySnapshot = await getDocs(carsQuery);
+    const carRef = doc(db, CARS_COLLECTION, id);
+    const carSnapshot = await getDoc(carRef);
     
-    let car: Car | null = null;
-    querySnapshot.forEach((doc) => {
-      if (doc.id === id) {
-        car = { id: doc.id, ...doc.data() } as Car;
-      }
-    });
+    if (carSnapshot.exists()) {
+      return { id: carSnapshot.id, ...carSnapshot.data() } as Car;
+    }
     
-    return car;
+    return null;
   } catch (error) {
     console.error("Error getting car by ID:", error);
     throw error;
@@ -76,17 +74,27 @@ export const deleteCar = async (id: string): Promise<void> => {
 // Initialize default cars in Firestore if they don't exist
 export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> => {
   try {
-    const existingCars = await getAllCars();
+    console.log("Checking if default cars need to be initialized...");
     
-    if (existingCars.length === 0) {
+    // Check if collection exists and has data
+    const carsQuery = query(collection(db, CARS_COLLECTION));
+    const querySnapshot = await getDocs(carsQuery);
+    
+    if (querySnapshot.empty) {
+      console.log("No cars found in Firestore, initializing default cars...");
+      
       // If no cars exist in Firestore, add the default ones
       const promises = defaultCars.map(car => {
+        // Clean up the car object by removing any undefined or non-serializable values
+        const cleanCar = JSON.parse(JSON.stringify(car));
         const carRef = doc(db, CARS_COLLECTION, car.id);
-        return setDoc(carRef, car);
+        return setDoc(carRef, cleanCar);
       });
       
       await Promise.all(promises);
-      console.log("Default cars initialized in Firestore");
+      console.log("Default cars successfully initialized in Firestore!");
+    } else {
+      console.log(`Found ${querySnapshot.size} cars in Firestore, skipping initialization.`);
     }
   } catch (error) {
     console.error("Error initializing default cars:", error);
