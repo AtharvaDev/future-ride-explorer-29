@@ -184,9 +184,17 @@ const AdminPage = () => {
       setCars(updatedCars);
       toast.success(`${data.title} updated successfully`);
     } else {
-      // Create new car with default features
+      // Create new car with default features and ensure all required properties are included
       const newCar: Car = {
-        ...data,
+        id: data.id,
+        model: data.model,
+        title: data.title,
+        description: data.description,
+        pricePerDay: data.pricePerDay,
+        pricePerKm: data.pricePerKm,
+        image: data.image,
+        color: data.color,
+        video: data.video,
         features: [
           {
             icon: "zap",
