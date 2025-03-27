@@ -39,7 +39,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import gsap from 'gsap';
-import { getAllCars, saveCar, deleteCar } from '@/services/carService';
+import { getAllCars, saveCar, deleteCar as deleteCarService } from '@/services/carService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Form validation schema
@@ -106,7 +106,7 @@ const AdminPage = () => {
   });
 
   const deleteCarMutation = useMutation({
-    mutationFn: deleteCar,
+    mutationFn: (id: string) => deleteCarService(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cars'] });
       setDeleteConfirmOpen(false);
@@ -198,7 +198,7 @@ const AdminPage = () => {
   };
 
   // Actually delete the car
-  const deleteCar = () => {
+  const handleDeleteCar = () => {
     if (carToDelete) {
       deleteCarMutation.mutate(carToDelete.id);
       toast.success(`${carToDelete.title} deleted successfully`);
@@ -580,7 +580,7 @@ const AdminPage = () => {
             </Button>
             <Button
               variant="destructive"
-              onClick={deleteCar}
+              onClick={handleDeleteCar}
               className="flex items-center gap-2"
               disabled={deleteCarMutation.isPending}
             >
