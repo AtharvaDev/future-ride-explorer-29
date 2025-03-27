@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import Navbar from '@/components/Navbar';
@@ -107,19 +106,19 @@ const AdminPage = () => {
   };
 
   // Handle form submission (create or update)
-  const onSubmit = (data: CarFormValues) => {
+  const onSubmit = (data: CarFormValues, features: { icon: string; title: string; description: string }[]) => {
     if (editingCar) {
       // Update existing car
       const updatedCar: Car = {
         ...editingCar,
         ...data,
-        features: editingCar.features // Keep the original features
+        features: features // Now using the features passed from the form
       };
       
       saveCarMutation.mutate(updatedCar);
       toast.success(`${data.title} updated successfully`);
     } else {
-      // Create new car with default features and ensure all required properties are included
+      // Create new car with features from the form
       const newCar: Car = {
         id: data.id,
         model: data.model,
@@ -130,28 +129,7 @@ const AdminPage = () => {
         image: data.image,
         color: data.color,
         video: data.video,
-        features: [
-          {
-            icon: "zap",
-            title: "Feature 1",
-            description: "Description for feature 1"
-          },
-          {
-            icon: "battery-charging",
-            title: "Feature 2",
-            description: "Description for feature 2"
-          },
-          {
-            icon: "activity",
-            title: "Feature 3",
-            description: "Description for feature 3"
-          },
-          {
-            icon: "cpu",
-            title: "Feature 4",
-            description: "Description for feature 4"
-          }
-        ]
+        features: features // Now using the features passed from the form
       };
       
       saveCarMutation.mutate(newCar);
