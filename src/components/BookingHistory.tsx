@@ -17,7 +17,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { CompleteBookingData, getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
 
 const BookingHistory: React.FC = () => {
@@ -101,7 +100,9 @@ const BookingHistory: React.FC = () => {
                       <TableBody>
                         {activeBookings.map((booking) => (
                           <TableRow key={booking.id}>
-                            <TableCell className="font-medium">{booking.carId}</TableCell>
+                            <TableCell className="font-medium">
+                              {booking.car ? booking.car.title : booking.carId}
+                            </TableCell>
                             <TableCell>
                               {format(booking.startDate, 'MMM dd, yyyy')} - {format(booking.endDate, 'MMM dd, yyyy')}
                             </TableCell>
@@ -142,7 +143,9 @@ const BookingHistory: React.FC = () => {
                       <TableBody>
                         {pastBookings.map((booking) => (
                           <TableRow key={booking.id}>
-                            <TableCell className="font-medium">{booking.carId}</TableCell>
+                            <TableCell className="font-medium">
+                              {booking.car ? booking.car.title : booking.carId}
+                            </TableCell>
                             <TableCell>
                               {format(booking.startDate, 'MMM dd, yyyy')} - {format(booking.endDate, 'MMM dd, yyyy')}
                             </TableCell>

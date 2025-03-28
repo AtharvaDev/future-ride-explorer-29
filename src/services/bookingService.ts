@@ -1,240 +1,300 @@
 
 import { db } from '@/config/firebase';
 import { 
-  collection,
-  doc, 
-  setDoc, 
-  getDoc, 
+  collection, 
+  addDoc, 
   getDocs, 
-  query, 
+  getDoc,
+  doc, 
+  updateDoc, 
+  deleteDoc,
+  query,
   where,
-  orderBy,
-  serverTimestamp,
-  Timestamp
+  Timestamp,
+  documentId 
 } from 'firebase/firestore';
+import { getCarById } from './carService';
+import { toast } from 'sonner';
 import { Car } from '@/data/cars';
-import { v4 as uuidv4 } from 'uuid';
 
-// Booking interfaces
-export interface BookingBasicInfo {
+export interface Booking {
   id?: string;
-  userId?: string;
+  userId: string;
   carId: string;
   startDate: Date;
   endDate: Date;
   startCity: string;
-  status: 'draft' | 'pending' | 'confirmed' | 'cancelled';
-  createdAt?: any;
-  updatedAt?: any;
+  numberOfPassengers: number;
+  totalPrice: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  createdAt: Date;
 }
 
-export interface BookingContactInfo {
-  name: string;
-  email: string;
-  phone: string;
-  startCity: string;
-  specialRequests?: string;
-}
-
-export interface BookingPaymentInfo {
-  paymentMethod: string;
-  upiId?: string;
-  tokenAmount: number;
-  totalAmount?: number;
-  isPaid: boolean;
-}
-
-export interface CompleteBookingData extends BookingBasicInfo, BookingContactInfo, BookingPaymentInfo {
+export interface CompleteBookingData extends Booking {
   car?: Car;
 }
 
-// Save booking date/trip information
-export const saveBookingBasicInfo = async (
-  bookingInfo: BookingBasicInfo,
-  userId?: string
-): Promise<string> => {
+// Create a new booking within the user's bookings subcollection
+export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt'>) => {
   try {
-    let bookingId = bookingInfo.id || uuidv4();
+    // Reference to the user's bookings subcollection
+    const userBookingsRef = collection(db, 'users', bookingData.userId, 'bookings');
     
-    const bookingData = {
-      ...bookingInfo,
-      id: bookingId,
-      userId: userId || null,
-      status: bookingInfo.status || 'draft',
-      createdAt: bookingInfo.createdAt || serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    const newBooking = {
+      ...bookingData,
+      createdAt: new Date()
     };
     
-    await setDoc(doc(db, 'bookings', bookingId), bookingData);
-    return bookingId;
+    const docRef = await addDoc(userBookingsRef, {
+      ...newBooking,
+      startDate: Timestamp.fromDate(newBooking.startDate),
+      endDate: Timestamp.fromDate(newBooking.endDate),
+      createdAt: Timestamp.fromDate(newBooking.createdAt)
+    });
+    
+    return { id: docRef.id, ...newBooking };
   } catch (error) {
-    console.error('Error saving booking basic info:', error);
+    console.error('Error creating booking:', error);
+    toast.error('Failed to create booking');
     throw error;
   }
 };
 
-// Save booking contact information
-export const saveBookingContactInfo = async (
-  bookingId: string,
-  contactInfo: BookingContactInfo
-): Promise<void> => {
-  try {
-    const bookingRef = doc(db, 'bookings', bookingId);
-    const bookingDoc = await getDoc(bookingRef);
-    
-    if (!bookingDoc.exists()) {
-      throw new Error('Booking not found');
-    }
-    
-    await setDoc(bookingRef, {
-      ...bookingDoc.data(),
-      ...contactInfo,
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-  } catch (error) {
-    console.error('Error saving booking contact info:', error);
-    throw error;
-  }
-};
-
-// Save booking payment information
-export const saveBookingPaymentInfo = async (
-  bookingId: string,
-  paymentInfo: BookingPaymentInfo
-): Promise<void> => {
-  try {
-    const bookingRef = doc(db, 'bookings', bookingId);
-    const bookingDoc = await getDoc(bookingRef);
-    
-    if (!bookingDoc.exists()) {
-      throw new Error('Booking not found');
-    }
-    
-    await setDoc(bookingRef, {
-      ...bookingDoc.data(),
-      ...paymentInfo,
-      status: paymentInfo.isPaid ? 'confirmed' : 'pending',
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-  } catch (error) {
-    console.error('Error saving booking payment info:', error);
-    throw error;
-  }
-};
-
-// Get a booking by ID
-export const getBookingById = async (bookingId: string): Promise<CompleteBookingData | null> => {
-  try {
-    const bookingDoc = await getDoc(doc(db, 'bookings', bookingId));
-    
-    if (!bookingDoc.exists()) {
-      return null;
-    }
-    
-    const bookingData = bookingDoc.data() as CompleteBookingData;
-    
-    // Convert Firestore timestamps to Date objects
-    if (bookingData.startDate) {
-      bookingData.startDate = bookingData.startDate instanceof Timestamp ? 
-        bookingData.startDate.toDate() : new Date(bookingData.startDate);
-    }
-    
-    if (bookingData.endDate) {
-      bookingData.endDate = bookingData.endDate instanceof Timestamp ? 
-        bookingData.endDate.toDate() : new Date(bookingData.endDate);
-    }
-    
-    return bookingData;
-  } catch (error) {
-    console.error('Error getting booking:', error);
-    throw error;
-  }
-};
-
-// Get bookings by user ID
+// Get all bookings for a specific user
 export const getBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
-    const bookingsQuery = query(
-      collection(db, 'bookings'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
+    const userBookingsRef = collection(db, 'users', userId, 'bookings');
+    const querySnapshot = await getDocs(userBookingsRef);
     
-    const bookingDocs = await getDocs(bookingsQuery);
-    return bookingDocs.docs.map(doc => {
-      const data = doc.data() as CompleteBookingData;
+    const bookings: CompleteBookingData[] = [];
+    
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+      const booking: CompleteBookingData = {
+        id: doc.id,
+        userId: data.userId,
+        carId: data.carId,
+        startDate: data.startDate.toDate(),
+        endDate: data.endDate.toDate(),
+        startCity: data.startCity,
+        numberOfPassengers: data.numberOfPassengers,
+        totalPrice: data.totalPrice,
+        status: data.status,
+        createdAt: data.createdAt.toDate()
+      };
       
-      // Convert Firestore timestamps to Date objects
-      if (data.startDate) {
-        data.startDate = data.startDate instanceof Timestamp ? 
-          data.startDate.toDate() : new Date(data.startDate);
+      try {
+        // Try to get car details
+        const car = await getCarById(data.carId);
+        if (car) {
+          booking.car = car;
+        }
+      } catch (carError) {
+        console.error('Error fetching car details:', carError);
       }
       
-      if (data.endDate) {
-        data.endDate = data.endDate instanceof Timestamp ? 
-          data.endDate.toDate() : new Date(data.endDate);
-      }
-      
-      return data;
-    });
+      bookings.push(booking);
+    }
+    
+    return bookings;
   } catch (error) {
-    console.error('Error getting user bookings:', error);
+    console.error('Error fetching bookings:', error);
+    toast.error('Failed to fetch bookings');
     throw error;
   }
 };
 
-// Get active bookings by user ID (end date is in the future)
+// Get active (pending or confirmed) bookings for a user
 export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const allBookings = await getBookingsByUserId(userId);
-    const now = new Date();
     
-    return allBookings.filter(booking => {
-      return booking.endDate > now && booking.status !== 'cancelled';
-    });
+    return allBookings.filter(booking => 
+      booking.status === 'pending' || booking.status === 'confirmed');
   } catch (error) {
-    console.error('Error getting active bookings:', error);
+    console.error('Error fetching active bookings:', error);
+    toast.error('Failed to fetch active bookings');
     throw error;
   }
 };
 
-// Get past bookings by user ID (end date is in the past)
+// Get past (completed or cancelled) bookings for a user
 export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const allBookings = await getBookingsByUserId(userId);
-    const now = new Date();
     
-    return allBookings.filter(booking => {
-      return booking.endDate <= now || booking.status === 'cancelled';
-    });
+    return allBookings.filter(booking => 
+      booking.status === 'completed' || booking.status === 'cancelled');
   } catch (error) {
-    console.error('Error getting past bookings:', error);
+    console.error('Error fetching past bookings:', error);
+    toast.error('Failed to fetch past bookings');
     throw error;
   }
 };
 
-// Get all bookings for admin
+// Update a booking
+export const updateBooking = async (userId: string, bookingId: string, updates: Partial<Booking>) => {
+  try {
+    const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+    
+    const updatesWithTimestamps = { ...updates };
+    
+    if (updates.startDate) {
+      updatesWithTimestamps.startDate = Timestamp.fromDate(updates.startDate);
+    }
+    
+    if (updates.endDate) {
+      updatesWithTimestamps.endDate = Timestamp.fromDate(updates.endDate);
+    }
+    
+    await updateDoc(bookingRef, updatesWithTimestamps);
+    return { id: bookingId, ...updates };
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    toast.error('Failed to update booking');
+    throw error;
+  }
+};
+
+// Delete a booking
+export const deleteBooking = async (userId: string, bookingId: string) => {
+  try {
+    const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+    await deleteDoc(bookingRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting booking:', error);
+    toast.error('Failed to delete booking');
+    throw error;
+  }
+};
+
+// Get a single booking by ID
+export const getBookingById = async (userId: string, bookingId: string): Promise<CompleteBookingData | null> => {
+  try {
+    const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+    const bookingSnap = await getDoc(bookingRef);
+    
+    if (!bookingSnap.exists()) {
+      return null;
+    }
+    
+    const data = bookingSnap.data();
+    const booking: CompleteBookingData = {
+      id: bookingSnap.id,
+      userId: data.userId,
+      carId: data.carId,
+      startDate: data.startDate.toDate(),
+      endDate: data.endDate.toDate(),
+      startCity: data.startCity,
+      numberOfPassengers: data.numberOfPassengers,
+      totalPrice: data.totalPrice,
+      status: data.status,
+      createdAt: data.createdAt.toDate()
+    };
+    
+    try {
+      // Try to get car details
+      const car = await getCarById(data.carId);
+      if (car) {
+        booking.car = car;
+      }
+    } catch (carError) {
+      console.error('Error fetching car details:', carError);
+    }
+    
+    return booking;
+  } catch (error) {
+    console.error('Error fetching booking:', error);
+    toast.error('Failed to fetch booking details');
+    throw error;
+  }
+};
+
+// For admin use: Get all bookings across all users (admin access)
 export const getAllBookings = async (): Promise<CompleteBookingData[]> => {
   try {
-    const bookingDocs = await getDocs(collection(db, 'bookings'));
-    return bookingDocs.docs.map(doc => {
-      const data = doc.data() as CompleteBookingData;
+    // Get all users
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    
+    const allBookings: CompleteBookingData[] = [];
+    
+    // For each user, get their bookings
+    for (const userDoc of usersSnapshot.docs) {
+      const userId = userDoc.id;
+      const userBookingsRef = collection(db, 'users', userId, 'bookings');
+      const bookingsSnapshot = await getDocs(userBookingsRef);
       
-      // Convert Firestore timestamps to Date objects
-      if (data.startDate) {
-        data.startDate = data.startDate instanceof Timestamp ? 
-          data.startDate.toDate() : new Date(data.startDate);
+      for (const bookingDoc of bookingsSnapshot.docs) {
+        const data = bookingDoc.data();
+        const booking: CompleteBookingData = {
+          id: bookingDoc.id,
+          userId: data.userId,
+          carId: data.carId,
+          startDate: data.startDate.toDate(),
+          endDate: data.endDate.toDate(),
+          startCity: data.startCity,
+          numberOfPassengers: data.numberOfPassengers,
+          totalPrice: data.totalPrice,
+          status: data.status,
+          createdAt: data.createdAt.toDate()
+        };
+        
+        try {
+          // Try to get car details
+          const car = await getCarById(data.carId);
+          if (car) {
+            booking.car = car;
+          }
+        } catch (carError) {
+          console.error('Error fetching car details:', carError);
+        }
+        
+        allBookings.push(booking);
       }
-      
-      if (data.endDate) {
-        data.endDate = data.endDate instanceof Timestamp ? 
-          data.endDate.toDate() : new Date(data.endDate);
-      }
-      
-      return data;
-    });
+    }
+    
+    return allBookings;
   } catch (error) {
-    console.error('Error getting all bookings:', error);
+    console.error('Error fetching all bookings:', error);
+    toast.error('Failed to fetch all bookings');
     throw error;
+  }
+};
+
+// Now we need to update the initService to ensure our user collection exists
+export const migrateBookingsToUserSubcollections = async () => {
+  try {
+    // This function would handle migration of existing bookings to the new structure
+    // This would only be needed if there are existing bookings in a top-level collection
+    const oldBookingsRef = collection(db, 'bookings');
+    const oldBookingsSnapshot = await getDocs(oldBookingsRef);
+    
+    // Check if there are any bookings to migrate
+    if (oldBookingsSnapshot.empty) {
+      console.log('No bookings to migrate');
+      return;
+    }
+    
+    // Migrate each booking to the user's subcollection
+    for (const oldBookingDoc of oldBookingsSnapshot.docs) {
+      const data = oldBookingDoc.data();
+      const userId = data.userId;
+      
+      // Skip if no userId (shouldn't happen, but just in case)
+      if (!userId) continue;
+      
+      // Create the booking in the user's subcollection
+      const userBookingsRef = collection(db, 'users', userId, 'bookings');
+      await addDoc(userBookingsRef, data);
+      
+      // Delete the old booking
+      await deleteDoc(doc(db, 'bookings', oldBookingDoc.id));
+    }
+    
+    console.log('Booking migration completed successfully');
+  } catch (error) {
+    console.error('Error migrating bookings:', error);
+    toast.error('Failed to migrate bookings');
   }
 };
