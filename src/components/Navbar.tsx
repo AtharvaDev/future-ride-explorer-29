@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Car, Home, Phone, Shield, LogIn, LogOut, User } from 'lucide-react';
+import { Menu, X, Car, Home, Phone, Shield, LogIn, LogOut, User, Book } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -28,7 +27,6 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const { user, isAdmin, signOut } = useAuth();
   
-  // We'll wrap this in a try/catch to handle cases where the component is not inside a Router
   let navigate;
   let location;
   
@@ -46,7 +44,6 @@ const Navbar = () => {
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    // Animate navbar items on load
     const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
     
     if (navbarRef.current) {
@@ -66,7 +63,6 @@ const Navbar = () => {
       );
     }
     
-    // Stagger animation for menu items
     if (menuItemsRef.current.length > 0) {
       tl.fromTo(
         menuItemsRef.current,
@@ -94,7 +90,6 @@ const Navbar = () => {
       );
     }
 
-    // Handle scroll effect
     const handleScroll = () => {
       const isScrolled = window.scrollY > 30;
       if (isScrolled !== scrolled) {
@@ -108,7 +103,6 @@ const Navbar = () => {
     };
   }, [scrolled]);
 
-  // Animation for dropdown menu
   useEffect(() => {
     if (mobileMenuOpen) {
       gsap.fromTo(
@@ -119,7 +113,6 @@ const Navbar = () => {
     }
   }, [mobileMenuOpen]);
 
-  // Create navigation links based on user role
   const getNavigationLinks = () => {
     const links = [
       { name: "Home", href: "/", icon: Home },
@@ -127,7 +120,10 @@ const Navbar = () => {
       { name: "Contact", href: "#contact", icon: Phone },
     ];
     
-    // Only add Admin link if user is an admin
+    if (user && !isAdmin) {
+      links.push({ name: "My Bookings", href: "/my-bookings", icon: Book });
+    }
+    
     if (isAdmin) {
       links.push({ name: "Admin", href: "/admin", icon: Shield });
     }
@@ -157,7 +153,6 @@ const Navbar = () => {
     } else if (navigate) {
       navigate(href);
     } else {
-      // Fallback for when Router is not available
       window.location.href = href;
     }
   };
@@ -170,7 +165,6 @@ const Navbar = () => {
     }
   };
 
-  // Check if we're on the admin page
   const isAdminPage = location?.pathname === '/admin';
 
   return (
@@ -202,7 +196,6 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Desktop Navigation */}
           {!isMobile && (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
@@ -236,8 +229,18 @@ const Navbar = () => {
             </NavigationMenu>
           )}
           
-          {/* Login/Logout Button (Desktop) */}
           <div className="hidden md:block">
+            {user ? (
+              <Button 
+                ref={actionButtonRef}
+                onClick={() => handleNavigation('/profile')}
+                variant="outline"
+                className="mr-2 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
+            ) : null}
             <Button 
               ref={actionButtonRef}
               onClick={handleAuthAction}
@@ -258,7 +261,6 @@ const Navbar = () => {
             </Button>
           </div>
           
-          {/* Mobile Menu Button */}
           {isMobile && (
             <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <DropdownMenuTrigger asChild>

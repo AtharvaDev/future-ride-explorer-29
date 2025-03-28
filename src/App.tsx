@@ -11,6 +11,7 @@ import BookingPage from "./pages/BookingPage";
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
+import MyBookingsPage from "./pages/MyBookingsPage";
 import { toast } from "sonner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { initializeAppData } from "./services/initService";
@@ -84,6 +85,7 @@ const AppContent = () => {
       <Route path="/booking/:carId?" element={<BookingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route 
         path="/admin" 
         element={
