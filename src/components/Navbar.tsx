@@ -2,8 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Car, Home, Phone, Shield } from 'lucide-react';
+import { Menu, X, Car, Home, Phone, Shield, LogIn, LogOut, User } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -25,6 +26,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { user, isAdmin, signOut } = useAuth();
   
   // We'll wrap this in a try/catch to handle cases where the component is not inside a Router
   let navigate;
@@ -40,7 +42,7 @@ const Navbar = () => {
   const navbarRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
   const menuItemsRef = useRef<HTMLLIElement[]>([]);
-  const contactButtonRef = useRef<HTMLButtonElement>(null);
+  const actionButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -74,9 +76,9 @@ const Navbar = () => {
       );
     }
     
-    if (contactButtonRef.current) {
+    if (actionButtonRef.current) {
       tl.fromTo(
-        contactButtonRef.current,
+        actionButtonRef.current,
         { scale: 0.9, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.4 },
         "-=0.2"
@@ -117,12 +119,23 @@ const Navbar = () => {
     }
   }, [mobileMenuOpen]);
 
-  const navigationLinks = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Fleet", href: "#fleet", icon: Car },
-    { name: "Contact", href: "#contact", icon: Phone },
-    { name: "Admin", href: "/admin", icon: Shield },
-  ];
+  // Create navigation links based on user role
+  const getNavigationLinks = () => {
+    const links = [
+      { name: "Home", href: "/", icon: Home },
+      { name: "Fleet", href: "#fleet", icon: Car },
+      { name: "Contact", href: "#contact", icon: Phone },
+    ];
+    
+    // Only add Admin link if user is an admin
+    if (isAdmin) {
+      links.push({ name: "Admin", href: "/admin", icon: Shield });
+    }
+    
+    return links;
+  };
+
+  const navigationLinks = getNavigationLinks();
 
   const handleNavigation = (href: string) => {
     if (mobileMenuOpen) {
@@ -146,6 +159,14 @@ const Navbar = () => {
     } else {
       // Fallback for when Router is not available
       window.location.href = href;
+    }
+  };
+
+  const handleAuthAction = () => {
+    if (user) {
+      signOut();
+    } else {
+      handleNavigation('/login');
     }
   };
 
@@ -215,15 +236,25 @@ const Navbar = () => {
             </NavigationMenu>
           )}
           
-          {/* Contact Button (Desktop) */}
+          {/* Login/Logout Button (Desktop) */}
           <div className="hidden md:block">
             <Button 
-              ref={contactButtonRef}
-              onClick={() => handleNavigation('#contact')}
+              ref={actionButtonRef}
+              onClick={handleAuthAction}
               variant="default"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
             >
-              Book Now
+              {user ? (
+                <>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </>
+              )}
             </Button>
           </div>
           
@@ -258,9 +289,19 @@ const Navbar = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 mt-2 transition-all duration-200 rounded-lg p-3 flex justify-center"
-                  onClick={() => handleNavigation('#contact')}
+                  onClick={handleAuthAction}
                 >
-                  Book Now
+                  {user ? (
+                    <>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Login
+                    </>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

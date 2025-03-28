@@ -1,241 +1,196 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
-import { format, addDays, differenceInDays } from "date-fns";
-import { toast } from "sonner";
-import gsap from 'gsap';
-import { User as FirebaseUser } from 'firebase/auth';
-
-// Import our components
-import ProgressSteps, { BookingStep } from './ProgressSteps';
-import ContactStep, { ContactFormData } from './ContactStep';
+import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
+import ProgressSteps from './ProgressSteps';
 import DatesStep from './DatesStep';
+import ContactStep from './ContactStep';
 import PaymentStep, { UpiFormData } from './PaymentStep';
 import ConfirmationStep from './ConfirmationStep';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  BookingBasicInfo, 
+  BookingContactInfo, 
+  BookingPaymentInfo, 
+  saveBookingBasicInfo, 
+  saveBookingContactInfo, 
+  saveBookingPaymentInfo 
+} from '@/services/bookingService';
 
 interface BookingFormContainerProps {
   car: Car;
 }
 
 const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
-  const [currentStep, setCurrentStep] = useState<BookingStep>('contact');
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
-  const [endDate, setEndDate] = useState<Date | undefined>(addDays(new Date(), 1));
-  const [numberOfDays, setNumberOfDays] = useState(1);
-  const [totalCost, setTotalCost] = useState(car.pricePerDay);
-  const [tokenAmount, setTokenAmount] = useState(1000);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<any>(null);
-  const [googleSignedIn, setGoogleSignedIn] = useState(false);
-  const [googleUser, setGoogleUser] = useState<FirebaseUser | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [datesData, setDatesData] = useState<{
+    startDate: Date;
+    endDate: Date;
+    numDays: number;
+  } | null>(null);
+  const [contactData, setContactData] = useState<BookingContactInfo | null>(null);
+  const [tokenAmount, setTokenAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+  
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Calculate the number of days and total cost
   useEffect(() => {
-    if (startDate && endDate) {
-      const days = Math.max(differenceInDays(endDate, startDate) + 1, 1);
-      setNumberOfDays(days);
-      setTotalCost(car.pricePerDay * days);
-      setTokenAmount(1000 * days);
+    // Calculate token amount (20% of estimated cost)
+    if (datesData) {
+      const estimatedCost = datesData.numDays * car.pricePerDay;
+      setTotalAmount(estimatedCost);
+      setTokenAmount(Math.round(estimatedCost * 0.2)); // 20% token amount
     }
-  }, [startDate, endDate, car.pricePerDay]);
+  }, [datesData, car.pricePerDay]);
 
-  // Animate step transitions
-  useEffect(() => {
-    if (formRef.current) {
-      gsap.fromTo(
-        '.step-container',
-        { 
-          opacity: 0, 
-          y: 20 
-        },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 0.5,
-          ease: 'power2.out'
-        }
-      );
-    }
-  }, [currentStep]);
+  const handleDatesSubmit = async (data: { startDate: Date; endDate: Date }) => {
+    const numDays = Math.ceil(
+      (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
-  // Handle Google Sign In
-  const handleGoogleSignIn = (user: FirebaseUser) => {
-    setGoogleUser(user);
-    setGoogleSignedIn(true);
-    
-    // Pre-fill contact details if available from Google account
-    if (user.displayName || user.email) {
-      setBookingDetails(prev => ({ 
-        ...prev, 
-        contact: {
-          ...prev?.contact,
-          name: user.displayName || prev?.contact?.name || '',
-          email: user.email || prev?.contact?.email || '',
-        } 
-      }));
-    }
-  };
-
-  // Handle Google Sign Out
-  const handleGoogleSignOut = () => {
-    setGoogleUser(null);
-    setGoogleSignedIn(false);
-  };
-
-  // Handle contact form submission
-  const handleContactSubmit = (data: ContactFormData) => {
-    // Animate button
-    gsap.to('.next-btn', {
-      x: 10,
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
+    setDatesData({
+      startDate: data.startDate,
+      endDate: data.endDate,
+      numDays,
     });
-    
-    // Save contact details and move to next step
-    setBookingDetails(prev => ({ ...prev, contact: data }));
-    setCurrentStep('dates');
+
+    try {
+      // Save basic booking info
+      const bookingData: BookingBasicInfo = {
+        carId: car.id,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        startCity: '',
+        status: 'draft',
+        userId: user?.uid
+      };
+      
+      const id = await saveBookingBasicInfo(bookingData, user?.uid);
+      setBookingId(id);
+      
+      // Move to next step
+      setActiveStep(1);
+    } catch (error) {
+      console.error('Error saving dates:', error);
+      toast.error('Failed to save booking dates. Please try again.');
+    }
   };
 
-  // Handle UPI form submission
-  const handleUpiSubmit = (data: UpiFormData) => {
-    // Animate button
-    gsap.to('.pay-btn', {
-      scale: 0.95,
-      duration: 0.1,
-      yoyo: true,
-      repeat: 1
-    });
+  const handleContactSubmit = async (data: BookingContactInfo) => {
+    setContactData(data);
     
-    // Show payment processing
-    toast.loading('Processing payment...');
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setBookingDetails(prev => ({ 
-        ...prev, 
-        payment: {
-          method: 'UPI',
-          details: data.upiId,
-          amount: tokenAmount,
-          transactionId: 'UPI' + Math.random().toString(36).substr(2, 9).toUpperCase()
-        },
-        booking: {
-          carId: car.id,
-          carModel: car.model,
-          carTitle: car.title,
-          startDate: startDate,
-          endDate: endDate,
-          numberOfDays: numberOfDays,
-          totalCost: totalCost,
-          tokenAmount: tokenAmount
-        }
-      }));
-      setBookingConfirmed(true);
-      setCurrentStep('confirmation');
-      toast.success('Payment successful!');
-
-      // Create confetti effect on payment success
-      const container = formRef.current;
-      if (container) {
-        for (let i = 0; i < 50; i++) {
-          const confetti = document.createElement('div');
-          confetti.className = 'absolute rounded-full pointer-events-none';
-          confetti.style.width = `${Math.random() * 10 + 5}px`;
-          confetti.style.height = `${Math.random() * 10 + 5}px`;
-          confetti.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
-          confetti.style.position = 'absolute';
-          confetti.style.zIndex = '50';
-          container.appendChild(confetti);
-          
-          gsap.fromTo(
-            confetti,
-            {
-              x: container.clientWidth / 2,
-              y: container.clientHeight / 2,
-              opacity: 1
-            },
-            {
-              x: `random(${-container.clientWidth/2}, ${container.clientWidth/2})`,
-              y: `random(${-container.clientHeight/2}, ${container.clientHeight/2})`,
-              opacity: 0,
-              duration: 2,
-              ease: 'power2.out',
-              onComplete: () => {
-                container.removeChild(confetti);
-              }
-            }
-          );
-        }
+    try {
+      if (bookingId) {
+        // Update booking with contact info
+        await saveBookingContactInfo(bookingId, data);
+        
+        // Also update the booking with the starting city
+        await saveBookingBasicInfo(
+          {
+            id: bookingId,
+            carId: car.id,
+            startDate: datesData!.startDate,
+            endDate: datesData!.endDate,
+            startCity: data.startCity,
+            status: 'draft',
+            userId: user?.uid
+          },
+          user?.uid
+        );
+        
+        // Move to next step
+        setActiveStep(2);
+      } else {
+        toast.error('Booking not found. Please start again.');
       }
-    }, 2000);
+    } catch (error) {
+      console.error('Error saving contact info:', error);
+      toast.error('Failed to save contact information. Please try again.');
+    }
   };
 
-  // Handle receipt download
-  const handleDownloadReceipt = () => {
-    // Animate button
-    gsap.to('.download-btn', {
-      y: -5,
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    });
-    
-    toast.success('Receipt downloaded successfully!');
+  const handlePaymentSubmit = async (data: UpiFormData) => {
+    try {
+      if (bookingId) {
+        // Save payment info
+        const paymentInfo: BookingPaymentInfo = {
+          paymentMethod: 'upi',
+          upiId: data.upiId,
+          tokenAmount: tokenAmount,
+          totalAmount: totalAmount,
+          isPaid: true // In a real app, this would be set after payment confirmation
+        };
+        
+        await saveBookingPaymentInfo(bookingId, paymentInfo);
+        
+        // Move to confirmation step
+        setActiveStep(3);
+      } else {
+        toast.error('Booking not found. Please start again.');
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast.error('Failed to process payment. Please try again.');
+    }
+  };
+  
+  const handleBackStep = () => {
+    setActiveStep(prevStep => Math.max(0, prevStep - 1));
+  };
+  
+  const handleFinish = () => {
+    toast.success("Booking confirmed! We'll contact you soon.");
+    navigate('/');
   };
 
   return (
-    <div ref={formRef} className="glass-panel p-6 rounded-2xl relative overflow-hidden">
-      {/* Progress Steps */}
-      <ProgressSteps currentStep={currentStep} />
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden">
+      <ProgressSteps activeStep={activeStep} />
       
-      {/* Step Content */}
-      {currentStep === 'contact' && (
-        <ContactStep 
-          onSubmit={handleContactSubmit}
-          googleSignedIn={googleSignedIn}
-          onGoogleSignIn={handleGoogleSignIn}
-          onGoogleSignOut={handleGoogleSignOut}
-          defaultValues={bookingDetails?.contact}
-        />
-      )}
-      
-      {currentStep === 'dates' && (
-        <DatesStep 
-          car={car}
-          startDate={startDate}
-          endDate={endDate}
-          numberOfDays={numberOfDays}
-          totalCost={totalCost}
-          tokenAmount={tokenAmount}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          onNext={() => setCurrentStep('payment')}
-          onBack={() => setCurrentStep('contact')}
-        />
-      )}
-      
-      {currentStep === 'payment' && (
-        <PaymentStep 
-          tokenAmount={tokenAmount}
-          onSubmit={handleUpiSubmit}
-          onBack={() => setCurrentStep('dates')}
-        />
-      )}
-      
-      {currentStep === 'confirmation' && bookingDetails && (
-        <ConfirmationStep 
-          bookingDetails={bookingDetails}
-          car={car}
-          startDate={startDate}
-          endDate={endDate}
-          numberOfDays={numberOfDays}
-          totalCost={totalCost}
-          tokenAmount={tokenAmount}
-          onDownloadReceipt={handleDownloadReceipt}
-        />
-      )}
+      <div className="mt-8">
+        {activeStep === 0 && (
+          <DatesStep onSubmit={handleDatesSubmit} />
+        )}
+        
+        {activeStep === 1 && contactData !== null && (
+          <ContactStep 
+            initialValues={contactData} 
+            onSubmit={handleContactSubmit} 
+            onBack={handleBackStep} 
+          />
+        )}
+        
+        {activeStep === 1 && contactData === null && (
+          <ContactStep 
+            onSubmit={handleContactSubmit} 
+            onBack={handleBackStep} 
+          />
+        )}
+        
+        {activeStep === 2 && (
+          <PaymentStep 
+            tokenAmount={tokenAmount} 
+            onSubmit={handlePaymentSubmit} 
+            onBack={handleBackStep} 
+          />
+        )}
+        
+        {activeStep === 3 && datesData && (
+          <ConfirmationStep
+            car={car}
+            startDate={datesData.startDate}
+            endDate={datesData.endDate}
+            numDays={datesData.numDays}
+            tokenAmount={tokenAmount}
+            totalAmount={totalAmount}
+            onFinish={handleFinish}
+          />
+        )}
+      </div>
     </div>
   );
 };
