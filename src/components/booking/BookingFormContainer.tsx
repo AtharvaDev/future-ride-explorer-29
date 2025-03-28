@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -39,9 +38,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [baseKm, setBaseKm] = useState(200); // Base 200 km included
   
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, updateUserPhone } = useAuth();
 
-  // Calculate costs based on selected dates
   useEffect(() => {
     if (datesData) {
       const estimatedCost = datesData.numDays * car.pricePerDay;
@@ -49,10 +47,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     }
   }, [datesData, car.pricePerDay]);
 
-  // Fetch user contact data if logged in
   useEffect(() => {
     if (user && !loading) {
-      // Check if we have an existing booking in progress
       if (bookingId) {
         const fetchBooking = async () => {
           try {
@@ -60,7 +56,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             if (booking && booking.contactInfo) {
               setContactData(booking.contactInfo);
             } else {
-              // Pre-populate with user data
               setContactData({
                 name: user.displayName || '',
                 email: user.email || '',
@@ -76,7 +71,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         
         fetchBooking();
       } else {
-        // Pre-populate with user data
         setContactData({
           name: user.displayName || '',
           email: user.email || '',
@@ -113,7 +107,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         const id = await saveBookingBasicInfo(bookingData, user.uid);
         setBookingId(id);
         
-        setActiveStep(1); // Go to contact step
+        setActiveStep(1);
       } catch (error) {
         console.error('Error saving dates:', error);
         toast.error('Failed to save booking dates. Please try again.');
@@ -152,7 +146,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           }
         }
         
-        setActiveStep(2); // Go to payment step
+        setActiveStep(2);
       } else {
         toast.error('Booking not found. Please start again.');
       }
@@ -175,7 +169,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         
         await saveBookingPaymentInfo(bookingId, paymentInfo, user.uid);
         
-        setActiveStep(3); // Go to confirmation step
+        setActiveStep(3);
       } else {
         toast.error('Booking not found. Please start again.');
       }

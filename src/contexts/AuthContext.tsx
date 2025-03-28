@@ -11,6 +11,7 @@ import {
 import { auth, db, googleProvider } from '@/config/firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { initializeUserBookings } from '@/services/initService';
 
 export type UserRole = 'admin' | 'visitor';
 
@@ -79,6 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               createdAt: new Date()
             });
           }
+          
+          // Initialize user's bookings collection
+          await initializeUserBookings(firebaseUser.uid);
           
           setUser(userData as AuthUser);
         } catch (error) {
@@ -185,6 +189,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: new Date()
         });
       }
+      
+      // Initialize user's bookings collection
+      await initializeUserBookings(user.uid);
       
       toast.success("Successfully logged in with Google!");
     } catch (error: any) {
