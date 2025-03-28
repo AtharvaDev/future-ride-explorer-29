@@ -9,30 +9,62 @@ import { Car } from '@/data/cars';
 import { cn } from "@/lib/utils";
 
 interface DatesStepProps {
-  car: Car;
-  startDate: Date | undefined;
-  endDate: Date | undefined;
-  numberOfDays: number;
-  totalCost: number;
-  tokenAmount: number;
-  onStartDateChange: (date: Date | undefined) => void;
-  onEndDateChange: (date: Date | undefined) => void;
-  onNext: () => void;
-  onBack: () => void;
+  onSubmit: (data: { startDate: Date; endDate: Date }) => void; // Updated to match BookingFormContainer
+  car?: Car; // Made optional since it's not used in some contexts
+  startDate?: Date;
+  endDate?: Date;
+  numberOfDays?: number;
+  totalCost?: number;
+  tokenAmount?: number;
+  onStartDateChange?: (date: Date | undefined) => void;
+  onEndDateChange?: (date: Date | undefined) => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 const DatesStep: React.FC<DatesStepProps> = ({
   car,
   startDate,
   endDate,
-  numberOfDays,
-  totalCost,
-  tokenAmount,
+  numberOfDays = 0,
+  totalCost = 0,
+  tokenAmount = 0,
   onStartDateChange,
   onEndDateChange,
+  onSubmit,
   onNext,
   onBack
 }) => {
+  // Simple form for onSubmit pattern if no start/end date handlers provided
+  const [localStartDate, setLocalStartDate] = React.useState<Date | undefined>(startDate);
+  const [localEndDate, setLocalEndDate] = React.useState<Date | undefined>(endDate);
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    if (onStartDateChange) {
+      onStartDateChange(date);
+    } else {
+      setLocalStartDate(date);
+      // If new start date is after end date, reset end date
+      if (date && localEndDate && date > localEndDate) {
+        setLocalEndDate(addDays(date, 1));
+      }
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    if (onEndDateChange) {
+      onEndDateChange(date);
+    } else {
+      setLocalEndDate(date);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (localStartDate && localEndDate) {
+      onSubmit({ startDate: localStartDate, endDate: localEndDate });
+    }
+  };
+
   return (
     <div className="step-container space-y-6">
       <div className="space-y-2">
@@ -52,8 +84,8 @@ const DatesStep: React.FC<DatesStepProps> = ({
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
                 >
-                  {startDate ? (
-                    format(startDate, "PPP")
+                  {localStartDate ? (
+                    format(localStartDate, "PPP")
                   ) : (
                     <span>Select pickup date</span>
                   )}
@@ -63,13 +95,8 @@ const DatesStep: React.FC<DatesStepProps> = ({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={startDate}
-                  onSelect={(date) => {
-                    onStartDateChange(date);
-                    if (date && endDate && date > endDate) {
-                      onEndDateChange(addDays(date, 1));
-                    }
-                  }}
+                  selected={localStartDate}
+                  onSelect={handleStartDateChange}
                   disabled={(date) => date < new Date()}
                   initialFocus
                   className="p-3 pointer-events-auto"
@@ -85,10 +112,10 @@ const DatesStep: React.FC<DatesStepProps> = ({
                 <Button
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
-                  disabled={!startDate}
+                  disabled={!localStartDate}
                 >
-                  {endDate ? (
-                    format(endDate, "PPP")
+                  {localEndDate ? (
+                    format(localEndDate, "PPP")
                   ) : (
                     <span>Select return date</span>
                   )}
@@ -98,9 +125,9 @@ const DatesStep: React.FC<DatesStepProps> = ({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={endDate}
-                  onSelect={onEndDateChange}
-                  disabled={(date) => date < (startDate || new Date())}
+                  selected={localEndDate}
+                  onSelect={handleEndDateChange}
+                  disabled={(date) => date < (localStartDate || new Date())}
                   initialFocus
                   className="p-3 pointer-events-auto"
                 />
@@ -109,38 +136,46 @@ const DatesStep: React.FC<DatesStepProps> = ({
           </div>
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
-          <h4 className="font-medium mb-3">Booking Summary</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-              <span>{numberOfDays} {numberOfDays === 1 ? 'day' : 'days'}</span>
+        {car && (
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+            <h4 className="font-medium mb-3">Booking Summary</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-300">Duration:</span>
+                <span>{numberOfDays} {numberOfDays === 1 ? 'day' : 'days'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
+                <span>₹{car.pricePerDay.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-medium">
+                <span>Token amount:</span>
+                <span>₹{tokenAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <span>Total:</span>
+                <span>₹{totalCost.toLocaleString()}</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
-              <span>₹{car.pricePerDay.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between font-medium">
-              <span>Token amount:</span>
-              <span>₹{tokenAmount.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-              <span>Total:</span>
-              <span>₹{totalCost.toLocaleString()}</span>
-            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+              * A token amount of ₹1,000 per day will be charged at the time of booking.
+            </p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-            * A token amount of ₹1,000 per day will be charged at the time of booking.
-          </p>
-        </div>
+        )}
       </div>
       
       <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
-        <Button onClick={onNext}>
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+        )}
+        
+        <Button 
+          onClick={onNext || handleSubmit}
+          disabled={!localStartDate || !localEndDate}
+        >
           Continue to Payment
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>

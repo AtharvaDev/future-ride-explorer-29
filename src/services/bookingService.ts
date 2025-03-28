@@ -1,4 +1,3 @@
-
 import { db } from '@/config/firebase';
 import { 
   collection,
@@ -30,6 +29,7 @@ export interface BookingContactInfo {
   name: string;
   email: string;
   phone: string;
+  startCity: string;
   specialRequests?: string;
 }
 

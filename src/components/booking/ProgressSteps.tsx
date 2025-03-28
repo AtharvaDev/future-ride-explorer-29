@@ -5,50 +5,64 @@ import { cn } from "@/lib/utils";
 export type BookingStep = 'contact' | 'dates' | 'payment' | 'confirmation';
 
 interface ProgressStepsProps {
-  currentStep: BookingStep;
+  activeStep: number; // Changed from currentStep to activeStep
 }
 
-const ProgressSteps: React.FC<ProgressStepsProps> = ({ currentStep }) => {
+const ProgressSteps: React.FC<ProgressStepsProps> = ({ activeStep }) => {
+  // Get the step name based on index
+  const getStepName = (index: number): BookingStep => {
+    switch(index) {
+      case 0: return 'dates';
+      case 1: return 'contact';
+      case 2: return 'payment';
+      case 3: return 'confirmation';
+      default: return 'dates';
+    }
+  };
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between">
-        {(['contact', 'dates', 'payment', 'confirmation'] as BookingStep[]).map((step, index) => (
-          <React.Fragment key={step}>
-            <div className="flex flex-col items-center">
-              <div 
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
-                  currentStep === step 
-                    ? "bg-primary text-white" 
-                    : (
-                      index <= ['contact', 'dates', 'payment', 'confirmation'].indexOf(currentStep) 
-                        ? "bg-primary/20 text-primary" 
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                    )
-                )}
-              >
-                {index + 1}
+        {[0, 1, 2, 3].map((index) => {
+          const step = getStepName(index);
+          return (
+            <React.Fragment key={step}>
+              <div className="flex flex-col items-center">
+                <div 
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
+                    activeStep === index 
+                      ? "bg-primary text-white" 
+                      : (
+                        index <= activeStep 
+                          ? "bg-primary/20 text-primary" 
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                      )
+                  )}
+                >
+                  {index + 1}
+                </div>
+                <span className="text-xs mt-2 hidden sm:block">{
+                  step === 'contact' ? 'Contact' : 
+                  step === 'dates' ? 'Dates' : 
+                  step === 'payment' ? 'Payment' : 
+                  'Confirmation'
+                }</span>
               </div>
-              <span className="text-xs mt-2 hidden sm:block">{
-                step === 'contact' ? 'Contact' : 
-                step === 'dates' ? 'Dates' : 
-                step === 'payment' ? 'Payment' : 
-                'Confirmation'
-              }</span>
-            </div>
-            
-            {index < 3 && (
-              <div 
-                className={cn(
-                  "flex-1 h-1 mx-2",
-                  index < ['contact', 'dates', 'payment', 'confirmation'].indexOf(currentStep) 
-                    ? "bg-primary" 
-                    : "bg-gray-100 dark:bg-gray-800"
-                )}
-              />
-            )}
-          </React.Fragment>
-        ))}
+              
+              {index < 3 && (
+                <div 
+                  className={cn(
+                    "flex-1 h-1 mx-2",
+                    index < activeStep 
+                      ? "bg-primary" 
+                      : "bg-gray-100 dark:bg-gray-800"
+                  )}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );

@@ -64,7 +64,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         carId: car.id,
         startDate: data.startDate,
         endDate: data.endDate,
-        startCity: '',
+        startCity: contactData?.startCity || '',
         status: 'draft',
         userId: user?.uid
       };

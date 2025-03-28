@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { BookingContactInfo } from '@/services/bookingService';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -29,7 +30,7 @@ export type ContactFormData = z.infer<typeof formSchema>;
 
 interface ContactStepProps {
   initialValues?: Partial<ContactFormData>;
-  onSubmit: (data: ContactFormData) => void;
+  onSubmit: (data: BookingContactInfo) => void;
   onBack: () => void;
 }
 

@@ -9,39 +9,30 @@ import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
 
 interface BookingDetails {
-  contact: {
+  contact?: {
     name: string;
     email: string;
     phone: string;
     address: string;
   };
-  payment: {
+  payment?: {
     method: string;
     details: string;
     amount: number;
     transactionId: string;
   };
-  booking: {
-    carId: string;
-    carModel: string;
-    carTitle: string;
-    startDate: Date | undefined;
-    endDate: Date | undefined;
-    numberOfDays: number;
-    totalCost: number;
-    tokenAmount: number;
-  };
 }
 
 interface ConfirmationStepProps {
-  bookingDetails: BookingDetails;
   car: Car;
-  startDate: Date | undefined;
-  endDate: Date | undefined;
-  numberOfDays: number;
-  totalCost: number;
+  startDate: Date;
+  endDate: Date;
+  numDays: number;  // Changed from numberOfDays to numDays
+  totalAmount: number;  // Changed from totalCost to totalAmount
   tokenAmount: number;
-  onDownloadReceipt: () => void;
+  onFinish: () => void;
+  bookingDetails?: BookingDetails;
+  onDownloadReceipt?: () => void;
 }
 
 const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
@@ -49,9 +40,10 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   car,
   startDate,
   endDate,
-  numberOfDays,
-  totalCost,
+  numDays,
+  totalAmount,
   tokenAmount,
+  onFinish,
   onDownloadReceipt
 }) => {
   const navigate = useNavigate();
@@ -62,6 +54,10 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
     const timestamp = Date.now().toString().substring(7);
     return `${prefix}${timestamp}`;
   };
+  
+  // Generate a fake transaction ID if not provided
+  const transactionId = bookingDetails?.payment?.transactionId || 
+    `TXN${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
   return (
     <div className="step-container space-y-6">
@@ -93,11 +89,11 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Transaction ID:</span>
-            <span className="font-medium">{bookingDetails?.payment.transactionId}</span>
+            <span className="font-medium">{transactionId}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Payment Method:</span>
-            <span>UPI - {bookingDetails?.payment.details}</span>
+            <span>UPI - {bookingDetails?.payment?.details || "Payment completed"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Payment Date:</span>
@@ -122,7 +118,7 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-            <span>{numberOfDays} {numberOfDays === 1 ? 'day' : 'days'}</span>
+            <span>{numDays} {numDays === 1 ? 'day' : 'days'}</span>
           </div>
         </div>
         
@@ -139,21 +135,23 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           </div>
           <div className="flex justify-between text-lg font-bold">
             <span>Total Amount:</span>
-            <span>₹{totalCost.toLocaleString()}</span>
+            <span>₹{totalAmount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
             <span>Balance Due at Pickup:</span>
-            <span>₹{(totalCost - tokenAmount).toLocaleString()}</span>
+            <span>₹{(totalAmount - tokenAmount).toLocaleString()}</span>
           </div>
         </div>
         
         <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-between">
-          <Button variant="outline" className="download-btn flex items-center gap-2" onClick={onDownloadReceipt}>
-            <BookOpen className="h-4 w-4" />
-            Download Receipt
-          </Button>
+          {onDownloadReceipt && (
+            <Button variant="outline" className="download-btn flex items-center gap-2" onClick={onDownloadReceipt}>
+              <BookOpen className="h-4 w-4" />
+              Download Receipt
+            </Button>
+          )}
           <Button 
-            onClick={() => navigate('/')}
+            onClick={onFinish}
             className="flex items-center gap-2"
           >
             Return to Home
