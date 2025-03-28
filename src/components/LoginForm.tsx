@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
-const LoginForm = () => {
+interface LoginFormProps {
+  returnUrl?: string;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
   const { signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -14,7 +18,7 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      navigate('/');
+      navigate(returnUrl);
     } catch (error) {
       console.error("Google login error:", error);
       // Error is already handled in the signInWithGoogle function

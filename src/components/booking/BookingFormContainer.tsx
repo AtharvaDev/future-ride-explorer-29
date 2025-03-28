@@ -10,13 +10,15 @@ import ContactStep from './ContactStep';
 import PaymentStep, { UpiFormData } from './PaymentStep';
 import ConfirmationStep from './ConfirmationStep';
 import { useAuth } from '@/contexts/AuthContext';
+import LoginPrompt from './LoginPrompt';
 import { 
   BookingBasicInfo, 
   BookingContactInfo, 
   BookingPaymentInfo, 
   saveBookingBasicInfo, 
   saveBookingContactInfo, 
-  saveBookingPaymentInfo 
+  saveBookingPaymentInfo,
+  getBookingById
 } from '@/services/bookingService';
 
 interface BookingFormContainerProps {
@@ -32,19 +34,59 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     numDays: number;
   } | null>(null);
   const [contactData, setContactData] = useState<BookingContactInfo | null>(null);
-  const [tokenAmount, setTokenAmount] = useState(0);
+  const [tokenAmount, setTokenAmount] = useState(1000); // Fixed token amount of 1000 Rs
   const [totalAmount, setTotalAmount] = useState(0);
+  const [baseKm, setBaseKm] = useState(200); // Base 200 km included
   
   const navigate = useNavigate();
-  const { user, updateUserPhone } = useAuth();
+  const { user, loading } = useAuth();
 
+  // Calculate costs based on selected dates
   useEffect(() => {
     if (datesData) {
       const estimatedCost = datesData.numDays * car.pricePerDay;
       setTotalAmount(estimatedCost);
-      setTokenAmount(Math.round(estimatedCost * 0.2)); // 20% token amount
     }
   }, [datesData, car.pricePerDay]);
+
+  // Fetch user contact data if logged in
+  useEffect(() => {
+    if (user && !loading) {
+      // Check if we have an existing booking in progress
+      if (bookingId) {
+        const fetchBooking = async () => {
+          try {
+            const booking = await getBookingById(user.uid, bookingId);
+            if (booking && booking.contactInfo) {
+              setContactData(booking.contactInfo);
+            } else {
+              // Pre-populate with user data
+              setContactData({
+                name: user.displayName || '',
+                email: user.email || '',
+                phone: user.phone || '',
+                startCity: '',
+                specialRequests: ''
+              });
+            }
+          } catch (error) {
+            console.error('Error fetching booking:', error);
+          }
+        };
+        
+        fetchBooking();
+      } else {
+        // Pre-populate with user data
+        setContactData({
+          name: user.displayName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          startCity: '',
+          specialRequests: ''
+        });
+      }
+    }
+  }, [user, loading, bookingId]);
 
   const handleDatesSubmit = async (data: { startDate: Date; endDate: Date }) => {
     const numDays = Math.ceil(
@@ -57,23 +99,28 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       numDays,
     });
 
-    try {
-      const bookingData: BookingBasicInfo = {
-        carId: car.id,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        startCity: contactData?.startCity || '',
-        status: 'draft',
-        userId: user?.uid
-      };
-      
-      const id = await saveBookingBasicInfo(bookingData, user?.uid);
-      setBookingId(id);
-      
-      setActiveStep(1);
-    } catch (error) {
-      console.error('Error saving dates:', error);
-      toast.error('Failed to save booking dates. Please try again.');
+    if (user) {
+      try {
+        const bookingData: BookingBasicInfo = {
+          carId: car.id,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          startCity: contactData?.startCity || '',
+          status: 'draft',
+          userId: user.uid
+        };
+        
+        const id = await saveBookingBasicInfo(bookingData, user.uid);
+        setBookingId(id);
+        
+        setActiveStep(1); // Go to contact step
+      } catch (error) {
+        console.error('Error saving dates:', error);
+        toast.error('Failed to save booking dates. Please try again.');
+      }
+    } else {
+      // If not logged in, we'll show the login prompt in the UI
+      // but we won't advance the step until they log in
     }
   };
 
@@ -81,8 +128,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     setContactData(data);
     
     try {
-      if (bookingId) {
-        await saveBookingContactInfo(bookingId, data);
+      if (bookingId && user) {
+        await saveBookingContactInfo(bookingId, data, user.uid);
         
         await saveBookingBasicInfo(
           {
@@ -92,9 +139,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             endDate: datesData!.endDate,
             startCity: data.startCity,
             status: 'draft',
-            userId: user?.uid
+            userId: user.uid
           },
-          user?.uid
+          user.uid
         );
         
         if (user && data.phone) {
@@ -105,7 +152,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           }
         }
         
-        setActiveStep(2);
+        setActiveStep(2); // Go to payment step
       } else {
         toast.error('Booking not found. Please start again.');
       }
@@ -117,7 +164,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
 
   const handlePaymentSubmit = async (data: UpiFormData) => {
     try {
-      if (bookingId) {
+      if (bookingId && user) {
         const paymentInfo: BookingPaymentInfo = {
           paymentMethod: 'upi',
           upiId: data.upiId,
@@ -126,9 +173,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           isPaid: true
         };
         
-        await saveBookingPaymentInfo(bookingId, paymentInfo);
+        await saveBookingPaymentInfo(bookingId, paymentInfo, user.uid);
         
-        setActiveStep(3);
+        setActiveStep(3); // Go to confirmation step
       } else {
         toast.error('Booking not found. Please start again.');
       }
@@ -144,7 +191,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   
   const handleFinish = () => {
     toast.success("Booking confirmed! We'll contact you soon.");
-    navigate('/');
+    navigate('/my-bookings');
   };
 
   return (
@@ -153,19 +200,26 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       
       <div className="mt-8">
         {activeStep === 0 && (
-          <DatesStep onSubmit={handleDatesSubmit} />
+          <>
+            <DatesStep 
+              car={car}
+              onSubmit={handleDatesSubmit}
+              startDate={datesData?.startDate}
+              endDate={datesData?.endDate}
+              numberOfDays={datesData?.numDays || 0}
+              totalCost={totalAmount}
+              tokenAmount={tokenAmount}
+            />
+            
+            {!user && !loading && datesData && (
+              <LoginPrompt />
+            )}
+          </>
         )}
         
-        {activeStep === 1 && contactData !== null && (
+        {activeStep === 1 && (
           <ContactStep 
-            initialValues={contactData} 
-            onSubmit={handleContactSubmit} 
-            onBack={handleBackStep} 
-          />
-        )}
-        
-        {activeStep === 1 && contactData === null && (
-          <ContactStep 
+            initialValues={contactData || undefined} 
             onSubmit={handleContactSubmit} 
             onBack={handleBackStep} 
           />
@@ -187,6 +241,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             numDays={datesData.numDays}
             tokenAmount={tokenAmount}
             totalAmount={totalAmount}
+            baseKm={baseKm}
+            pricePerKm={car.pricePerKm}
             onFinish={handleFinish}
           />
         )}

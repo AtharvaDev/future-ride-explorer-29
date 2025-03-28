@@ -18,12 +18,16 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CompleteBookingData, getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Car, Clock } from 'lucide-react';
 
 const BookingHistory: React.FC = () => {
   const { user } = useAuth();
   const [activeBookings, setActiveBookings] = useState<CompleteBookingData[]>([]);
   const [pastBookings, setPastBookings] = useState<CompleteBookingData[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -46,6 +50,10 @@ const BookingHistory: React.FC = () => {
     fetchBookings();
   }, [user]);
 
+  const handleBookCar = () => {
+    navigate('/');
+  };
+
   if (!user) {
     return (
       <Card className="my-8">
@@ -62,8 +70,9 @@ const BookingHistory: React.FC = () => {
   return (
     <div className="my-8">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>My Bookings</CardTitle>
+          <Button onClick={handleBookCar}>Book a Car</Button>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -83,9 +92,16 @@ const BookingHistory: React.FC = () => {
               
               <TabsContent value="active">
                 {activeBookings.length === 0 ? (
-                  <p className="text-center py-6 text-muted-foreground">
-                    You don't have any active bookings.
-                  </p>
+                  <div className="text-center py-10 px-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Car className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      No active bookings
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                      You don't have any upcoming trips. Book a car to get started!
+                    </p>
+                    <Button onClick={handleBookCar}>Book a Car Now</Button>
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
@@ -95,6 +111,7 @@ const BookingHistory: React.FC = () => {
                           <TableHead>Trip Dates</TableHead>
                           <TableHead>Starting City</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead>Price</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -104,7 +121,14 @@ const BookingHistory: React.FC = () => {
                               {booking.car ? booking.car.title : booking.carId}
                             </TableCell>
                             <TableCell>
-                              {format(booking.startDate, 'MMM dd, yyyy')} - {format(booking.endDate, 'MMM dd, yyyy')}
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-1 text-primary" />
+                                <span>{format(booking.startDate, 'MMM dd, yyyy')}</span>
+                              </div>
+                              <div className="flex items-center mt-1 text-muted-foreground text-sm">
+                                <Clock className="w-3 h-3 mr-1" />
+                                <span>For {Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                              </div>
                             </TableCell>
                             <TableCell>{booking.startCity}</TableCell>
                             <TableCell>
@@ -115,6 +139,18 @@ const BookingHistory: React.FC = () => {
                               }`}>
                                 {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                               </span>
+                            </TableCell>
+                            <TableCell>
+                              {booking.paymentInfo ? (
+                                <div>
+                                  <div>₹{booking.paymentInfo.totalAmount}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    (₹{booking.paymentInfo.tokenAmount} paid)
+                                  </div>
+                                </div>
+                              ) : (
+                                '-'
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -138,6 +174,7 @@ const BookingHistory: React.FC = () => {
                           <TableHead>Trip Dates</TableHead>
                           <TableHead>Starting City</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead>Amount</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -147,7 +184,14 @@ const BookingHistory: React.FC = () => {
                               {booking.car ? booking.car.title : booking.carId}
                             </TableCell>
                             <TableCell>
-                              {format(booking.startDate, 'MMM dd, yyyy')} - {format(booking.endDate, 'MMM dd, yyyy')}
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-1 text-primary" />
+                                <span>{format(booking.startDate, 'MMM dd, yyyy')}</span>
+                              </div>
+                              <div className="flex items-center mt-1 text-muted-foreground text-sm">
+                                <Clock className="w-3 h-3 mr-1" />
+                                <span>For {Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                              </div>
                             </TableCell>
                             <TableCell>{booking.startCity}</TableCell>
                             <TableCell>
@@ -156,10 +200,21 @@ const BookingHistory: React.FC = () => {
                                   ? 'bg-green-100 text-green-800' 
                                   : booking.status === 'cancelled'
                                   ? 'bg-red-100 text-red-800'
+                                  : booking.status === 'completed'
+                                  ? 'bg-blue-100 text-blue-800'
                                   : 'bg-gray-100 text-gray-800'
                               }`}>
                                 {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                               </span>
+                            </TableCell>
+                            <TableCell>
+                              {booking.paymentInfo ? (
+                                <div>
+                                  <div>₹{booking.paymentInfo.totalAmount}</div>
+                                </div>
+                              ) : (
+                                '-'
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}

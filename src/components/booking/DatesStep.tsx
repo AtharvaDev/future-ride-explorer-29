@@ -9,8 +9,8 @@ import { Car } from '@/data/cars';
 import { cn } from "@/lib/utils";
 
 interface DatesStepProps {
-  onSubmit: (data: { startDate: Date; endDate: Date }) => void; // Updated to match BookingFormContainer
-  car?: Car; // Made optional since it's not used in some contexts
+  onSubmit: (data: { startDate: Date; endDate: Date }) => void;
+  car?: Car;
   startDate?: Date;
   endDate?: Date;
   numberOfDays?: number;
@@ -148,6 +148,14 @@ const DatesStep: React.FC<DatesStepProps> = ({
                 <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
                 <span>₹{car.pricePerDay.toLocaleString()}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-300">Includes:</span>
+                <span>200 km/day</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-300">Extra km rate:</span>
+                <span>₹{car.pricePerKm}/km</span>
+              </div>
               <div className="flex justify-between font-medium">
                 <span>Token amount:</span>
                 <span>₹{tokenAmount.toLocaleString()}</span>
@@ -158,7 +166,7 @@ const DatesStep: React.FC<DatesStepProps> = ({
               </div>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              * A token amount of ₹1,000 per day will be charged at the time of booking.
+              * A token amount of ₹1,000 is required to confirm your booking.
             </p>
           </div>
         )}
@@ -176,7 +184,7 @@ const DatesStep: React.FC<DatesStepProps> = ({
           onClick={onNext || handleSubmit}
           disabled={!localStartDate || !localEndDate}
         >
-          Continue to Payment
+          Continue to Contact
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>

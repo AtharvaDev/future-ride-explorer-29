@@ -1,162 +1,106 @@
 
 import React from 'react';
-import { format } from "date-fns";
-import { BookOpen, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { Car } from '@/data/cars';
-
-interface BookingDetails {
-  contact?: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-  payment?: {
-    method: string;
-    details: string;
-    amount: number;
-    transactionId: string;
-  };
-}
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Calendar, Check, Info } from 'lucide-react';
 
 interface ConfirmationStepProps {
   car: Car;
   startDate: Date;
   endDate: Date;
-  numDays: number;  // Changed from numberOfDays to numDays
-  totalAmount: number;  // Changed from totalCost to totalAmount
+  numDays: number;
   tokenAmount: number;
+  totalAmount: number;
+  baseKm?: number;
+  pricePerKm?: number;
   onFinish: () => void;
-  bookingDetails?: BookingDetails;
-  onDownloadReceipt?: () => void;
 }
 
 const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
-  bookingDetails,
   car,
   startDate,
   endDate,
   numDays,
-  totalAmount,
   tokenAmount,
+  totalAmount,
+  baseKm = 200,
+  pricePerKm,
   onFinish,
-  onDownloadReceipt
 }) => {
-  const navigate = useNavigate();
-
-  // Generate booking reference
-  const generateBookingReference = () => {
-    const prefix = car.model.substring(0, 3).toUpperCase();
-    const timestamp = Date.now().toString().substring(7);
-    return `${prefix}${timestamp}`;
-  };
-  
-  // Generate a fake transaction ID if not provided
-  const transactionId = bookingDetails?.payment?.transactionId || 
-    `TXN${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-
   return (
-    <div className="step-container space-y-6">
-      <div className="text-center mb-6">
-        <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+          <Check className="w-8 h-8" />
         </div>
-        <h3 className="text-2xl font-bold">Booking Confirmed!</h3>
+        <h3 className="text-2xl font-bold mb-2">Booking Confirmed!</h3>
         <p className="text-gray-500 dark:text-gray-400">
-          Your booking has been successfully confirmed. Below is your booking receipt.
+          Thank you for booking with us. Your car is reserved.
         </p>
       </div>
       
-      <div className="glass-panel p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h4 className="text-lg font-bold">FutureRide</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Premium Car Rental Service</p>
+      <Card className="p-4 bg-gray-50 dark:bg-gray-800/50">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div className="font-medium">Car Details</div>
+            <div>{car.model} {car.title}</div>
           </div>
-          <Badge className="text-xs">Receipt</Badge>
-        </div>
-        
-        <Separator className="my-4" />
-        
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Booking Reference:</span>
-            <span className="font-medium">{generateBookingReference()}</span>
+          
+          <div className="flex justify-between items-center">
+            <div className="font-medium">Pick-up Date</div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-1 text-primary" />
+              {format(startDate, 'PPP')}
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Transaction ID:</span>
-            <span className="font-medium">{transactionId}</span>
+          
+          <div className="flex justify-between items-center">
+            <div className="font-medium">Return Date</div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-1 text-primary" />
+              {format(endDate, 'PPP')}
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Payment Method:</span>
-            <span>UPI - {bookingDetails?.payment?.details || "Payment completed"}</span>
+          
+          <div className="flex justify-between items-center">
+            <div className="font-medium">Duration</div>
+            <div>{numDays} {numDays === 1 ? 'day' : 'days'}</div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Payment Date:</span>
-            <span>{format(new Date(), "PPP")}</span>
+          
+          <div className="flex justify-between items-center">
+            <div className="font-medium">Daily Rate</div>
+            <div>₹{car.pricePerDay.toLocaleString()}</div>
           </div>
-        </div>
-        
-        <Separator className="my-4" />
-        
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Vehicle:</span>
-            <span>{car.model} {car.title}</span>
+          
+          <div className="flex justify-between items-center">
+            <div className="font-medium">Booking Amount (Paid)</div>
+            <div className="text-green-600 font-medium">₹{tokenAmount.toLocaleString()}</div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Pickup Date:</span>
-            <span>{startDate ? format(startDate, "PPP") : "-"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Return Date:</span>
-            <span>{endDate ? format(endDate, "PPP") : "-"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-            <span>{numDays} {numDays === 1 ? 'day' : 'days'}</span>
+          
+          <div className="flex justify-between items-center border-t pt-3">
+            <div className="font-bold">Total Estimated Cost</div>
+            <div className="font-bold text-lg">₹{totalAmount.toLocaleString()}</div>
           </div>
         </div>
-        
-        <Separator className="my-4" />
-        
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Daily Rate:</span>
-            <span>₹{car.pricePerDay.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-300">Token Amount Paid:</span>
-            <span className="font-medium">₹{tokenAmount.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-lg font-bold">
-            <span>Total Amount:</span>
-            <span>₹{totalAmount.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-            <span>Balance Due at Pickup:</span>
-            <span>₹{(totalAmount - tokenAmount).toLocaleString()}</span>
-          </div>
+      </Card>
+      
+      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex">
+        <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5 mr-3" />
+        <div>
+          <p className="text-blue-700 dark:text-blue-300 text-sm">
+            <span className="font-medium">Important Information:</span> Your booking includes {baseKm} km per day. 
+            Additional kilometers will be charged at ₹{pricePerKm}/km. The remaining balance (₹{(totalAmount - tokenAmount).toLocaleString()}) 
+            will be collected on delivery.
+          </p>
         </div>
-        
-        <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-between">
-          {onDownloadReceipt && (
-            <Button variant="outline" className="download-btn flex items-center gap-2" onClick={onDownloadReceipt}>
-              <BookOpen className="h-4 w-4" />
-              Download Receipt
-            </Button>
-          )}
-          <Button 
-            onClick={onFinish}
-            className="flex items-center gap-2"
-          >
-            Return to Home
-          </Button>
-        </div>
+      </div>
+      
+      <div className="flex justify-center pt-2">
+        <Button onClick={onFinish} className="w-full md:w-auto">
+          View My Bookings
+        </Button>
       </div>
     </div>
   );

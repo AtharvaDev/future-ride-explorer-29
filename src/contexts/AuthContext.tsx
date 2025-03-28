@@ -1,10 +1,12 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   signInWithEmailAndPassword, 
   signOut as firebaseSignOut,
   onAuthStateChanged,
   signInWithPopup,
-  User
+  User,
+  updateProfile
 } from 'firebase/auth';
 import { auth, db, googleProvider } from '@/config/firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -17,6 +19,7 @@ interface AuthUser {
   email: string | null;
   role: UserRole;
   phone?: string;
+  displayName?: string | null;
 }
 
 interface AuthContextType {
@@ -27,6 +30,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   updateUserPhone: (phone: string) => Promise<void>;
+  updateUserProfile: (data: { displayName?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           let userData: Partial<AuthUser> = {
             uid: firebaseUser.uid,
             email: firebaseUser.email,
+            displayName: firebaseUser.displayName
           };
           
           if (userSnap.exists()) {
@@ -69,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             await setDoc(userRef, {
               email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
               role,
               createdAt: new Date()
             });
@@ -80,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
             role: 'visitor' // Default role
           });
         }
@@ -110,6 +117,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Phone number updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update phone number');
+      throw error;
+    }
+  };
+
+  const updateUserProfile = async (data: { displayName?: string }) => {
+    if (!user || !auth.currentUser) {
+      throw new Error('No user is logged in');
+    }
+    
+    try {
+      // Update Firebase Auth profile
+      if (data.displayName) {
+        await updateProfile(auth.currentUser, { displayName: data.displayName });
+      }
+      
+      // Update Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, data, { merge: true });
+      
+      // Update local state
+      setUser({
+        ...user,
+        ...data
+      });
+      
+      toast.success('Profile updated successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile');
       throw error;
     }
   };
@@ -145,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
         await setDoc(userRef, {
           email: user.email,
+          displayName: user.displayName,
           role,
           createdAt: new Date()
         });
@@ -181,7 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         signOut,
         isAdmin: user?.role === 'admin',
-        updateUserPhone
+        updateUserPhone,
+        updateUserProfile
       }}
     >
       {children}

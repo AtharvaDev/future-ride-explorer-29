@@ -29,6 +29,8 @@ export interface Booking {
   totalPrice: number;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'draft';
   createdAt: Date;
+  contactInfo?: BookingContactInfo;
+  paymentInfo?: BookingPaymentInfo;
 }
 
 export interface BookingBasicInfo {
@@ -59,6 +61,9 @@ export interface BookingPaymentInfo {
 
 export interface CompleteBookingData extends Booking {
   car?: Car;
+  isActive?: boolean;
+  contactInfo?: BookingContactInfo;
+  paymentInfo?: BookingPaymentInfo;
 }
 
 // Save booking basic info (for multi-step booking process)
@@ -171,20 +176,30 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
     const querySnapshot = await getDocs(userBookingsRef);
     
     const bookings: CompleteBookingData[] = [];
+    const now = new Date();
     
     for (const doc of querySnapshot.docs) {
       const data = doc.data();
+      
+      // Convert Firebase Timestamps to JavaScript Dates
+      const startDate = data.startDate.toDate();
+      const endDate = data.endDate.toDate();
+      const createdAt = data.createdAt.toDate();
+      
       const booking: CompleteBookingData = {
         id: doc.id,
         userId: data.userId,
         carId: data.carId,
-        startDate: data.startDate.toDate(),
-        endDate: data.endDate.toDate(),
+        startDate,
+        endDate,
         startCity: data.startCity,
-        numberOfPassengers: data.numberOfPassengers,
-        totalPrice: data.totalPrice,
+        numberOfPassengers: data.numberOfPassengers || 0,
+        totalPrice: data.totalPrice || 0,
         status: data.status,
-        createdAt: data.createdAt.toDate()
+        createdAt,
+        contactInfo: data.contactInfo,
+        paymentInfo: data.paymentInfo,
+        isActive: startDate >= now // Determine if booking is active based on start date
       };
       
       try {
@@ -212,9 +227,11 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
 export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const allBookings = await getBookingsByUserId(userId);
+    const now = new Date();
     
     return allBookings.filter(booking => 
-      booking.status === 'pending' || booking.status === 'confirmed');
+      (booking.status === 'pending' || booking.status === 'confirmed') && 
+      booking.startDate >= now);
   } catch (error) {
     console.error('Error fetching active bookings:', error);
     toast.error('Failed to fetch active bookings');
@@ -226,9 +243,12 @@ export const getActiveBookingsByUserId = async (userId: string): Promise<Complet
 export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const allBookings = await getBookingsByUserId(userId);
+    const now = new Date();
     
     return allBookings.filter(booking => 
-      booking.status === 'completed' || booking.status === 'cancelled');
+      booking.status === 'completed' || 
+      booking.status === 'cancelled' ||
+      (booking.status === 'confirmed' && booking.startDate < now));
   } catch (error) {
     console.error('Error fetching past bookings:', error);
     toast.error('Failed to fetch past bookings');
@@ -290,11 +310,13 @@ export const getBookingById = async (userId: string, bookingId: string): Promise
       carId: data.carId,
       startDate: data.startDate.toDate(),
       endDate: data.endDate.toDate(),
-      startCity: data.startCity,
-      numberOfPassengers: data.numberOfPassengers,
-      totalPrice: data.totalPrice,
+      startCity: data.startCity || '',
+      numberOfPassengers: data.numberOfPassengers || 0,
+      totalPrice: data.totalPrice || 0,
       status: data.status,
-      createdAt: data.createdAt.toDate()
+      createdAt: data.createdAt.toDate(),
+      contactInfo: data.contactInfo,
+      paymentInfo: data.paymentInfo
     };
     
     try {
@@ -322,6 +344,7 @@ export const getAllBookings = async (): Promise<CompleteBookingData[]> => {
     const usersSnapshot = await getDocs(collection(db, 'users'));
     
     const allBookings: CompleteBookingData[] = [];
+    const now = new Date();
     
     // For each user, get their bookings
     for (const userDoc of usersSnapshot.docs) {
@@ -331,17 +354,26 @@ export const getAllBookings = async (): Promise<CompleteBookingData[]> => {
       
       for (const bookingDoc of bookingsSnapshot.docs) {
         const data = bookingDoc.data();
+        
+        // Convert Firebase Timestamps to JavaScript Dates
+        const startDate = data.startDate.toDate();
+        const endDate = data.endDate.toDate();
+        const createdAt = data.createdAt.toDate();
+        
         const booking: CompleteBookingData = {
           id: bookingDoc.id,
           userId: data.userId,
           carId: data.carId,
-          startDate: data.startDate.toDate(),
-          endDate: data.endDate.toDate(),
+          startDate,
+          endDate,
           startCity: data.startCity,
-          numberOfPassengers: data.numberOfPassengers,
-          totalPrice: data.totalPrice,
+          numberOfPassengers: data.numberOfPassengers || 0,
+          totalPrice: data.totalPrice || 0,
           status: data.status,
-          createdAt: data.createdAt.toDate()
+          createdAt,
+          contactInfo: data.contactInfo,
+          paymentInfo: data.paymentInfo,
+          isActive: startDate >= now
         };
         
         try {
