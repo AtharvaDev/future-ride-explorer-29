@@ -4,7 +4,8 @@ import { format } from 'date-fns';
 import { Car } from '@/data/cars';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Check, Info } from 'lucide-react';
+import { Calendar, Check, Info, Share2 } from 'lucide-react';
+import { openWhatsAppWithBookingDetails } from '@/services/notificationService';
 
 interface ConfirmationStepProps {
   car: Car;
@@ -29,6 +30,22 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   pricePerKm,
   onFinish,
 }) => {
+  const handleShareViaWhatsApp = () => {
+    const bookingDetails = {
+      customerName: "You", // This is for customer sharing, so we use "You"
+      carModel: car.model,
+      carTitle: car.title,
+      startDate: format(startDate, 'PPP'),
+      endDate: format(endDate, 'PPP'),
+      numDays,
+      tokenAmount,
+      totalAmount,
+      customerPhone: "" // We don't include phone number when customer is sharing
+    };
+    
+    openWhatsAppWithBookingDetails(bookingDetails);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -97,9 +114,17 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
         </div>
       </div>
       
-      <div className="flex justify-center pt-2">
+      <div className="flex flex-col md:flex-row justify-center gap-4 pt-2">
         <Button onClick={onFinish} className="w-full md:w-auto">
           View My Bookings
+        </Button>
+        <Button 
+          onClick={handleShareViaWhatsApp} 
+          variant="outline" 
+          className="w-full md:w-auto flex items-center gap-2"
+        >
+          <Share2 className="h-4 w-4" />
+          Share via WhatsApp
         </Button>
       </div>
     </div>

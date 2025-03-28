@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -19,6 +20,7 @@ import {
   saveBookingPaymentInfo,
   getBookingById
 } from '@/services/bookingService';
+import { sendWhatsAppNotification } from '@/services/notificationService';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -167,7 +169,30 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           isPaid: true
         };
         
-        await saveBookingPaymentInfo(bookingId, paymentInfo, user.uid);
+        await saveBookingPaymentInfo(bookingId, user.uid, paymentInfo);
+        
+        // Send WhatsApp notification after successful booking
+        if (contactData) {
+          const bookingDetails = {
+            customerName: contactData.name,
+            carModel: car.model,
+            carTitle: car.title,
+            startDate: datesData?.startDate ? datesData.startDate.toLocaleDateString() : '',
+            endDate: datesData?.endDate ? datesData.endDate.toLocaleDateString() : '',
+            numDays: datesData?.numDays || 0,
+            tokenAmount: tokenAmount,
+            totalAmount: totalAmount,
+            customerPhone: contactData.phone
+          };
+          
+          try {
+            await sendWhatsAppNotification(bookingDetails);
+            console.log('WhatsApp notification sent successfully');
+          } catch (notificationError) {
+            console.error('Failed to send WhatsApp notification:', notificationError);
+            // Don't block the booking process if notification fails
+          }
+        }
         
         setActiveStep(3);
       } else {
