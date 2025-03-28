@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Car } from '@/data/cars';
 import { Loader, Plus, Trash, PencilLine } from 'lucide-react';
@@ -32,6 +33,7 @@ import {
   AccordionTrigger 
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Form validation schema
 const carFormSchema = z.object({
@@ -201,7 +203,7 @@ const CarForm: React.FC<CarFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>{editingCar ? "Edit Car" : "Add New Car"}</DialogTitle>
           <DialogDescription>
@@ -211,300 +213,304 @@ const CarForm: React.FC<CarFormProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ID</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g. toyota-innova" 
-                        {...field} 
-                        disabled={!!editingCar} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Toyota" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Toyota Innova Hycross" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter a detailed description of the car" 
-                      {...field} 
-                      className="min-h-[100px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="pricePerDay"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price Per Day (₹)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="pricePerKm"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price Per Km (₹)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/car-image.jpg" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Enter a URL for the car image
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Brand Color</FormLabel>
-                    <div className="flex gap-2">
+        <ScrollArea className="flex-grow pr-4 max-h-[60vh]">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ID</FormLabel>
                       <FormControl>
-                        <Input type="text" placeholder="#3b82f6" {...field} />
+                        <Input 
+                          placeholder="e.g. toyota-innova" 
+                          {...field} 
+                          disabled={!!editingCar} 
+                        />
                       </FormControl>
-                      <div 
-                        className="w-10 h-10 rounded-md border" 
-                        style={{ backgroundColor: field.value }}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="model"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Model</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Toyota" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Toyota Innova Hycross" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter a detailed description of the car" 
+                        {...field} 
+                        className="min-h-[100px]"
                       />
-                    </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="pricePerDay"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price Per Day (₹)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pricePerKm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price Per Km (₹)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/car-image.jpg" {...field} />
+                    </FormControl>
                     <FormDescription>
-                      Enter a hex color code
+                      Enter a URL for the car image
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="video"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Video URL (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://youtube.com/watch?v=..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Brand Color</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input type="text" placeholder="#3b82f6" {...field} />
+                        </FormControl>
+                        <div 
+                          className="w-10 h-10 rounded-md border" 
+                          style={{ backgroundColor: field.value }}
+                        />
+                      </div>
+                      <FormDescription>
+                        Enter a hex color code
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Accordion type="single" collapsible className="w-full mt-6 border rounded-md">
-              <AccordionItem value="features">
-                <AccordionTrigger className="px-4">Car Features</AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4">
-                    {features.length > 0 ? (
-                      <div className="space-y-2">
-                        {features.map((feature, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
-                            <div className="flex items-start gap-3">
-                              <div className="bg-primary/10 p-2 rounded-md text-primary">
-                                {feature.icon}
+                <FormField
+                  control={form.control}
+                  name="video"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Video URL (optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://youtube.com/watch?v=..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <Accordion type="single" collapsible className="w-full mt-6 border rounded-md">
+                <AccordionItem value="features">
+                  <AccordionTrigger className="px-4">Car Features</AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      {features.length > 0 ? (
+                        <div className="space-y-2">
+                          {features.map((feature, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <div className="bg-primary/10 p-2 rounded-md text-primary">
+                                  {feature.icon}
+                                </div>
+                                <div>
+                                  <h4 className="font-medium">{feature.title}</h4>
+                                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-medium">{feature.title}</h4>
-                                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                              <div className="flex gap-1">
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => editFeature(index)}
+                                >
+                                  <PencilLine className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => deleteFeature(index)}
+                                  className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
-                            <div className="flex gap-1">
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => editFeature(index)}
-                              >
-                                <PencilLine className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => deleteFeature(index)}
-                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No features added yet. Add some features below.</p>
+                      )}
+
+                      <div className="space-y-3 pt-3 border-t">
+                        <h4 className="text-sm font-medium">
+                          {editingFeatureIndex !== null ? "Edit Feature" : "Add New Feature"}
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="featureIcon">Icon Name</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="featureIcon"
+                                value={newFeatureIcon}
+                                onChange={(e) => setNewFeatureIcon(e.target.value)}
+                                placeholder="Icon name (e.g. zap, bolt)"
+                              />
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Available icons: {AVAILABLE_ICONS.join(", ")}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No features added yet. Add some features below.</p>
-                    )}
-
-                    <div className="space-y-3 pt-3 border-t">
-                      <h4 className="text-sm font-medium">
-                        {editingFeatureIndex !== null ? "Edit Feature" : "Add New Feature"}
-                      </h4>
-                      
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="featureIcon">Icon Name</Label>
-                          <div className="flex items-center gap-2">
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="featureTitle">Title</Label>
                             <Input
-                              id="featureIcon"
-                              value={newFeatureIcon}
-                              onChange={(e) => setNewFeatureIcon(e.target.value)}
-                              placeholder="Icon name (e.g. zap, bolt)"
+                              id="featureTitle"
+                              value={newFeatureTitle}
+                              onChange={(e) => setNewFeatureTitle(e.target.value)}
+                              placeholder="e.g. 750 HP Overboost"
                             />
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            Available icons: {AVAILABLE_ICONS.join(", ")}
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="featureDesc">Description</Label>
+                            <Input
+                              id="featureDesc"
+                              value={newFeatureDesc}
+                              onChange={(e) => setNewFeatureDesc(e.target.value)}
+                              placeholder="e.g. Porsche performance"
+                            />
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="featureTitle">Title</Label>
-                          <Input
-                            id="featureTitle"
-                            value={newFeatureTitle}
-                            onChange={(e) => setNewFeatureTitle(e.target.value)}
-                            placeholder="e.g. 750 HP Overboost"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="featureDesc">Description</Label>
-                          <Input
-                            id="featureDesc"
-                            value={newFeatureDesc}
-                            onChange={(e) => setNewFeatureDesc(e.target.value)}
-                            placeholder="e.g. Porsche performance"
-                          />
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        type="button" 
-                        onClick={addFeature}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        {editingFeatureIndex !== null ? (
-                          <>Update Feature</>
-                        ) : (
-                          <>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Feature
-                          </>
-                        )}
-                      </Button>
-                      
-                      {editingFeatureIndex !== null && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingFeatureIndex(null);
-                            setNewFeatureIcon("zap");
-                            setNewFeatureTitle("");
-                            setNewFeatureDesc("");
-                          }}
-                          className="w-full text-muted-foreground"
+                        <Button 
+                          type="button" 
+                          onClick={addFeature}
+                          variant="outline"
+                          className="w-full"
                         >
-                          Cancel Edit
+                          {editingFeatureIndex !== null ? (
+                            <>Update Feature</>
+                          ) : (
+                            <>
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add Feature
+                            </>
+                          )}
                         </Button>
-                      )}
+                        
+                        {editingFeatureIndex !== null && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingFeatureIndex(null);
+                              setNewFeatureIcon("zap");
+                              setNewFeatureTitle("");
+                              setNewFeatureDesc("");
+                            }}
+                            className="w-full text-muted-foreground"
+                          >
+                            Cancel Edit
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              <div className="h-4"></div> {/* Add some space at the bottom */}
+            </form>
+          </Form>
+        </ScrollArea>
 
-            <DialogFooter>
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    {editingCar ? "Saving..." : "Adding..."}
-                  </>
-                ) : (
-                  editingCar ? "Save Changes" : "Add Car"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <DialogFooter className="mt-4 pt-2 border-t">
+          <Button 
+            type="button"
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                {editingCar ? "Saving..." : "Adding..."}
+              </>
+            ) : (
+              editingCar ? "Save Changes" : "Add Car"
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
