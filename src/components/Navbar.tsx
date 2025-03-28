@@ -241,36 +241,36 @@ const Navbar = () => {
             </NavigationMenu>
           )}
           
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-2">
             {user ? (
-              <Button 
-                ref={actionButtonRef}
-                onClick={() => handleNavigation('/profile')}
-                variant="outline"
-                className="mr-2 transition-all duration-300 hover:scale-105 flex items-center gap-2"
-              >
-                <User className="h-4 w-4" />
-                Profile
-              </Button>
-            ) : null}
-            <Button 
-              ref={actionButtonRef}
-              onClick={handleAuthAction}
-              variant="default"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
-            >
-              {user ? (
-                <>
+              <>
+                <Button 
+                  onClick={() => handleNavigation('/profile')}
+                  variant="outline"
+                  className="transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profile
+                </Button>
+                <Button 
+                  onClick={handleAuthAction}
+                  variant="default"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </>
-              )}
-            </Button>
+                </Button>
+              </>
+            ) : (
+              <Button 
+                onClick={handleAuthAction}
+                variant="default"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+            )}
           </div>
           
           {isMobile && (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import Navbar from '@/components/Navbar';
@@ -175,8 +176,8 @@ const AdminPage = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-16">
+      <main className="flex-grow pt-24"> {/* Added padding-top to prevent overlap with navbar */}
+        <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold admin-title">Car Management</h1>
             <Button 
