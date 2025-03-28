@@ -60,6 +60,24 @@ export interface Booking {
   updatedAt: Date;
 }
 
+// This is the type used in BookingHistory.tsx
+export interface CompleteBookingData {
+  id: string;
+  carId: string;
+  startDate: Date;
+  endDate: Date;
+  startCity: string;
+  status: BookingStatus;
+  car?: {
+    id: string;
+    title: string;
+    image: string;
+    price: number;
+  };
+  paymentInfo?: BookingPaymentInfo;
+  userId: string;
+}
+
 // Function to convert Firestore Timestamp to Date
 const convertTimestampToDate = (timestamp: Timestamp): Date => {
   return timestamp.toDate();
@@ -223,6 +241,93 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
     return bookings;
   } catch (error) {
     console.error('Error getting user bookings:', error);
+    throw error;
+  }
+};
+
+// Function to get active bookings (not yet completed or cancelled)
+export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
+  try {
+    const bookingsRef = collection(db, 'users', userId, 'bookings');
+    const today = new Date();
+    
+    // Get bookings that are not completed or cancelled
+    const q = query(
+      bookingsRef,
+      where('basicInfo.status', 'in', ['draft', 'confirmed'])
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const activeBookings: CompleteBookingData[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const startDate = data.basicInfo.startDate instanceof Timestamp ? 
+        convertTimestampToDate(data.basicInfo.startDate) : 
+        new Date(data.basicInfo.startDate);
+      const endDate = data.basicInfo.endDate instanceof Timestamp ? 
+        convertTimestampToDate(data.basicInfo.endDate) : 
+        new Date(data.basicInfo.endDate);
+      
+      activeBookings.push({
+        id: doc.id,
+        carId: data.basicInfo.carId,
+        startDate,
+        endDate,
+        startCity: data.basicInfo.startCity,
+        status: data.basicInfo.status,
+        car: data.car,
+        paymentInfo: data.paymentInfo,
+        userId: data.basicInfo.userId || userId
+      });
+    });
+    
+    return activeBookings;
+  } catch (error) {
+    console.error('Error getting active bookings:', error);
+    throw error;
+  }
+};
+
+// Function to get past bookings (completed or cancelled)
+export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
+  try {
+    const bookingsRef = collection(db, 'users', userId, 'bookings');
+    
+    // Get bookings that are completed or cancelled
+    const q = query(
+      bookingsRef,
+      where('basicInfo.status', 'in', ['completed', 'cancelled'])
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const pastBookings: CompleteBookingData[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const startDate = data.basicInfo.startDate instanceof Timestamp ? 
+        convertTimestampToDate(data.basicInfo.startDate) : 
+        new Date(data.basicInfo.startDate);
+      const endDate = data.basicInfo.endDate instanceof Timestamp ? 
+        convertTimestampToDate(data.basicInfo.endDate) : 
+        new Date(data.basicInfo.endDate);
+      
+      pastBookings.push({
+        id: doc.id,
+        carId: data.basicInfo.carId,
+        startDate,
+        endDate,
+        startCity: data.basicInfo.startCity,
+        status: data.basicInfo.status,
+        car: data.car,
+        paymentInfo: data.paymentInfo,
+        userId: data.basicInfo.userId || userId
+      });
+    });
+    
+    return pastBookings;
+  } catch (error) {
+    console.error('Error getting past bookings:', error);
     throw error;
   }
 };
