@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -35,7 +36,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUserPhone } = useAuth();
 
   useEffect(() => {
     if (datesData) {

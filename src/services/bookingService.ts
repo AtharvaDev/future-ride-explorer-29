@@ -9,7 +9,8 @@ import {
   query, 
   where,
   orderBy,
-  serverTimestamp 
+  serverTimestamp,
+  Timestamp
 } from 'firebase/firestore';
 import { Car } from '@/data/cars';
 import { v4 as uuidv4 } from 'uuid';
@@ -134,12 +135,12 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
     
     // Convert Firestore timestamps to Date objects
     if (bookingData.startDate) {
-      bookingData.startDate = bookingData.startDate.toDate ? 
+      bookingData.startDate = bookingData.startDate instanceof Timestamp ? 
         bookingData.startDate.toDate() : new Date(bookingData.startDate);
     }
     
     if (bookingData.endDate) {
-      bookingData.endDate = bookingData.endDate.toDate ? 
+      bookingData.endDate = bookingData.endDate instanceof Timestamp ? 
         bookingData.endDate.toDate() : new Date(bookingData.endDate);
     }
     
@@ -165,12 +166,12 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
       
       // Convert Firestore timestamps to Date objects
       if (data.startDate) {
-        data.startDate = data.startDate.toDate ? 
+        data.startDate = data.startDate instanceof Timestamp ? 
           data.startDate.toDate() : new Date(data.startDate);
       }
       
       if (data.endDate) {
-        data.endDate = data.endDate.toDate ? 
+        data.endDate = data.endDate instanceof Timestamp ? 
           data.endDate.toDate() : new Date(data.endDate);
       }
       
@@ -221,12 +222,12 @@ export const getAllBookings = async (): Promise<CompleteBookingData[]> => {
       
       // Convert Firestore timestamps to Date objects
       if (data.startDate) {
-        data.startDate = data.startDate.toDate ? 
+        data.startDate = data.startDate instanceof Timestamp ? 
           data.startDate.toDate() : new Date(data.startDate);
       }
       
       if (data.endDate) {
-        data.endDate = data.endDate.toDate ? 
+        data.endDate = data.endDate instanceof Timestamp ? 
           data.endDate.toDate() : new Date(data.endDate);
       }
       
