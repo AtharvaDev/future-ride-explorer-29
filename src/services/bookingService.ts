@@ -11,7 +11,8 @@ import {
   query,
   where,
   Timestamp,
-  documentId 
+  documentId,
+  setDoc
 } from 'firebase/firestore';
 import { getCarById } from './carService';
 import { toast } from 'sonner';
@@ -26,13 +27,116 @@ export interface Booking {
   startCity: string;
   numberOfPassengers: number;
   totalPrice: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'draft';
   createdAt: Date;
+}
+
+export interface BookingBasicInfo {
+  id?: string;
+  userId?: string;
+  carId: string;
+  startDate: Date;
+  endDate: Date;
+  startCity: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'draft';
+}
+
+export interface BookingContactInfo {
+  name: string;
+  email: string;
+  phone: string;
+  startCity: string;
+  specialRequests?: string;
+}
+
+export interface BookingPaymentInfo {
+  paymentMethod: 'upi' | 'card';
+  upiId?: string;
+  tokenAmount: number;
+  totalAmount: number;
+  isPaid: boolean;
 }
 
 export interface CompleteBookingData extends Booking {
   car?: Car;
 }
+
+// Save booking basic info (for multi-step booking process)
+export const saveBookingBasicInfo = async (data: BookingBasicInfo, userId?: string): Promise<string> => {
+  try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    const bookingData = {
+      ...data,
+      userId,
+      status: data.status || 'draft'
+    };
+    
+    if (data.id) {
+      // Update existing booking
+      const bookingRef = doc(db, 'users', userId, 'bookings', data.id);
+      await updateDoc(bookingRef, {
+        ...bookingData,
+        startDate: Timestamp.fromDate(bookingData.startDate),
+        endDate: Timestamp.fromDate(bookingData.endDate)
+      });
+      return data.id;
+    } else {
+      // Create new booking
+      const userBookingsRef = collection(db, 'users', userId, 'bookings');
+      const docRef = await addDoc(userBookingsRef, {
+        ...bookingData,
+        createdAt: Timestamp.fromDate(new Date()),
+        startDate: Timestamp.fromDate(bookingData.startDate),
+        endDate: Timestamp.fromDate(bookingData.endDate)
+      });
+      return docRef.id;
+    }
+  } catch (error) {
+    console.error('Error saving booking basic info:', error);
+    toast.error('Failed to save booking information');
+    throw error;
+  }
+};
+
+// Save booking contact information
+export const saveBookingContactInfo = async (bookingId: string, data: BookingContactInfo, userId?: string): Promise<void> => {
+  try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      contactInfo: data
+    });
+  } catch (error) {
+    console.error('Error saving booking contact info:', error);
+    toast.error('Failed to save contact information');
+    throw error;
+  }
+};
+
+// Save booking payment information
+export const saveBookingPaymentInfo = async (bookingId: string, data: BookingPaymentInfo, userId?: string): Promise<void> => {
+  try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      paymentInfo: data,
+      status: 'confirmed' // Update status to confirmed once payment is complete
+    });
+  } catch (error) {
+    console.error('Error saving booking payment info:', error);
+    toast.error('Failed to save payment information');
+    throw error;
+  }
+};
 
 // Create a new booking within the user's bookings subcollection
 export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt'>) => {

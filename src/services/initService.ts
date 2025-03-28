@@ -10,7 +10,7 @@ import {
   query, 
   where 
 } from 'firebase/firestore';
-import { defaultCars } from '@/data/cars';
+import { cars } from '@/data/cars';
 import { migrateBookingsToUserSubcollections } from './bookingService';
 
 // Initialize the app with default data
@@ -55,7 +55,7 @@ const ensureCarData = async () => {
   
   // If we have no cars, add the default ones
   if (carsSnapshot.empty) {
-    for (const car of defaultCars) {
+    for (const car of cars) {
       await addDoc(carsRef, car);
     }
     console.log('Default car data added successfully');
