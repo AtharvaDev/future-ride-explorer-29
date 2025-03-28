@@ -1,12 +1,12 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   signInWithEmailAndPassword, 
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  signInWithPopup,
   User
 } from 'firebase/auth';
-import { auth, db } from '@/config/firebase';
+import { auth, db, googleProvider } from '@/config/firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { toast } from 'sonner';
 
@@ -22,6 +22,7 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
 }
@@ -101,6 +102,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithGoogle = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      // Check if user exists in the database
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        // New user, create in database
+        const role: UserRole = ADMIN_EMAILS.includes(user.email || '') 
+          ? 'admin' 
+          : 'visitor';
+          
+        await setDoc(userRef, {
+          email: user.email,
+          role,
+          createdAt: new Date()
+        });
+      }
+      
+      toast.success("Successfully logged in with Google!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login with Google");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     setLoading(true);
     try {
@@ -120,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user, 
         loading,
         signIn,
+        signInWithGoogle,
         signOut,
         isAdmin: user?.role === 'admin'
       }}
