@@ -28,17 +28,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-      <h2 className="text-2xl font-bold mb-6 text-center">Login to FutureRide</h2>
+    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Login to FutureRide</h2>
       
       <Button 
         onClick={handleGoogleSignIn} 
-        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300"
+        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-6"
         disabled={isLoading}
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" />
             Signing in...
           </>
         ) : (
@@ -67,8 +67,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
         )}
       </Button>
       
-      <div className="mt-4 text-center text-sm">
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="mt-6 text-center text-sm">
+        <p className="text-gray-600 dark:text-gray-400 font-medium">
           Demo admin login: admin@futureride.com / password123
         </p>
       </div>

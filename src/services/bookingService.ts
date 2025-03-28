@@ -1,4 +1,3 @@
-
 import { db } from '@/config/firebase';
 import { 
   doc, 
@@ -12,7 +11,8 @@ import {
   updateDoc,
   serverTimestamp,
   Timestamp,
-  orderBy
+  orderBy,
+  limit
 } from 'firebase/firestore';
 import { toast } from 'sonner';
 
@@ -60,7 +60,6 @@ export interface Booking {
   updatedAt: Date;
 }
 
-// This is the type used in BookingHistory.tsx
 export interface CompleteBookingData {
   id: string;
   carId: string;
@@ -78,12 +77,32 @@ export interface CompleteBookingData {
   userId: string;
 }
 
-// Function to convert Firestore Timestamp to Date
 const convertTimestampToDate = (timestamp: Timestamp): Date => {
   return timestamp.toDate();
 };
 
-// Function to save basic booking information
+export const getExistingDraftBooking = async (userId: string): Promise<string | null> => {
+  try {
+    const bookingsRef = collection(db, 'users', userId, 'bookings');
+    const q = query(
+      bookingsRef,
+      where('basicInfo.status', '==', 'draft'),
+      limit(1)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error checking for existing draft bookings:', error);
+    throw error;
+  }
+};
+
 export const saveBookingBasicInfo = async (
   bookingData: BookingBasicInfo,
   userId: string
@@ -93,11 +112,27 @@ export const saveBookingBasicInfo = async (
     let bookingId = bookingData.id;
     
     if (!bookingId) {
-      // Create a new document reference with auto-generated ID
+      const existingDraftId = await getExistingDraftBooking(userId);
+      
+      if (existingDraftId) {
+        bookingId = existingDraftId;
+        
+        const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
+        await updateDoc(bookingRef, {
+          'basicInfo': {
+            ...bookingData,
+            id: bookingId
+          },
+          'updatedAt': serverTimestamp()
+        });
+        
+        console.log('Updated existing draft booking:', bookingId);
+        return bookingId;
+      }
+      
       const newBookingRef = doc(userBookingsRef);
       bookingId = newBookingRef.id;
       
-      // Create the booking with basic info
       await setDoc(newBookingRef, {
         basicInfo: {
           ...bookingData,
@@ -107,7 +142,6 @@ export const saveBookingBasicInfo = async (
         updatedAt: serverTimestamp()
       });
     } else {
-      // Update existing booking
       const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
       await updateDoc(bookingRef, {
         'basicInfo': {
@@ -125,7 +159,6 @@ export const saveBookingBasicInfo = async (
   }
 };
 
-// Function to save contact information
 export const saveBookingContactInfo = async (
   bookingId: string,
   contactInfo: BookingContactInfo,
@@ -143,7 +176,6 @@ export const saveBookingContactInfo = async (
   }
 };
 
-// Function to save payment information
 export const saveBookingPaymentInfo = async (
   bookingId: string,
   paymentInfo: BookingPaymentInfo,
@@ -152,7 +184,6 @@ export const saveBookingPaymentInfo = async (
   try {
     const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
     
-    // Update the booking with payment info and set status to confirmed
     await updateDoc(bookingRef, {
       'paymentInfo': paymentInfo,
       'basicInfo.status': 'confirmed',
@@ -164,7 +195,6 @@ export const saveBookingPaymentInfo = async (
   }
 };
 
-// Function to get a booking by ID
 export const getBookingById = async (userId: string, bookingId: string): Promise<Booking | null> => {
   try {
     const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);
@@ -173,7 +203,6 @@ export const getBookingById = async (userId: string, bookingId: string): Promise
     if (bookingSnap.exists()) {
       const data = bookingSnap.data();
       
-      // Convert Firestore Timestamps to JavaScript Dates
       return {
         id: bookingId,
         basicInfo: {
@@ -204,7 +233,6 @@ export const getBookingById = async (userId: string, bookingId: string): Promise
   }
 };
 
-// Function to get all bookings for a user
 export const getUserBookings = async (userId: string): Promise<Booking[]> => {
   try {
     const bookingsRef = collection(db, 'users', userId, 'bookings');
@@ -245,13 +273,11 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
   }
 };
 
-// Function to get active bookings (not yet completed or cancelled)
 export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const bookingsRef = collection(db, 'users', userId, 'bookings');
     const today = new Date();
     
-    // Get bookings that are not completed or cancelled
     const q = query(
       bookingsRef,
       where('basicInfo.status', 'in', ['draft', 'confirmed'])
@@ -289,12 +315,10 @@ export const getActiveBookingsByUserId = async (userId: string): Promise<Complet
   }
 };
 
-// Function to get past bookings (completed or cancelled)
 export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     const bookingsRef = collection(db, 'users', userId, 'bookings');
     
-    // Get bookings that are completed or cancelled
     const q = query(
       bookingsRef,
       where('basicInfo.status', 'in', ['completed', 'cancelled'])
@@ -332,7 +356,6 @@ export const getPastBookingsByUserId = async (userId: string): Promise<CompleteB
   }
 };
 
-// Function to delete a booking
 export const deleteBooking = async (userId: string, bookingId: string): Promise<void> => {
   try {
     const bookingRef = doc(db, 'users', userId, 'bookings', bookingId);

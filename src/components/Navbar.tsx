@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 import gsap from 'gsap';
 
 const Navbar = () => {
@@ -138,6 +139,13 @@ const Navbar = () => {
       setMobileMenuOpen(false);
     }
     
+    if (href === '#contact') {
+      const phoneNumber = '+919876543210'; // Replace with actual number
+      window.location.href = `tel:${phoneNumber}`;
+      toast.success("Calling FutureRide customer service");
+      return;
+    }
+    
     if (href.startsWith('#') && (window.location.pathname === '/' || !location)) {
       const element = document.getElementById(href.substring(1));
       if (element) {
@@ -213,14 +221,18 @@ const Navbar = () => {
                         (location?.pathname === link.href || 
                          (location?.pathname === '/' && link.href.startsWith('#')))
                           ? "bg-primary/10 text-primary font-medium" 
-                          : ""
+                          : "",
+                        link.name === "Contact" ? "text-green-600 hover:text-green-700" : ""
                       )}
                       onClick={(e) => {
                         e.preventDefault();
                         handleNavigation(link.href);
                       }}
                     >
-                      <link.icon className="h-4 w-4" />
+                      <link.icon className={cn(
+                        "h-4 w-4",
+                        link.name === "Contact" ? "text-green-600" : ""
+                      )} />
                       {link.name}
                     </NavigationMenuLink>
                   </NavigationMenuItem>
@@ -281,10 +293,16 @@ const Navbar = () => {
                 {navigationLinks.map((link) => (
                   <DropdownMenuItem 
                     key={link.name}
-                    className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary/10 rounded-lg flex items-center gap-2 p-3"
+                    className={cn(
+                      "cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary/10 rounded-lg flex items-center gap-2 p-3",
+                      link.name === "Contact" ? "text-green-600 hover:text-green-700" : ""
+                    )}
                     onClick={() => handleNavigation(link.href)}
                   >
-                    <link.icon className="h-4 w-4" />
+                    <link.icon className={cn(
+                      "h-4 w-4",
+                      link.name === "Contact" ? "text-green-600" : ""
+                    )} />
                     {link.name}
                   </DropdownMenuItem>
                 ))}

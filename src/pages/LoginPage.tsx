@@ -22,8 +22,8 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
-        <div className="relative">
+      <main className="flex-grow flex items-center justify-center px-4 py-12 mt-16">
+        <div className="max-w-md w-full">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-xl rounded-xl"></div>
           <div className="relative z-10">
             <LoginForm returnUrl={returnUrl} />
