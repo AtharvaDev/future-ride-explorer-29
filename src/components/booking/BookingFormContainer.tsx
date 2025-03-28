@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -39,7 +38,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Calculate token amount (20% of estimated cost)
     if (datesData) {
       const estimatedCost = datesData.numDays * car.pricePerDay;
       setTotalAmount(estimatedCost);
@@ -59,7 +57,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     });
 
     try {
-      // Save basic booking info
       const bookingData: BookingBasicInfo = {
         carId: car.id,
         startDate: data.startDate,
@@ -72,7 +69,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       const id = await saveBookingBasicInfo(bookingData, user?.uid);
       setBookingId(id);
       
-      // Move to next step
       setActiveStep(1);
     } catch (error) {
       console.error('Error saving dates:', error);
@@ -85,10 +81,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     
     try {
       if (bookingId) {
-        // Update booking with contact info
         await saveBookingContactInfo(bookingId, data);
         
-        // Also update the booking with the starting city
         await saveBookingBasicInfo(
           {
             id: bookingId,
@@ -102,7 +96,14 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           user?.uid
         );
         
-        // Move to next step
+        if (user && data.phone) {
+          try {
+            await updateUserPhone(data.phone);
+          } catch (phoneError) {
+            console.error('Error updating user phone:', phoneError);
+          }
+        }
+        
         setActiveStep(2);
       } else {
         toast.error('Booking not found. Please start again.');
@@ -116,18 +117,16 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const handlePaymentSubmit = async (data: UpiFormData) => {
     try {
       if (bookingId) {
-        // Save payment info
         const paymentInfo: BookingPaymentInfo = {
           paymentMethod: 'upi',
           upiId: data.upiId,
           tokenAmount: tokenAmount,
           totalAmount: totalAmount,
-          isPaid: true // In a real app, this would be set after payment confirmation
+          isPaid: true
         };
         
         await saveBookingPaymentInfo(bookingId, paymentInfo);
         
-        // Move to confirmation step
         setActiveStep(3);
       } else {
         toast.error('Booking not found. Please start again.');

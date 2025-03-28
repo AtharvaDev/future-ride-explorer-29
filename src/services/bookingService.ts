@@ -1,3 +1,4 @@
+
 import { db } from '@/config/firebase';
 import { 
   collection,
@@ -7,6 +8,7 @@ import {
   getDocs, 
   query, 
   where,
+  orderBy,
   serverTimestamp 
 } from 'firebase/firestore';
 import { Car } from '@/data/cars';
@@ -128,7 +130,20 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
       return null;
     }
     
-    return bookingDoc.data() as CompleteBookingData;
+    const bookingData = bookingDoc.data() as CompleteBookingData;
+    
+    // Convert Firestore timestamps to Date objects
+    if (bookingData.startDate) {
+      bookingData.startDate = bookingData.startDate.toDate ? 
+        bookingData.startDate.toDate() : new Date(bookingData.startDate);
+    }
+    
+    if (bookingData.endDate) {
+      bookingData.endDate = bookingData.endDate.toDate ? 
+        bookingData.endDate.toDate() : new Date(bookingData.endDate);
+    }
+    
+    return bookingData;
   } catch (error) {
     console.error('Error getting booking:', error);
     throw error;
@@ -140,13 +155,59 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
   try {
     const bookingsQuery = query(
       collection(db, 'bookings'),
-      where('userId', '==', userId)
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
     );
     
     const bookingDocs = await getDocs(bookingsQuery);
-    return bookingDocs.docs.map(doc => doc.data() as CompleteBookingData);
+    return bookingDocs.docs.map(doc => {
+      const data = doc.data() as CompleteBookingData;
+      
+      // Convert Firestore timestamps to Date objects
+      if (data.startDate) {
+        data.startDate = data.startDate.toDate ? 
+          data.startDate.toDate() : new Date(data.startDate);
+      }
+      
+      if (data.endDate) {
+        data.endDate = data.endDate.toDate ? 
+          data.endDate.toDate() : new Date(data.endDate);
+      }
+      
+      return data;
+    });
   } catch (error) {
     console.error('Error getting user bookings:', error);
+    throw error;
+  }
+};
+
+// Get active bookings by user ID (end date is in the future)
+export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
+  try {
+    const allBookings = await getBookingsByUserId(userId);
+    const now = new Date();
+    
+    return allBookings.filter(booking => {
+      return booking.endDate > now && booking.status !== 'cancelled';
+    });
+  } catch (error) {
+    console.error('Error getting active bookings:', error);
+    throw error;
+  }
+};
+
+// Get past bookings by user ID (end date is in the past)
+export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
+  try {
+    const allBookings = await getBookingsByUserId(userId);
+    const now = new Date();
+    
+    return allBookings.filter(booking => {
+      return booking.endDate <= now || booking.status === 'cancelled';
+    });
+  } catch (error) {
+    console.error('Error getting past bookings:', error);
     throw error;
   }
 };
@@ -155,7 +216,22 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
 export const getAllBookings = async (): Promise<CompleteBookingData[]> => {
   try {
     const bookingDocs = await getDocs(collection(db, 'bookings'));
-    return bookingDocs.docs.map(doc => doc.data() as CompleteBookingData);
+    return bookingDocs.docs.map(doc => {
+      const data = doc.data() as CompleteBookingData;
+      
+      // Convert Firestore timestamps to Date objects
+      if (data.startDate) {
+        data.startDate = data.startDate.toDate ? 
+          data.startDate.toDate() : new Date(data.startDate);
+      }
+      
+      if (data.endDate) {
+        data.endDate = data.endDate.toDate ? 
+          data.endDate.toDate() : new Date(data.endDate);
+      }
+      
+      return data;
+    });
   } catch (error) {
     console.error('Error getting all bookings:', error);
     throw error;

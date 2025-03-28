@@ -16,6 +16,7 @@ interface AuthUser {
   uid: string;
   email: string | null;
   role: UserRole;
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -25,6 +26,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
+  updateUserPhone: (phone: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // User exists in database
             const dbUser = userSnap.data();
             userData.role = dbUser.role || 'visitor';
+            userData.phone = dbUser.phone;
           } else {
             // New user, create in database
             const role: UserRole = ADMIN_EMAILS.includes(firebaseUser.email || '') 
@@ -88,6 +91,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => unsubscribe();
   }, []);
+
+  const updateUserPhone = async (phone: string) => {
+    if (!user) {
+      throw new Error('No user is logged in');
+    }
+    
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, { phone }, { merge: true });
+      
+      // Update local user state
+      setUser({
+        ...user,
+        phone
+      });
+      
+      toast.success('Phone number updated successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update phone number');
+      throw error;
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -155,7 +180,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signInWithGoogle,
         signOut,
-        isAdmin: user?.role === 'admin'
+        isAdmin: user?.role === 'admin',
+        updateUserPhone
       }}
     >
       {children}
