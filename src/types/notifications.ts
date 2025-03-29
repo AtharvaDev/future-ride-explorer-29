@@ -1,5 +1,6 @@
 
 import { AuthUser } from '@/types/auth';
+import { BookingContactInfo, BookingStatus } from '@/types/booking';
 
 export interface BookingNotificationDetails {
   id: string;
@@ -9,12 +10,7 @@ export interface BookingNotificationDetails {
   endDate: Date;
   startCity: string;
   status: string;
-  contactInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
+  contactInfo: BookingContactInfo;
   paymentInfo: {
     method: string;
     totalAmount: number;

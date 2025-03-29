@@ -11,6 +11,7 @@ import { useBookingFormState } from '@/hooks/useBookingFormState';
 import { UpiFormData } from './PaymentStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { BookingContactInfo } from '@/types/booking';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -44,7 +45,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   }, [user, resetStep]);
 
   // Handle various step submissions
-  const handleLoginWithGoogle = async () => {
+  const handleLoginWithGoogle = async (): Promise<void> => {
     try {
       setIsLoading(true);
       // We'll use the actual Firebase authentication in the LoginStep component
@@ -75,12 +76,13 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         email: user.email || '',
         phone: user.phone || '',
         startCity: formState.startCity,
+        address: '', // Add empty address field
         specialRequests: ''
       });
     }
   }, [user, formState.step, setContactInfo, formState.startCity]);
 
-  const handleContactSubmit = (contactData: any) => {
+  const handleContactSubmit = (contactData: BookingContactInfo) => {
     setContactInfo(contactData);
     nextStep();
   };
@@ -153,6 +155,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             onDateChange={setDates}
             onCityChange={setStartCity}
             onNext={handleDatesSubmit}
+            onBack={handleBackStep}
           />
         )}
         

@@ -25,6 +25,9 @@ const formSchema = z.object({
   startCity: z.string().min(2, {
     message: "Starting city must be at least 2 characters.",
   }),
+  address: z.string().min(5, {
+    message: "Address must be at least 5 characters.",
+  }),
   specialRequests: z.string().optional(),
 });
 
@@ -47,6 +50,7 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
       email: "",
       phone: "",
       startCity: "",
+      address: "",
       specialRequests: "",
     },
   });
@@ -84,7 +88,7 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
       }
     }
     
-    onSubmit(data);
+    onSubmit(data as BookingContactInfo);
   };
 
   return (
@@ -150,6 +154,20 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
                 <FormLabel>Starting City</FormLabel>
                 <FormControl>
                   <Input placeholder="Mumbai" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="123 Main St, Mumbai" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

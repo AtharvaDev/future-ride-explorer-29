@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   signInWithEmailAndPassword, 
@@ -17,7 +16,6 @@ export const useAuthProvider = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
@@ -45,7 +43,6 @@ export const useAuthProvider = () => {
     
     await updatePhoneNumber(user.uid, phone);
     
-    // Update local user state
     setUser({
       ...user,
       phone
@@ -58,14 +55,12 @@ export const useAuthProvider = () => {
     }
     
     try {
-      // Update Firebase Auth profile
       if (data.displayName) {
         await firebaseUpdateProfile(auth.currentUser, { displayName: data.displayName });
       }
       
       await updateProfile(user.uid, auth.currentUser, data);
       
-      // Update local state
       setUser({
         ...user,
         ...data
@@ -95,7 +90,6 @@ export const useAuthProvider = () => {
       const userData = await getUserFromFirebase(result.user);
       setUser(userData);
       toast.success("Successfully logged in with Google!");
-      return userData;
     } catch (error: any) {
       toast.error(error.message || "Failed to login with Google");
       throw error;
@@ -117,7 +111,6 @@ export const useAuthProvider = () => {
     }
   };
 
-  // Get the latest user data from Firestore
   const refreshUserData = async () => {
     if (!user || !auth.currentUser) return null;
     

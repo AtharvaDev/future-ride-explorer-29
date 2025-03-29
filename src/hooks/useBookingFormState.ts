@@ -38,6 +38,7 @@ export function useBookingFormState(car: Car) {
       email: '',
       phone: '',
       startCity: 'Bangalore',
+      address: '',
       specialRequests: '',
     },
     loginMethod: null,
