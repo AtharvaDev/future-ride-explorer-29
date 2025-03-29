@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +41,7 @@ interface ContactStepProps {
 
 const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBack, isLoading = false }) => {
   const { user, updateUserPhone } = useAuth();
+  const toastShownRef = useRef(false);
   
   const form = useForm<ContactFormData>({
     resolver: zodResolver(formSchema),
@@ -64,8 +64,10 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
         }
       });
       
-      if (initialValues.name && initialValues.email) {
+      // Only show toast once when form is initially populated
+      if (initialValues.name && initialValues.email && !toastShownRef.current) {
         toast.info("Contact information auto-populated from your account");
+        toastShownRef.current = true;
       }
     }
   }, [initialValues, form]);

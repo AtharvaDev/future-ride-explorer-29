@@ -1,7 +1,9 @@
+
 import { AuthUser } from '@/types/auth';
 import { format } from 'date-fns';
 import { emailConfig, whatsAppConfig } from '@/config/notifications';
 import { BookingNotificationDetails } from '@/types/notifications';
+import { sendEmail, sendWhatsAppMessage } from './twilioService';
 
 // Function to replace template variables
 const replaceTemplateVariables = (template: string, variables: Record<string, string | number>) => {
@@ -32,15 +34,20 @@ export const sendBookingConfirmationEmail = async (booking: BookingNotificationD
     const subject = replaceTemplateVariables(emailConfig.templates.bookingConfirmation.subject, variables);
     const body = replaceTemplateVariables(emailConfig.templates.bookingConfirmation.body, variables);
 
-    console.log('Sending booking confirmation email to:', booking.contactInfo.email);
-    console.log('Subject:', subject);
-    console.log('Body:', body);
+    // Use our twilioService to send the email
+    const sent = await sendEmail({
+      to: booking.contactInfo.email,
+      subject,
+      body,
+    });
 
-    // In a real app, you would call an API to send the email
-    // For now, we'll just log that we would send an email
-    console.log(`Email notification sent to ${booking.contactInfo.email}`);
-    
-    return true;
+    if (sent) {
+      console.log(`Email notification sent to ${booking.contactInfo.email}`);
+      return true;
+    } else {
+      console.error('Failed to send email notification');
+      return false;
+    }
   } catch (error) {
     console.error('Error sending email notification:', error);
     return false;
@@ -65,15 +72,32 @@ export const sendBookingConfirmationWhatsApp = async (booking: BookingNotificati
     };
 
     const message = replaceTemplateVariables(whatsAppConfig.templates.bookingConfirmation, variables);
-
-    console.log('Sending WhatsApp message to:', booking.contactInfo.phone);
-    console.log('Message:', message);
-
-    // In a real app, you would call WhatsApp Business API
-    // For now, we'll just log that we would send a WhatsApp message
-    console.log(`WhatsApp notification sent to ${booking.contactInfo.phone}`);
     
-    return true;
+    // Format the phone number for WhatsApp (add whatsapp: prefix if not present)
+    let phoneNumber = booking.contactInfo.phone;
+    if (!phoneNumber.startsWith('whatsapp:')) {
+      // Remove any non-digit characters for standardization
+      phoneNumber = phoneNumber.replace(/\D/g, '');
+      // Add country code if not present (assuming India +91)
+      if (!phoneNumber.startsWith('91') && phoneNumber.length === 10) {
+        phoneNumber = `91${phoneNumber}`;
+      }
+      phoneNumber = `whatsapp:+${phoneNumber}`;
+    }
+
+    // Use our twilioService to send the WhatsApp message
+    const sent = await sendWhatsAppMessage({
+      to: phoneNumber,
+      body: message,
+    });
+
+    if (sent) {
+      console.log(`WhatsApp notification sent to ${booking.contactInfo.phone}`);
+      return true;
+    } else {
+      console.error('Failed to send WhatsApp notification');
+      return false;
+    }
   } catch (error) {
     console.error('Error sending WhatsApp notification:', error);
     return false;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,7 +48,8 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           email: formState.contactInfo.email,
           phone: formState.contactInfo.phone,
           address: formState.contactInfo.address,
-          startCity: formState.startCity, // Added startCity to contactInfo
+          startCity: formState.startCity,
+          specialRequests: formState.contactInfo.specialRequests || '',
         },
         paymentInfo: {
           method: formState.paymentMethod,
@@ -69,7 +69,6 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
 
       const newBooking = await createBooking(bookingData);
       
-      // Send confirmation notifications
       await sendBookingConfirmation({
         id: newBooking.id,
         ...bookingData
