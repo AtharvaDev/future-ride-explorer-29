@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Car } from '@/data/cars';
 import { differenceInDays } from 'date-fns';
@@ -58,18 +57,16 @@ export function useBookingFormState(car: Car) {
     tokenAmount: 0,
   });
 
-  // Calculate booking summary whenever dates change
   useEffect(() => {
     if (formState.startDate && formState.endDate) {
       const days = Math.max(1, differenceInDays(formState.endDate, formState.startDate));
       const isDatesValid = days > 0;
       
-      // Only calculate if dates are valid
       if (isDatesValid) {
         const subtotal = days * car.pricePerDay;
-        const tax = subtotal * 0.18; // 18% GST
+        const tax = subtotal * 0.18;
         const totalAmount = subtotal + tax;
-        const tokenAmount = totalAmount * 0.2; // 20% token amount
+        const tokenAmount = totalAmount * 0.2;
         
         setBookingSummary({
           totalDays: days,
@@ -80,7 +77,6 @@ export function useBookingFormState(car: Car) {
           tokenAmount,
         });
         
-        // Update the form state with the calculated values
         setFormState(prev => ({
           ...prev,
           totalDays: days,
@@ -154,7 +150,6 @@ export function useBookingFormState(car: Car) {
     }));
   };
 
-  // Reset to step 1
   const resetStep = useCallback(() => {
     setFormState(prev => ({
       ...prev,

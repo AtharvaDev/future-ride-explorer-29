@@ -20,7 +20,7 @@ interface BookingFormContainerProps {
 const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [baseKm] = useState(100); // Base kilometers included in package
+  const [baseKm] = useState(100);
   const { user } = useAuth();
   
   const {
@@ -37,7 +37,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     resetStep
   } = useBookingFormState(car);
 
-  // Reset to step 1 if no user is logged in
+  // Reset to step 1 (Login) if no user is logged in
   useEffect(() => {
     if (!user) {
       resetStep();
@@ -127,7 +127,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden">
-      <ProgressSteps activeStep={formState.step} />
+      <ProgressSteps activeStep={formState.step - 1} />
       
       <div className="mt-8">
         {formState.step === 1 && (
