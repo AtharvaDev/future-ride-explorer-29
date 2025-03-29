@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LogIn } from "lucide-react";
 
-const LoginPrompt: React.FC = () => {
+interface LoginPromptProps {
+  onLogin?: () => void;
+}
+
+const LoginPrompt: React.FC<LoginPromptProps> = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
-    navigate('/login', { state: { returnUrl: window.location.pathname } });
+    if (onLogin) {
+      onLogin();
+    } else {
+      navigate('/login', { state: { returnUrl: window.location.pathname } });
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -10,9 +11,8 @@ import CarSection from '@/components/CarSection';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader, Play } from 'lucide-react';
-import { getAllCars, getCarById } from '@/services/carService';
+import { getAllCars } from '@/services/carService';
 import { useQuery } from '@tanstack/react-query';
-import { Car } from '@/data/cars';
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -91,11 +91,6 @@ const BookingPage = () => {
     }, 1500);
   };
 
-  // Update CarSection component to pass the scroll function
-  const handleBookNowClick = () => {
-    scrollToBookingForm();
-  };
-
   if (carsLoading || !selectedCar) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -127,7 +122,6 @@ const BookingPage = () => {
           color={selectedCar.color}
           features={selectedCar.features}
           index={carId || "0"}
-          onBookNow={handleBookNowClick}
         />
       </Card>
       <main className="flex-grow">
@@ -161,17 +155,27 @@ const BookingPage = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">₹{selectedCar.pricePerKm}/km mileage fee</p>
                   </div>
                   
-                  {selectedCar.video && (
-                    <Button 
-                      onClick={handleWatchVideo}
-                      variant="outline" 
-                      size="sm" 
+                  <div className="flex flex-col gap-2">
+                    {selectedCar.video && (
+                      <Button 
+                        onClick={handleWatchVideo}
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center gap-2"
+                      >
+                        <Play className="h-4 w-4" />
+                        <span>Watch Video</span>
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={scrollToBookingForm}
+                      size="sm"
                       className="flex items-center gap-2"
                     >
-                      <Play className="h-4 w-4" />
-                      <span>Watch Video</span>
+                      Book Now
                     </Button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
