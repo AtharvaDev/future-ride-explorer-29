@@ -1,5 +1,5 @@
 
-import { User } from '@/types/auth';
+import { AuthUser } from '@/types/auth';
 
 export interface BookingNotificationDetails {
   id: string;

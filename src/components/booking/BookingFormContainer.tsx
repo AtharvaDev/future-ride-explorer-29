@@ -8,6 +8,7 @@ import PaymentStep from './PaymentStep';
 import ConfirmationStep from './ConfirmationStep';
 import LoginStep from './LoginStep';
 import { useBookingFormState } from '@/hooks/useBookingFormState';
+import { UpiFormData } from './PaymentStep';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -32,13 +33,16 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   } = useBookingFormState(car);
 
   // Handle various step submissions
-  const handleLoginWithGoogle = () => {
+  const handleLoginWithGoogle = async () => {
     // In a real app, this would handle Google login
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      nextStep();
-    }, 1000);
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        setIsLoading(false);
+        nextStep();
+        resolve();
+      }, 1000);
+    });
   };
 
   const handleContactSubmit = (contactData: any) => {
@@ -50,13 +54,21 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     nextStep();
   };
 
-  const handlePaymentSubmit = (method: string) => {
+  const handlePaymentSubmit = (data: UpiFormData & { paymentMethod: string, paymentId?: string }) => {
     setIsLoading(true);
-    setPaymentMethod(method);
+    setPaymentMethod(data.paymentMethod);
+    
+    // If paymentId is provided, set it
+    if (data.paymentId) {
+      setPaymentId(data.paymentId);
+    }
+    
     // Simulate payment processing
     setTimeout(() => {
       setIsLoading(false);
-      setPaymentId("pay_" + Math.random().toString(36).substring(2, 15));
+      if (!data.paymentId) {
+        setPaymentId("pay_" + Math.random().toString(36).substring(2, 15));
+      }
       nextStep();
     }, 1500);
   };
@@ -90,14 +102,11 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         
         {formState.step === 3 && (
           <DatesStep 
-            onSubmit={handleDatesSubmit}
-            startDate={formState.startDate}
-            endDate={formState.endDate}
-            numberOfDays={bookingSummary.totalDays}
-            totalCost={bookingSummary.totalAmount}
-            tokenAmount={bookingSummary.tokenAmount}
-            onBack={handleBackStep}
-            isLoading={isLoading}
+            formState={formState}
+            bookingSummary={bookingSummary}
+            onDateChange={setDates}
+            onCityChange={setStartCity}
+            onNext={handleDatesSubmit}
           />
         )}
         

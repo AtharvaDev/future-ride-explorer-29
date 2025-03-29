@@ -1,4 +1,4 @@
-import { User } from '@/types/auth';
+import { AuthUser } from '@/types/auth';
 import { format } from 'date-fns';
 import { emailConfig, whatsAppConfig } from '@/config/notifications';
 import { BookingNotificationDetails } from '@/types/notifications';
@@ -13,7 +13,7 @@ const replaceTemplateVariables = (template: string, variables: Record<string, st
 };
 
 // Send booking confirmation email
-export const sendBookingConfirmationEmail = async (booking: BookingNotificationDetails, user: User | null) => {
+export const sendBookingConfirmationEmail = async (booking: BookingNotificationDetails, user: AuthUser | null) => {
   if (!emailConfig.enabled) return;
 
   try {
@@ -83,7 +83,7 @@ export const sendBookingConfirmationWhatsApp = async (booking: BookingNotificati
 // Send booking confirmation notifications through all enabled channels
 export const sendBookingConfirmation = async (
   booking: BookingNotificationDetails, 
-  user: User | null
+  user: AuthUser | null
 ) => {
   const emailPromise = sendBookingConfirmationEmail(booking, user);
   const whatsAppPromise = sendBookingConfirmationWhatsApp(booking);
