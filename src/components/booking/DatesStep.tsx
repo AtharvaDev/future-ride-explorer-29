@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +22,7 @@ interface DatesStepProps {
   onDateChange: (startDate: Date | null, endDate: Date | null) => void;
   onCityChange: (city: string) => void;
   onNext: () => void;
+  onBack?: () => void;
 }
 
 const CITIES = [
@@ -44,41 +44,35 @@ const DatesStep: React.FC<DatesStepProps> = ({
   onDateChange,
   onCityChange,
   onNext,
+  onBack,
 }) => {
   const [startDate, setStartDate] = useState<Date | null>(formState.startDate);
   const [endDate, setEndDate] = useState<Date | null>(formState.endDate);
   const [city, setCity] = useState(formState.startCity);
   
-  // Calculate minimum end date (day after start date)
   const minEndDate = startDate ? addDays(startDate, 1) : undefined;
   
-  // Update parent component when dates change
   useEffect(() => {
     onDateChange(startDate, endDate);
   }, [startDate, endDate, onDateChange]);
   
-  // Handle start date selection
   const handleStartDateSelect = (date: Date | null) => {
     setStartDate(date);
     
-    // If end date is before new start date, reset it
     if (date && endDate && endDate < date) {
       setEndDate(null);
     }
   };
   
-  // Handle end date selection
   const handleEndDateSelect = (date: Date | null) => {
     setEndDate(date);
   };
   
-  // Handle city selection
   const handleCityChange = (value: string) => {
     setCity(value);
     onCityChange(value);
   };
   
-  // Determine if form is valid to proceed
   const isFormValid = startDate && endDate && city && formState.isDatesValid;
 
   return (
@@ -243,15 +237,22 @@ const DatesStep: React.FC<DatesStepProps> = ({
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <Button 
-          onClick={onNext} 
-          disabled={!isFormValid}
-          className="bg-primary text-white"
-        >
-          Continue
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+      <div className="flex justify-between">
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            Back
+          </Button>
+        )}
+        <div className={onBack ? "" : "ml-auto"}>
+          <Button 
+            onClick={onNext} 
+            disabled={!isFormValid}
+            className="bg-primary text-white"
+          >
+            Continue
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

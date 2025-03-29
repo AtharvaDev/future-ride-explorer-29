@@ -49,6 +49,7 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           email: formState.contactInfo.email,
           phone: formState.contactInfo.phone,
           address: formState.contactInfo.address,
+          startCity: formState.startCity, // Added startCity to contactInfo
         },
         paymentInfo: {
           method: formState.paymentMethod,
