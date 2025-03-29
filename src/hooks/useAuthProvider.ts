@@ -7,20 +7,28 @@ import {
   signInWithPopup,
   updateProfile as firebaseUpdateProfile
 } from 'firebase/auth';
-import { auth, googleProvider } from '@/config/firebase';
+import { auth, googleProvider, db } from '@/config/firebase';
 import { AuthUser } from '@/types/auth';
 import { getUserFromFirebase, updatePhoneNumber, updateProfile } from '@/utils/authUtils';
 import { toast } from 'sonner';
+import { doc, getDoc } from 'firebase/firestore';
 
 export const useAuthProvider = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
-        const userData = await getUserFromFirebase(firebaseUser);
-        setUser(userData);
+        try {
+          const userData = await getUserFromFirebase(firebaseUser);
+          setUser(userData);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -87,6 +95,7 @@ export const useAuthProvider = () => {
       const userData = await getUserFromFirebase(result.user);
       setUser(userData);
       toast.success("Successfully logged in with Google!");
+      return userData;
     } catch (error: any) {
       toast.error(error.message || "Failed to login with Google");
       throw error;
@@ -108,6 +117,23 @@ export const useAuthProvider = () => {
     }
   };
 
+  // Get the latest user data from Firestore
+  const refreshUserData = async () => {
+    if (!user || !auth.currentUser) return null;
+    
+    try {
+      setLoading(true);
+      const userData = await getUserFromFirebase(auth.currentUser);
+      setUser(userData);
+      setLoading(false);
+      return userData;
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      setLoading(false);
+      return null;
+    }
+  };
+
   return {
     user,
     loading,
@@ -116,6 +142,7 @@ export const useAuthProvider = () => {
     signOut,
     isAdmin: user?.role === 'admin',
     updateUserPhone,
-    updateUserProfile
+    updateUserProfile,
+    refreshUserData
   };
 };

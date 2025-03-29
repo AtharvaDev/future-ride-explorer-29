@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import ProgressSteps from './ProgressSteps';
 import DatesStep from './DatesStep';
@@ -9,6 +9,8 @@ import ConfirmationStep from './ConfirmationStep';
 import LoginStep from './LoginStep';
 import { useBookingFormState } from '@/hooks/useBookingFormState';
 import { UpiFormData } from './PaymentStep';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -18,6 +20,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [baseKm] = useState(100); // Base kilometers included in package
+  const { user } = useAuth();
   
   const {
     formState,
@@ -29,21 +32,53 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     setPaymentMethod,
     nextStep,
     prevStep,
-    goToStep
+    goToStep,
+    resetStep
   } = useBookingFormState(car);
+
+  // Reset to step 1 if no user is logged in
+  useEffect(() => {
+    if (!user) {
+      resetStep();
+    }
+  }, [user, resetStep]);
 
   // Handle various step submissions
   const handleLoginWithGoogle = async () => {
-    // In a real app, this would handle Google login
-    setIsLoading(true);
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        nextStep();
-        resolve();
-      }, 1000);
-    });
+    try {
+      setIsLoading(true);
+      // We'll use the actual Firebase authentication in the LoginStep component
+      // Just simulating the login process success here
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setIsLoading(false);
+          if (user) {
+            setLoginMethod('google');
+            nextStep();
+          }
+          resolve();
+        }, 1000);
+      });
+    } catch (error) {
+      setIsLoading(false);
+      toast.error('Login failed. Please try again.');
+      return Promise.reject(error);
+    }
   };
+
+  // Auto-populate contact info when user is available
+  useEffect(() => {
+    if (user && formState.step >= 2) {
+      // Populate contact info from user data
+      setContactInfo({
+        name: user.displayName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        startCity: formState.startCity,
+        specialRequests: ''
+      });
+    }
+  }, [user, formState.step, setContactInfo, formState.startCity]);
 
   const handleContactSubmit = (contactData: any) => {
     setContactInfo(contactData);
@@ -82,16 +117,27 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     goToStep(1);
   };
 
+  // Prevent accessing steps beyond login if not logged in
+  const isStepAccessible = (step: number) => {
+    if (step === 1) return true; // Login step is always accessible
+    return !!user; // Other steps require user to be logged in
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden">
       <ProgressSteps activeStep={formState.step} />
       
       <div className="mt-8">
         {formState.step === 1 && (
-          <LoginStep onLoginWithGoogle={handleLoginWithGoogle} isLoading={isLoading} />
+          <LoginStep 
+            onLoginWithGoogle={handleLoginWithGoogle} 
+            isLoading={isLoading}
+            isLoggedIn={!!user}
+            onContinue={nextStep}
+          />
         )}
         
-        {formState.step === 2 && (
+        {formState.step === 2 && isStepAccessible(2) && (
           <ContactStep 
             initialValues={formState.contactInfo} 
             onSubmit={handleContactSubmit} 
@@ -100,7 +146,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           />
         )}
         
-        {formState.step === 3 && (
+        {formState.step === 3 && isStepAccessible(3) && (
           <DatesStep 
             formState={formState}
             bookingSummary={bookingSummary}
@@ -110,7 +156,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           />
         )}
         
-        {formState.step === 4 && (
+        {formState.step === 4 && isStepAccessible(4) && (
           <PaymentStep 
             tokenAmount={bookingSummary.tokenAmount} 
             onSubmit={handlePaymentSubmit} 
@@ -120,7 +166,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           />
         )}
         
-        {formState.step === 5 && (
+        {formState.step === 5 && isStepAccessible(5) && (
           <ConfirmationStep
             formState={formState}
             bookingSummary={bookingSummary}

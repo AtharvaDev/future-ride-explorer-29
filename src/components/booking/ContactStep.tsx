@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { BookingContactInfo } from '@/types/booking';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -32,11 +33,13 @@ export type ContactFormData = z.infer<typeof formSchema>;
 interface ContactStepProps {
   initialValues?: Partial<ContactFormData>;
   onSubmit: (data: BookingContactInfo) => void;
-  onBack: () => void;
+  onBack?: () => void;
   isLoading?: boolean;
 }
 
 const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBack, isLoading = false }) => {
+  const { user, updateUserPhone } = useAuth();
+  
   const form = useForm<ContactFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,6 +65,27 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
       }
     }
   }, [initialValues, form]);
+  
+  // Fetch additional user data if needed
+  useEffect(() => {
+    if (user && !initialValues?.phone && user.phone) {
+      form.setValue('phone', user.phone);
+    }
+  }, [user, form, initialValues]);
+
+  const handleSubmit = async (data: ContactFormData) => {
+    // If user is logged in and phone number has changed, update it in their profile
+    if (user && user.phone !== data.phone) {
+      try {
+        await updateUserPhone(data.phone);
+      } catch (error) {
+        console.error("Failed to update phone number:", error);
+        // Continue with submission even if profile update fails
+      }
+    }
+    
+    onSubmit(data);
+  };
 
   return (
     <div className="step-container space-y-6">
@@ -73,7 +97,7 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
       </div>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"
@@ -151,11 +175,13 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
           />
           
           <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-            <Button type="submit" disabled={isLoading}>
+            {onBack && (
+              <Button type="button" variant="outline" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+            )}
+            <Button type="submit" disabled={isLoading} className={onBack ? "" : "ml-auto"}>
               {isLoading ? "Saving..." : "Continue"}
             </Button>
           </div>

@@ -44,6 +44,8 @@ export const getUserFromFirebase = async (firebaseUser: User): Promise<AuthUser 
         role,
         createdAt: new Date()
       });
+
+      toast.success("Welcome to FutureRide! Your account has been created.");
     }
     
     // Initialize user's bookings collection
@@ -52,6 +54,9 @@ export const getUserFromFirebase = async (firebaseUser: User): Promise<AuthUser 
     return userData as AuthUser;
   } catch (error) {
     console.error("Error getting user data:", error);
+    toast.error("Failed to load user data. Please try again.");
+    
+    // Return basic user info even if there's an error
     return {
       uid: firebaseUser.uid,
       email: firebaseUser.email,

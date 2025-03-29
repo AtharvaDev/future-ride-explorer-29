@@ -1,19 +1,15 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Car } from '@/data/cars';
 import { differenceInDays } from 'date-fns';
+import { BookingContactInfo } from '@/types/booking';
 
 export interface BookingFormState {
   step: number;
   startDate: Date | null;
   endDate: Date | null;
   startCity: string;
-  contactInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
+  contactInfo: BookingContactInfo;
   loginMethod: 'google' | 'email' | null;
   paymentMethod: string;
   totalDays: number;
@@ -41,7 +37,8 @@ export function useBookingFormState(car: Car) {
       name: '',
       email: '',
       phone: '',
-      address: '',
+      startCity: 'Bangalore',
+      specialRequests: '',
     },
     loginMethod: null,
     paymentMethod: 'creditCard',
@@ -114,7 +111,7 @@ export function useBookingFormState(car: Car) {
     }));
   };
 
-  const setContactInfo = (contactInfo: BookingFormState['contactInfo']) => {
+  const setContactInfo = (contactInfo: BookingContactInfo) => {
     setFormState(prev => ({
       ...prev,
       contactInfo,
@@ -156,6 +153,14 @@ export function useBookingFormState(car: Car) {
     }));
   };
 
+  // Reset to step 1
+  const resetStep = useCallback(() => {
+    setFormState(prev => ({
+      ...prev,
+      step: 1,
+    }));
+  }, []);
+
   return {
     formState,
     bookingSummary,
@@ -167,6 +172,7 @@ export function useBookingFormState(car: Car) {
     nextStep,
     prevStep,
     goToStep,
+    resetStep
   };
 }
 
