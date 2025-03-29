@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,14 +42,13 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
         userId: user?.uid || 'guest',
         startDate: formState.startDate,
         endDate: formState.endDate,
-        startCity: formState.startCity,
+        startCity: formState.contactInfo.startCity,
         status: 'confirmed',
         contactInfo: {
           name: formState.contactInfo.name,
           email: formState.contactInfo.email,
           phone: formState.contactInfo.phone,
-          address: formState.contactInfo.address,
-          startCity: formState.startCity,
+          startCity: formState.contactInfo.startCity,
           specialRequests: formState.contactInfo.specialRequests || '',
         },
         paymentInfo: {
@@ -119,8 +119,8 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                   <p className="font-medium">₹{bookingSummary.dailyRate}/day</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Mileage Fee</p>
-                  <p className="font-medium">₹{car.pricePerKm}/km</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Extra KM Rate</p>
+                  <p className="font-medium">₹{bookingSummary.extraKmRate}/km after {bookingSummary.baseKm} km</p>
                 </div>
               </div>
             </div>
@@ -161,7 +161,7 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                 <p className="text-sm text-gray-500 dark:text-gray-400">Pickup Location</p>
                 <div className="flex items-center">
                   <Map className="w-4 h-4 mr-1 text-primary" />
-                  <p className="font-medium">{formState.startCity}</p>
+                  <p className="font-medium">{formState.contactInfo.startCity}</p>
                 </div>
               </div>
             </div>
@@ -193,10 +193,6 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                   <p className="font-medium">{formState.contactInfo.phone}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
-                <p className="font-medium">{formState.contactInfo.address}</p>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -212,17 +208,17 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                 <p className="text-gray-500 dark:text-gray-400">Rental ({bookingSummary.totalDays} days × ₹{bookingSummary.dailyRate})</p>
                 <p>₹{bookingSummary.subtotal.toFixed(2)}</p>
               </div>
-              <div className="flex justify-between">
-                <p className="text-gray-500 dark:text-gray-400">Tax (18% GST)</p>
-                <p>₹{bookingSummary.tax.toFixed(2)}</p>
-              </div>
               <div className="border-t my-2"></div>
               <div className="flex justify-between font-semibold">
                 <p>Total Amount</p>
                 <p>₹{bookingSummary.totalAmount.toFixed(2)}</p>
               </div>
+              <div className="flex justify-between mt-2">
+                <p className="text-sm text-gray-500">Extra KM charges</p>
+                <p className="text-sm">₹{bookingSummary.extraKmRate}/km after {bookingSummary.baseKm} km</p>
+              </div>
               <div className="flex justify-between mt-4 pt-4 border-t">
-                <p className="text-primary font-medium">Token Amount (20%)</p>
+                <p className="text-primary font-medium">Token Amount</p>
                 <p className="text-primary font-semibold">₹{bookingSummary.tokenAmount.toFixed(2)}</p>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">

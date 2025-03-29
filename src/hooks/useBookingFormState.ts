@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Car } from '@/data/cars';
 import { differenceInDays } from 'date-fns';
@@ -15,15 +16,18 @@ export interface BookingFormState {
   totalAmount: number;
   tokenAmount: number;
   isDatesValid: boolean;
+  baseKm: number;
+  extraKmRate: number;
 }
 
 export interface BookingSummary {
   totalDays: number;
   dailyRate: number;
   subtotal: number;
-  tax: number;
   totalAmount: number;
   tokenAmount: number;
+  baseKm: number;
+  extraKmRate: number;
 }
 
 export function useBookingFormState(car: Car) {
@@ -37,24 +41,26 @@ export function useBookingFormState(car: Car) {
       email: '',
       phone: '',
       startCity: 'Bangalore',
-      address: '',
       specialRequests: '',
     },
     loginMethod: null,
     paymentMethod: 'creditCard',
     totalDays: 0,
     totalAmount: 0,
-    tokenAmount: 0,
+    tokenAmount: 1000, // Fixed token amount of 1000 Rs
     isDatesValid: false,
+    baseKm: 100,
+    extraKmRate: car.pricePerKm || 10,
   });
 
   const [bookingSummary, setBookingSummary] = useState<BookingSummary>({
     totalDays: 0,
     dailyRate: car.pricePerDay,
     subtotal: 0,
-    tax: 0,
     totalAmount: 0,
-    tokenAmount: 0,
+    tokenAmount: 1000, // Fixed token amount of 1000 Rs
+    baseKm: 100,
+    extraKmRate: car.pricePerKm || 10,
   });
 
   useEffect(() => {
@@ -64,24 +70,23 @@ export function useBookingFormState(car: Car) {
       
       if (isDatesValid) {
         const subtotal = days * car.pricePerDay;
-        const tax = subtotal * 0.18;
-        const totalAmount = subtotal + tax;
-        const tokenAmount = totalAmount * 0.2;
+        const totalAmount = subtotal; // No tax calculation
         
         setBookingSummary({
           totalDays: days,
           dailyRate: car.pricePerDay,
           subtotal,
-          tax,
           totalAmount,
-          tokenAmount,
+          tokenAmount: 1000, // Fixed token amount of 1000 Rs
+          baseKm: 100,
+          extraKmRate: car.pricePerKm || 10,
         });
         
         setFormState(prev => ({
           ...prev,
           totalDays: days,
           totalAmount,
-          tokenAmount,
+          tokenAmount: 1000, // Fixed token amount of 1000 Rs
           isDatesValid,
         }));
       } else {
@@ -91,7 +96,7 @@ export function useBookingFormState(car: Car) {
         }));
       }
     }
-  }, [formState.startDate, formState.endDate, car.pricePerDay]);
+  }, [formState.startDate, formState.endDate, car.pricePerDay, car.pricePerKm]);
 
   const setDates = (startDate: Date | null, endDate: Date | null) => {
     setFormState(prev => ({

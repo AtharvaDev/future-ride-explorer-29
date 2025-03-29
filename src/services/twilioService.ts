@@ -17,11 +17,11 @@ interface TwilioEmailOptions {
 
 // Mock Twilio configuration
 const TWILIO_CONFIG = {
-  accountSid: process.env.TWILIO_ACCOUNT_SID || 'mock-account-sid',
-  authToken: process.env.TWILIO_AUTH_TOKEN || 'mock-auth-token',
-  whatsappFrom: process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886', // Default Twilio sandbox number
-  smsFrom: process.env.TWILIO_SMS_FROM || '+15005550006', // Default Twilio test number
-  emailFrom: process.env.TWILIO_EMAIL_FROM || 'noreply@yourapp.com'
+  accountSid: 'mock-account-sid',
+  authToken: 'mock-auth-token',
+  whatsappFrom: 'whatsapp:+14155238886', // Default Twilio sandbox number
+  smsFrom: '+15005550006', // Default Twilio test number
+  emailFrom: 'noreply@yourapp.com'
 };
 
 /**

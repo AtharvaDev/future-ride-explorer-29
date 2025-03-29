@@ -20,7 +20,6 @@ interface BookingFormContainerProps {
 const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [baseKm] = useState(100);
   const { user } = useAuth();
   
   const {
@@ -76,7 +75,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         email: user.email || '',
         phone: user.phone || '',
         startCity: formState.startCity,
-        address: '', // Add empty address field
         specialRequests: ''
       });
     }
@@ -84,6 +82,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
 
   const handleContactSubmit = (contactData: BookingContactInfo) => {
     setContactInfo(contactData);
+    // Set the startCity from the contact form
+    setStartCity(contactData.startCity);
     nextStep();
   };
 
@@ -153,7 +153,6 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             formState={formState}
             bookingSummary={bookingSummary}
             onDateChange={setDates}
-            onCityChange={setStartCity}
             onNext={handleDatesSubmit}
             onBack={handleBackStep}
           />

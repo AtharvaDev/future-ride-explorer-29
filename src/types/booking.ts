@@ -18,7 +18,6 @@ export interface BookingContactInfo {
   email: string;
   phone: string;
   startCity: string;
-  address: string;
   specialRequests?: string;
 }
 

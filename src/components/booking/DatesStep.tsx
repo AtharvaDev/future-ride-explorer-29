@@ -1,11 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, addDays } from 'date-fns';
-import { ArrowRight, Calendar as CalendarIcon, Clock, Map } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowRight, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookingFormState } from '@/hooks/useBookingFormState';
 
@@ -15,40 +15,25 @@ interface DatesStepProps {
     totalDays: number;
     dailyRate: number;
     subtotal: number;
-    tax: number;
     totalAmount: number;
     tokenAmount: number;
+    baseKm: number;
+    extraKmRate: number;
   };
   onDateChange: (startDate: Date | null, endDate: Date | null) => void;
-  onCityChange: (city: string) => void;
   onNext: () => void;
   onBack?: () => void;
 }
-
-const CITIES = [
-  "Bangalore",
-  "Mumbai",
-  "Delhi",
-  "Chennai",
-  "Hyderabad",
-  "Kolkata",
-  "Pune",
-  "Ahmedabad",
-  "Jaipur",
-  "Kochi",
-];
 
 const DatesStep: React.FC<DatesStepProps> = ({
   formState,
   bookingSummary,
   onDateChange,
-  onCityChange,
   onNext,
   onBack,
 }) => {
   const [startDate, setStartDate] = useState<Date | null>(formState.startDate);
   const [endDate, setEndDate] = useState<Date | null>(formState.endDate);
-  const [city, setCity] = useState(formState.startCity);
   
   const minEndDate = startDate ? addDays(startDate, 1) : undefined;
   
@@ -68,19 +53,14 @@ const DatesStep: React.FC<DatesStepProps> = ({
     setEndDate(date);
   };
   
-  const handleCityChange = (value: string) => {
-    setCity(value);
-    onCityChange(value);
-  };
-  
-  const isFormValid = startDate && endDate && city && formState.isDatesValid;
+  const isFormValid = startDate && endDate && formState.isDatesValid;
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold mb-2">Select Trip Dates</h2>
         <p className="text-gray-500 dark:text-gray-400">
-          Choose your pickup location and rental period
+          Choose your rental period
         </p>
       </div>
 
@@ -88,23 +68,6 @@ const DatesStep: React.FC<DatesStepProps> = ({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Pickup Location</label>
-                <Select
-                  value={city}
-                  onValueChange={handleCityChange}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CITIES.map((cityName) => (
-                      <SelectItem key={cityName} value={cityName}>{cityName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Start Date</label>
@@ -180,15 +143,7 @@ const DatesStep: React.FC<DatesStepProps> = ({
             <h3 className="text-lg font-semibold mb-4">Trip Summary</h3>
             
             {startDate && endDate && formState.isDatesValid ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Map className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Pickup Location</p>
-                    <p className="font-medium">{city}</p>
-                  </div>
-                </div>
-                
+              <div className="space-y-4">                
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5 text-primary" />
                   <div>
@@ -213,16 +168,20 @@ const DatesStep: React.FC<DatesStepProps> = ({
                     <p>₹{bookingSummary.dailyRate}/day</p>
                   </div>
                   <div className="flex justify-between my-1">
-                    <p className="text-gray-500 dark:text-gray-400">Subtotal</p>
+                    <p className="text-gray-500 dark:text-gray-400">Subtotal ({bookingSummary.totalDays} days)</p>
                     <p>₹{bookingSummary.subtotal.toFixed(2)}</p>
                   </div>
-                  <div className="flex justify-between my-1">
-                    <p className="text-gray-500 dark:text-gray-400">Tax (18%)</p>
-                    <p>₹{bookingSummary.tax.toFixed(2)}</p>
-                  </div>
                   <div className="flex justify-between font-semibold pt-2 border-t mt-2">
-                    <p>Total</p>
+                    <p>Total Amount</p>
                     <p>₹{bookingSummary.totalAmount.toFixed(2)}</p>
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    <p className="text-sm text-gray-500">Extra KM charges</p>
+                    <p className="text-sm">₹{bookingSummary.extraKmRate}/km after {bookingSummary.baseKm} km</p>
+                  </div>
+                  <div className="flex justify-between mt-4 pt-2 border-t">
+                    <p className="text-primary font-medium">Token Amount</p>
+                    <p className="text-primary font-semibold">₹{bookingSummary.tokenAmount.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
