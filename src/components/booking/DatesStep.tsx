@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, CalendarIcon, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -18,6 +18,7 @@ interface DatesStepProps {
   totalCost?: number;
   tokenAmount?: number;
   onBack?: () => void;
+  isLoading?: boolean;
 }
 
 const DatesStep: React.FC<DatesStepProps> = ({
@@ -26,16 +27,31 @@ const DatesStep: React.FC<DatesStepProps> = ({
   endDate,
   numberOfDays = 0,
   totalCost = 0,
-  tokenAmount = 0,
+  tokenAmount = 1000,
   onSubmit,
-  onBack
+  onBack,
+  isLoading = false
 }) => {
   // Use the DateRange type for date selection
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
     startDate && endDate 
       ? { from: startDate, to: endDate } 
       : undefined
   );
+  
+  const [calculatedDays, setCalculatedDays] = useState(numberOfDays);
+  const [calculatedCost, setCalculatedCost] = useState(totalCost);
+  
+  // Calculate number of days and total cost when date range changes
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to && car) {
+      const days = Math.max(1, differenceInDays(dateRange.to, dateRange.from) + 1);
+      setCalculatedDays(days);
+      
+      const cost = days * car.pricePerDay;
+      setCalculatedCost(cost);
+    }
+  }, [dateRange, car]);
 
   const handleSubmit = () => {
     if (dateRange?.from && dateRange?.to) {
@@ -99,7 +115,7 @@ const DatesStep: React.FC<DatesStepProps> = ({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-                <span>{numberOfDays} {numberOfDays === 1 ? 'day' : 'days'}</span>
+                <span>{calculatedDays} {calculatedDays === 1 ? 'day' : 'days'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
@@ -119,11 +135,11 @@ const DatesStep: React.FC<DatesStepProps> = ({
               </div>
               <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <span>Total:</span>
-                <span>₹{totalCost.toLocaleString()}</span>
+                <span>₹{calculatedCost.toLocaleString()}</span>
               </div>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              * A token amount of ₹1,000 is required to confirm your booking.
+              * A token amount of ₹{tokenAmount.toLocaleString()} is required to confirm your booking.
             </p>
           </div>
         )}
@@ -139,9 +155,9 @@ const DatesStep: React.FC<DatesStepProps> = ({
         
         <Button 
           onClick={handleSubmit}
-          disabled={!dateRange?.from || !dateRange?.to}
+          disabled={!dateRange?.from || !dateRange?.to || isLoading}
         >
-          Continue to Payment
+          {isLoading ? "Processing..." : "Continue to Payment"}
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>

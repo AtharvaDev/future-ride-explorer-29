@@ -22,11 +22,13 @@ export interface BookingContactInfo {
 }
 
 export interface BookingPaymentInfo {
-  paymentMethod: 'upi' | 'card' | 'cash';
+  paymentMethod: 'upi' | 'card' | 'cash' | 'razorpay';
   upiId?: string;
+  paymentId?: string;
   tokenAmount: number;
   totalAmount: number;
   isPaid: boolean;
+  paidAt?: Date;
 }
 
 export interface Booking {

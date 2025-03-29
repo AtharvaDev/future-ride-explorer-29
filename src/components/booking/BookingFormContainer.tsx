@@ -21,6 +21,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     tokenAmount,
     totalAmount,
     baseKm,
+    isLoading,
+    paymentMethod,
+    paymentId,
     handleLoginWithGoogle,
     handleContactSubmit,
     handleDatesSubmit,
@@ -35,14 +38,15 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       
       <div className="mt-8">
         {activeStep === 0 && (
-          <LoginStep onLoginWithGoogle={handleLoginWithGoogle} />
+          <LoginStep onLoginWithGoogle={handleLoginWithGoogle} isLoading={isLoading} />
         )}
         
         {activeStep === 1 && (
           <ContactStep 
             initialValues={contactData || undefined} 
             onSubmit={handleContactSubmit} 
-            onBack={activeStep > 1 ? handleBackStep : undefined} 
+            onBack={activeStep > 1 ? handleBackStep : undefined}
+            isLoading={isLoading}
           />
         )}
         
@@ -56,6 +60,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             totalCost={totalAmount}
             tokenAmount={tokenAmount}
             onBack={handleBackStep}
+            isLoading={isLoading}
           />
         )}
         
@@ -63,7 +68,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           <PaymentStep 
             tokenAmount={tokenAmount} 
             onSubmit={handlePaymentSubmit} 
-            onBack={handleBackStep} 
+            onBack={handleBackStep}
+            isLoading={isLoading}
+            contactInfo={contactData || undefined}
           />
         )}
         
@@ -78,6 +85,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             baseKm={baseKm}
             pricePerKm={car.pricePerKm}
             onFinish={handleFinish}
+            contactInfo={contactData || undefined}
+            paymentMethod={paymentMethod}
+            paymentId={paymentId}
           />
         )}
       </div>

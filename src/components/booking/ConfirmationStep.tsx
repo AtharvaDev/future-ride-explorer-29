@@ -3,9 +3,9 @@ import React from 'react';
 import { format } from 'date-fns';
 import { Car } from '@/data/cars';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Calendar, Check, Info, Share2 } from 'lucide-react';
-import { openWhatsAppWithBookingDetails } from '@/services/notificationService';
+import { Check, Download, WhatsApp } from 'lucide-react';
+import { generateBookingReceipt } from '@/services/pdfService';
+import { BookingNotificationDetails } from '@/services/notificationService';
 
 interface ConfirmationStepProps {
   car: Car;
@@ -14,9 +14,16 @@ interface ConfirmationStepProps {
   numDays: number;
   tokenAmount: number;
   totalAmount: number;
-  baseKm?: number;
-  pricePerKm?: number;
+  baseKm: number;
+  pricePerKm: number;
   onFinish: () => void;
+  contactInfo?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  paymentMethod?: string;
+  paymentId?: string;
 }
 
 const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
@@ -26,105 +33,126 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   numDays,
   tokenAmount,
   totalAmount,
-  baseKm = 200,
+  baseKm,
   pricePerKm,
   onFinish,
+  contactInfo,
+  paymentMethod = 'upi',
+  paymentId
 }) => {
-  const handleShareViaWhatsApp = () => {
-    const bookingDetails = {
-      customerName: "You", // This is for customer sharing, so we use "You"
+  
+  const handleDownloadReceipt = async () => {
+    if (!contactInfo) return;
+    
+    const bookingDetails: BookingNotificationDetails = {
+      customerName: contactInfo.name,
+      customerEmail: contactInfo.email,
+      customerPhone: contactInfo.phone,
       carModel: car.model,
       carTitle: car.title,
-      startDate: format(startDate, 'PPP'),
-      endDate: format(endDate, 'PPP'),
+      startDate: format(startDate, 'dd MMM yyyy'),
+      endDate: format(endDate, 'dd MMM yyyy'),
       numDays,
       tokenAmount,
       totalAmount,
-      customerPhone: "" // We don't include phone number when customer is sharing
+      paymentMethod,
+      paymentId
     };
     
-    openWhatsAppWithBookingDetails(bookingDetails);
+    await generateBookingReceipt(bookingDetails);
   };
-
+  
+  const handleWhatsAppSupport = () => {
+    // Basic WhatsApp support link
+    const message = encodeURIComponent(
+      `Hello, I've just booked a ${car.model} ${car.title} (Booking Reference: ${paymentId || 'Pending'}). I have a question about my booking.`
+    );
+    const supportNumber = "+919876543210"; // Replace with actual support number
+    window.open(`https://api.whatsapp.com/send?phone=${supportNumber}&text=${message}`, '_blank');
+  };
+  
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
-          <Check className="w-8 h-8" />
+    <div className="step-container space-y-6">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
         </div>
-        <h3 className="text-2xl font-bold mb-2">Booking Confirmed!</h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          Thank you for booking with us. Your car is reserved.
+        <h3 className="text-2xl font-bold">Booking Confirmed!</h3>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
+          Your booking has been successfully confirmed. Thank you for choosing Future Ride.
         </p>
       </div>
       
-      <Card className="p-4 bg-gray-50 dark:bg-gray-800/50">
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+        <h4 className="font-medium text-lg mb-4">Booking Summary</h4>
+        
         <div className="space-y-4">
-          <div className="flex justify-between items-center border-b pb-3">
-            <div className="font-medium">Car Details</div>
-            <div>{car.model} {car.title}</div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="font-medium">Pick-up Date</div>
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1 text-primary" />
-              {format(startDate, 'PPP')}
+          <div className="flex items-center gap-4">
+            <img src={car.image} alt={car.title} className="w-20 h-20 object-contain" />
+            <div>
+              <h5 className="font-medium">{car.model} {car.title}</h5>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{format(startDate, 'dd MMM yyyy')} - {format(endDate, 'dd MMM yyyy')}</p>
             </div>
           </div>
           
-          <div className="flex justify-between items-center">
-            <div className="font-medium">Return Date</div>
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1 text-primary" />
-              {format(endDate, 'PPP')}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Duration:</span>
+              <span>{numDays} {numDays === 1 ? 'day' : 'days'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
+              <span>₹{car.pricePerDay.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Included kilometers:</span>
+              <span>{baseKm} km/day</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Extra km rate:</span>
+              <span>₹{pricePerKm}/km</span>
+            </div>
+            <div className="flex justify-between text-green-600 dark:text-green-400 font-medium">
+              <span>Token amount paid:</span>
+              <span>₹{tokenAmount.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
+              <span>Balance due at pickup:</span>
+              <span>₹{(totalAmount - tokenAmount).toLocaleString()}</span>
             </div>
           </div>
           
-          <div className="flex justify-between items-center">
-            <div className="font-medium">Duration</div>
-            <div>{numDays} {numDays === 1 ? 'day' : 'days'}</div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="font-medium">Daily Rate</div>
-            <div>₹{car.pricePerDay.toLocaleString()}</div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="font-medium">Booking Amount (Paid)</div>
-            <div className="text-green-600 font-medium">₹{tokenAmount.toLocaleString()}</div>
-          </div>
-          
-          <div className="flex justify-between items-center border-t pt-3">
-            <div className="font-bold">Total Estimated Cost</div>
-            <div className="font-bold text-lg">₹{totalAmount.toLocaleString()}</div>
-          </div>
-        </div>
-      </Card>
-      
-      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex">
-        <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5 mr-3" />
-        <div>
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            <span className="font-medium">Important Information:</span> Your booking includes {baseKm} km per day. 
-            Additional kilometers will be charged at ₹{pricePerKm}/km. The remaining balance (₹{(totalAmount - tokenAmount).toLocaleString()}) 
-            will be collected on delivery.
-          </p>
+          {paymentId && (
+            <div className="text-sm text-gray-500 dark:text-gray-400 pt-2">
+              Payment ID: {paymentId}
+            </div>
+          )}
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row justify-center gap-4 pt-2">
-        <Button onClick={onFinish} className="w-full md:w-auto">
-          View My Bookings
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
         <Button 
-          onClick={handleShareViaWhatsApp} 
           variant="outline" 
-          className="w-full md:w-auto flex items-center gap-2"
+          className="flex items-center gap-2"
+          onClick={handleDownloadReceipt}
         >
-          <Share2 className="h-4 w-4" />
-          Share via WhatsApp
+          <Download className="h-4 w-4" />
+          Download Receipt
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2"
+          onClick={handleWhatsAppSupport}
+        >
+          <WhatsApp className="h-4 w-4" />
+          WhatsApp Support
+        </Button>
+        
+        <Button onClick={onFinish}>
+          View My Bookings
         </Button>
       </div>
     </div>

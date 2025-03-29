@@ -13,8 +13,13 @@ import {
   saveBookingPaymentInfo,
   getBookingById
 } from '@/services/bookingService';
-import { sendWhatsAppNotification } from '@/services/notificationService';
+import { 
+  sendAllNotifications, 
+  sendContactNotification,
+  BookingNotificationDetails
+} from '@/services/notificationService';
 import { UpiFormData } from '@/components/booking/PaymentStep';
+import { differenceInDays } from 'date-fns';
 
 export const useBookingFormState = (car: Car) => {
   const [activeStep, setActiveStep] = useState(0);
@@ -25,9 +30,12 @@ export const useBookingFormState = (car: Car) => {
     numDays: number;
   } | null>(null);
   const [contactData, setContactData] = useState<BookingContactInfo | null>(null);
-  const [tokenAmount, setTokenAmount] = useState(1000); // Fixed token amount of 1000 Rs
+  const [tokenAmount] = useState(1000); // Fixed token amount of 1000 Rs
   const [totalAmount, setTotalAmount] = useState(0);
-  const [baseKm, setBaseKm] = useState(200); // Base 200 km included
+  const [baseKm] = useState(200); // Base 200 km included
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [paymentId, setPaymentId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
   const { user, loading, signInWithGoogle, updateUserPhone } = useAuth();
@@ -48,6 +56,7 @@ export const useBookingFormState = (car: Car) => {
     if (user && !loading) {
       if (bookingId) {
         const fetchBooking = async () => {
+          setIsLoading(true);
           try {
             const booking = await getBookingById(user.uid, bookingId);
             if (booking && booking.contactInfo) {
@@ -63,6 +72,8 @@ export const useBookingFormState = (car: Car) => {
             }
           } catch (error) {
             console.error('Error fetching booking:', error);
+          } finally {
+            setIsLoading(false);
           }
         };
         
@@ -80,16 +91,20 @@ export const useBookingFormState = (car: Car) => {
   }, [user, loading, bookingId, activeStep]);
 
   const handleLoginWithGoogle = async () => {
+    setIsLoading(true);
     try {
       await signInWithGoogle();
       setActiveStep(1); // Move to contact info step after successful login
     } catch (error) {
       console.error('Google login error:', error);
       toast.error('Failed to sign in with Google. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleContactSubmit = async (data: BookingContactInfo) => {
+    setIsLoading(true);
     setContactData(data);
     
     try {
@@ -107,11 +122,14 @@ export const useBookingFormState = (car: Car) => {
           
           const id = await saveBookingBasicInfo(bookingData, user.uid);
           setBookingId(id);
-        } else {
-          // Update existing booking with contact info
+        }
+        
+        // Update existing booking with contact info
+        if (bookingId) {
           await saveBookingContactInfo(bookingId, data, user.uid);
         }
         
+        // Update user's phone number if provided
         if (user && data.phone) {
           try {
             await updateUserPhone(data.phone);
@@ -120,18 +138,26 @@ export const useBookingFormState = (car: Car) => {
           }
         }
         
+        // Send notification to admin about new contact
+        try {
+          await sendContactNotification(data);
+        } catch (notificationError) {
+          console.error('Failed to send contact notification:', notificationError);
+        }
+        
         setActiveStep(2); // Move to dates step
       }
     } catch (error) {
       console.error('Error saving contact info:', error);
       toast.error('Failed to save contact information. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDatesSubmit = async (data: { startDate: Date; endDate: Date }) => {
-    const numDays = Math.ceil(
-      (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    setIsLoading(true);
+    const numDays = Math.max(1, differenceInDays(data.endDate, data.startDate) + 1);
 
     setDatesData({
       startDate: data.startDate,
@@ -156,42 +182,57 @@ export const useBookingFormState = (car: Car) => {
       } catch (error) {
         console.error('Error saving dates:', error);
         toast.error('Failed to save booking dates. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
+    } else {
+      setIsLoading(false);
     }
   };
 
-  const handlePaymentSubmit = async (data: UpiFormData) => {
+  const handlePaymentSubmit = async (data: UpiFormData & { paymentMethod: string, paymentId?: string }) => {
+    setIsLoading(true);
     try {
       if (bookingId && user) {
+        setPaymentMethod(data.paymentMethod);
+        if (data.paymentId) {
+          setPaymentId(data.paymentId);
+        }
+        
         const paymentInfo: BookingPaymentInfo = {
-          paymentMethod: 'upi',
+          paymentMethod: data.paymentMethod as any,
           upiId: data.upiId,
+          paymentId: data.paymentId,
           tokenAmount: tokenAmount,
           totalAmount: totalAmount,
-          isPaid: true
+          isPaid: true,
+          paidAt: new Date()
         };
         
         await saveBookingPaymentInfo(bookingId, paymentInfo, user.uid);
         
-        // Send WhatsApp notification after successful booking
-        if (contactData) {
-          const bookingDetails = {
+        // Send WhatsApp and email notifications after successful booking
+        if (contactData && datesData) {
+          const bookingDetails: BookingNotificationDetails = {
             customerName: contactData.name,
+            customerEmail: contactData.email,
+            customerPhone: contactData.phone,
             carModel: car.model,
             carTitle: car.title,
-            startDate: datesData?.startDate ? datesData.startDate.toLocaleDateString() : '',
-            endDate: datesData?.endDate ? datesData.endDate.toLocaleDateString() : '',
-            numDays: datesData?.numDays || 0,
+            startDate: datesData.startDate.toLocaleDateString(),
+            endDate: datesData.endDate.toLocaleDateString(),
+            numDays: datesData.numDays,
             tokenAmount: tokenAmount,
             totalAmount: totalAmount,
-            customerPhone: contactData.phone
+            paymentMethod: data.paymentMethod,
+            paymentId: data.paymentId
           };
           
           try {
-            await sendWhatsAppNotification(bookingDetails);
-            console.log('WhatsApp notification sent successfully');
+            await sendAllNotifications(bookingDetails);
+            console.log('Notifications sent successfully');
           } catch (notificationError) {
-            console.error('Failed to send WhatsApp notification:', notificationError);
+            console.error('Failed to send notifications:', notificationError);
           }
         }
         
@@ -202,15 +243,17 @@ export const useBookingFormState = (car: Car) => {
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
   const handleBackStep = () => {
-    setActiveStep(activeStep => Math.max(0, activeStep - 1));
+    setActiveStep(prev => Math.max(0, prev - 1));
     
     // Skip login step when going back if user is already logged in
     if (activeStep === 1 && user) {
-      setActiveStep(activeStep => Math.max(0, activeStep - 1));
+      setActiveStep(0);
     }
   };
   
@@ -230,6 +273,9 @@ export const useBookingFormState = (car: Car) => {
     baseKm,
     user,
     loading,
+    isLoading,
+    paymentMethod,
+    paymentId,
     handleLoginWithGoogle,
     handleContactSubmit,
     handleDatesSubmit,

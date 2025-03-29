@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { BookingContactInfo } from '@/services/bookingService';
+import { BookingContactInfo } from '@/types/booking';
+import { toast } from 'sonner';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -32,19 +33,35 @@ interface ContactStepProps {
   initialValues?: Partial<ContactFormData>;
   onSubmit: (data: BookingContactInfo) => void;
   onBack: () => void;
+  isLoading?: boolean;
 }
 
-const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBack }) => {
+const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBack, isLoading = false }) => {
   const form = useForm<ContactFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialValues?.name || "",
-      email: initialValues?.email || "",
-      phone: initialValues?.phone || "",
-      startCity: initialValues?.startCity || "",
-      specialRequests: initialValues?.specialRequests || "",
+      name: "",
+      email: "",
+      phone: "",
+      startCity: "",
+      specialRequests: "",
     },
   });
+
+  // Update form values when initialValues change
+  useEffect(() => {
+    if (initialValues) {
+      Object.entries(initialValues).forEach(([key, value]) => {
+        if (value) {
+          form.setValue(key as keyof ContactFormData, value);
+        }
+      });
+      
+      if (initialValues.name && initialValues.email) {
+        toast.info("Contact information auto-populated from your account");
+      }
+    }
+  }, [initialValues, form]);
 
   return (
     <div className="step-container space-y-6">
@@ -138,8 +155,8 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
             </Button>
-            <Button type="submit">
-              Continue
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Continue"}
             </Button>
           </div>
         </form>
