@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Car } from '@/data/cars';
 import ProgressSteps from './ProgressSteps';
 import DatesStep from './DatesStep';
@@ -14,80 +14,109 @@ interface BookingFormContainerProps {
 }
 
 const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [baseKm] = useState(100); // Base kilometers included in package
+  
   const {
-    activeStep,
-    datesData,
-    contactData,
-    tokenAmount,
-    totalAmount,
-    baseKm,
-    isLoading,
-    paymentMethod,
-    paymentId,
-    handleLoginWithGoogle,
-    handleContactSubmit,
-    handleDatesSubmit,
-    handlePaymentSubmit,
-    handleBackStep,
-    handleFinish
+    formState,
+    bookingSummary,
+    setDates,
+    setStartCity,
+    setContactInfo,
+    setLoginMethod,
+    setPaymentMethod,
+    nextStep,
+    prevStep,
+    goToStep
   } = useBookingFormState(car);
+
+  // Handle various step submissions
+  const handleLoginWithGoogle = () => {
+    // In a real app, this would handle Google login
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      nextStep();
+    }, 1000);
+  };
+
+  const handleContactSubmit = (contactData: any) => {
+    setContactInfo(contactData);
+    nextStep();
+  };
+
+  const handleDatesSubmit = () => {
+    nextStep();
+  };
+
+  const handlePaymentSubmit = (method: string) => {
+    setIsLoading(true);
+    setPaymentMethod(method);
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsLoading(false);
+      setPaymentId("pay_" + Math.random().toString(36).substring(2, 15));
+      nextStep();
+    }, 1500);
+  };
+
+  const handleBackStep = () => {
+    prevStep();
+  };
+
+  const handleFinish = () => {
+    // Implementation for finishing the booking process
+    goToStep(1);
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden">
-      <ProgressSteps activeStep={activeStep} />
+      <ProgressSteps activeStep={formState.step} />
       
       <div className="mt-8">
-        {activeStep === 0 && (
+        {formState.step === 1 && (
           <LoginStep onLoginWithGoogle={handleLoginWithGoogle} isLoading={isLoading} />
         )}
         
-        {activeStep === 1 && (
+        {formState.step === 2 && (
           <ContactStep 
-            initialValues={contactData || undefined} 
+            initialValues={formState.contactInfo} 
             onSubmit={handleContactSubmit} 
-            onBack={activeStep > 1 ? handleBackStep : undefined}
+            onBack={formState.step > 1 ? handleBackStep : undefined}
             isLoading={isLoading}
           />
         )}
         
-        {activeStep === 2 && (
+        {formState.step === 3 && (
           <DatesStep 
-            car={car}
             onSubmit={handleDatesSubmit}
-            startDate={datesData?.startDate}
-            endDate={datesData?.endDate}
-            numberOfDays={datesData?.numDays || 0}
-            totalCost={totalAmount}
-            tokenAmount={tokenAmount}
+            startDate={formState.startDate}
+            endDate={formState.endDate}
+            numberOfDays={bookingSummary.totalDays}
+            totalCost={bookingSummary.totalAmount}
+            tokenAmount={bookingSummary.tokenAmount}
             onBack={handleBackStep}
             isLoading={isLoading}
           />
         )}
         
-        {activeStep === 3 && (
+        {formState.step === 4 && (
           <PaymentStep 
-            tokenAmount={tokenAmount} 
+            tokenAmount={bookingSummary.tokenAmount} 
             onSubmit={handlePaymentSubmit} 
             onBack={handleBackStep}
             isLoading={isLoading}
-            contactInfo={contactData || undefined}
+            contactInfo={formState.contactInfo}
           />
         )}
         
-        {activeStep === 4 && datesData && (
+        {formState.step === 5 && (
           <ConfirmationStep
-            car={car}
-            startDate={datesData.startDate}
-            endDate={datesData.endDate}
-            numDays={datesData.numDays}
-            tokenAmount={tokenAmount}
-            totalAmount={totalAmount}
-            baseKm={baseKm}
-            pricePerKm={car.pricePerKm}
-            onFinish={handleFinish}
-            contactInfo={contactData || undefined}
-            paymentMethod={paymentMethod}
-            paymentId={paymentId}
+            formState={formState}
+            bookingSummary={bookingSummary}
+            car={car} 
+            onPrevious={handleBackStep}
           />
         )}
       </div>

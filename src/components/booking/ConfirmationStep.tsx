@@ -6,22 +6,15 @@ import { format } from 'date-fns';
 import { ArrowLeft, CheckCircle, Clock, Calendar, Car, Map, Phone, Mail, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { createBooking } from '@/services/bookingService';
+import { createBooking } from '@/services/booking/createBookingService';
 import { Car as CarType } from '@/data/cars';
-import { BookingFormState } from '@/hooks/useBookingFormState';
+import { BookingFormState, BookingSummary } from '@/hooks/useBookingFormState';
 import { toast } from 'sonner';
 import { sendBookingConfirmation } from '@/services/notificationService';
 
 interface ConfirmationStepProps {
   formState: BookingFormState;
-  bookingSummary: {
-    totalDays: number;
-    dailyRate: number;
-    subtotal: number;
-    tax: number;
-    totalAmount: number;
-    tokenAmount: number;
-  };
+  bookingSummary: BookingSummary;
   car: CarType;
   onPrevious: () => void;
 }
@@ -65,15 +58,20 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           paidAt: new Date(),
         },
         createdAt: new Date(),
+        car: {
+          id: car.id,
+          name: car.title,
+          image: car.image,
+          pricePerDay: car.pricePerDay
+        }
       };
 
       const newBooking = await createBooking(bookingData);
       
       // Send confirmation notifications
       await sendBookingConfirmation({
-        ...bookingData,
         id: newBooking.id,
-        car: car
+        ...bookingData
       }, user);
       
       toast.success('Booking confirmed successfully!');

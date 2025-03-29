@@ -145,7 +145,7 @@ export function useBookingFormState(car: Car) {
   const prevStep = () => {
     setFormState(prev => ({
       ...prev,
-      step: prev.step - 1,
+      step: Math.max(1, prev.step - 1),
     }));
   };
 

@@ -5,3 +5,5 @@ export * from '@/services/booking/draftBookingService';
 export * from '@/services/booking/paymentService';
 export * from '@/services/booking/bookingQueries';
 export * from '@/services/booking/bookingManagement';
+export * from '@/services/booking/createBookingService';
+
