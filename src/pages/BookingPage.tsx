@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -20,6 +19,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const [videoOpen, setVideoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const bookingFormRef = useRef<HTMLDivElement>(null);
 
   // Fetch all cars
   const { data: cars = [], isLoading: carsLoading } = useQuery({
@@ -71,6 +71,16 @@ const BookingPage = () => {
     };
   }, [carId, cars, navigate]);
 
+  // Add scroll to booking form function
+  const scrollToBookingForm = () => {
+    if (bookingFormRef.current) {
+      bookingFormRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   const handleWatchVideo = () => {
     setLoading(true);
     setVideoOpen(true);
@@ -79,6 +89,11 @@ const BookingPage = () => {
     setTimeout(() => {
       setLoading(false);
     }, 1500);
+  };
+
+  // Update CarSection component to pass the scroll function
+  const handleBookNowClick = () => {
+    scrollToBookingForm();
   };
 
   if (carsLoading || !selectedCar) {
@@ -111,7 +126,8 @@ const BookingPage = () => {
           image={selectedCar.image}
           color={selectedCar.color}
           features={selectedCar.features}
-          index={carId || "0"} // Fix: Convert to string explicitly
+          index={carId || "0"}
+          onBookNow={handleBookNowClick}
         />
       </Card>
       <main className="flex-grow">
@@ -160,7 +176,7 @@ const BookingPage = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-8 booking-container">
+            <div ref={bookingFormRef} className="lg:col-span-8 booking-container">
               <BookingForm car={selectedCar} />
             </div>
           </div>

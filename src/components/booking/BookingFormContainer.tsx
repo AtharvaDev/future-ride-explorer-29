@@ -84,6 +84,50 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     }
   }, [user, loading, bookingId]);
 
+  // Contact info submission now happens first
+  const handleContactSubmit = async (data: BookingContactInfo) => {
+    setContactData(data);
+    
+    try {
+      if (user) {
+        // Create a new booking if one doesn't exist
+        if (!bookingId) {
+          const bookingData: BookingBasicInfo = {
+            carId: car.id,
+            startDate: new Date(),
+            endDate: new Date(),
+            startCity: data.startCity,
+            status: 'draft',
+            userId: user.uid
+          };
+          
+          const id = await saveBookingBasicInfo(bookingData, user.uid);
+          setBookingId(id);
+        } else {
+          // Update existing booking with contact info
+          await saveBookingContactInfo(bookingId, data, user.uid);
+        }
+        
+        if (user && data.phone) {
+          try {
+            await updateUserPhone(data.phone);
+          } catch (phoneError) {
+            console.error('Error updating user phone:', phoneError);
+          }
+        }
+        
+        setActiveStep(1);
+      } else {
+        // If not logged in, we'll show the login prompt in the UI
+        // but we won't advance the step until they log in
+      }
+    } catch (error) {
+      console.error('Error saving contact info:', error);
+      toast.error('Failed to save contact information. Please try again.');
+    }
+  };
+
+  // Date selection happens in the second step now
   const handleDatesSubmit = async (data: { startDate: Date; endDate: Date }) => {
     const numDays = Math.ceil(
       (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -95,9 +139,10 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       numDays,
     });
 
-    if (user) {
+    if (user && bookingId) {
       try {
         const bookingData: BookingBasicInfo = {
+          id: bookingId,
           carId: car.id,
           startDate: data.startDate,
           endDate: data.endDate,
@@ -106,55 +151,12 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           userId: user.uid
         };
         
-        const id = await saveBookingBasicInfo(bookingData, user.uid);
-        setBookingId(id);
-        
-        setActiveStep(1);
+        await saveBookingBasicInfo(bookingData, user.uid);
+        setActiveStep(2);
       } catch (error) {
         console.error('Error saving dates:', error);
         toast.error('Failed to save booking dates. Please try again.');
       }
-    } else {
-      // If not logged in, we'll show the login prompt in the UI
-      // but we won't advance the step until they log in
-    }
-  };
-
-  const handleContactSubmit = async (data: BookingContactInfo) => {
-    setContactData(data);
-    
-    try {
-      if (bookingId && user) {
-        await saveBookingContactInfo(bookingId, data, user.uid);
-        
-        await saveBookingBasicInfo(
-          {
-            id: bookingId,
-            carId: car.id,
-            startDate: datesData!.startDate,
-            endDate: datesData!.endDate,
-            startCity: data.startCity,
-            status: 'draft',
-            userId: user.uid
-          },
-          user.uid
-        );
-        
-        if (user && data.phone) {
-          try {
-            await updateUserPhone(data.phone);
-          } catch (phoneError) {
-            console.error('Error updating user phone:', phoneError);
-          }
-        }
-        
-        setActiveStep(2);
-      } else {
-        toast.error('Booking not found. Please start again.');
-      }
-    } catch (error) {
-      console.error('Error saving contact info:', error);
-      toast.error('Failed to save contact information. Please try again.');
     }
   };
 
@@ -221,27 +223,28 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       <div className="mt-8">
         {activeStep === 0 && (
           <>
-            <DatesStep 
-              car={car}
-              onSubmit={handleDatesSubmit}
-              startDate={datesData?.startDate}
-              endDate={datesData?.endDate}
-              numberOfDays={datesData?.numDays || 0}
-              totalCost={totalAmount}
-              tokenAmount={tokenAmount}
+            <ContactStep 
+              initialValues={contactData || undefined} 
+              onSubmit={handleContactSubmit} 
+              onBack={activeStep > 0 ? handleBackStep : undefined} 
             />
             
-            {!user && !loading && datesData && (
+            {!user && !loading && (
               <LoginPrompt />
             )}
           </>
         )}
         
         {activeStep === 1 && (
-          <ContactStep 
-            initialValues={contactData || undefined} 
-            onSubmit={handleContactSubmit} 
-            onBack={handleBackStep} 
+          <DatesStep 
+            car={car}
+            onSubmit={handleDatesSubmit}
+            startDate={datesData?.startDate}
+            endDate={datesData?.endDate}
+            numberOfDays={datesData?.numDays || 0}
+            totalCost={totalAmount}
+            tokenAmount={tokenAmount}
+            onBack={handleBackStep}
           />
         )}
         

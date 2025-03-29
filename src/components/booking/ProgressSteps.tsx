@@ -5,18 +5,18 @@ import { cn } from "@/lib/utils";
 export type BookingStep = 'contact' | 'dates' | 'payment' | 'confirmation';
 
 interface ProgressStepsProps {
-  activeStep: number; // Changed from currentStep to activeStep
+  activeStep: number;
 }
 
 const ProgressSteps: React.FC<ProgressStepsProps> = ({ activeStep }) => {
-  // Get the step name based on index
+  // Updated step order: contact, dates, payment, confirmation
   const getStepName = (index: number): BookingStep => {
     switch(index) {
-      case 0: return 'dates';
-      case 1: return 'contact';
+      case 0: return 'contact';
+      case 1: return 'dates';
       case 2: return 'payment';
       case 3: return 'confirmation';
-      default: return 'dates';
+      default: return 'contact';
     }
   };
 
