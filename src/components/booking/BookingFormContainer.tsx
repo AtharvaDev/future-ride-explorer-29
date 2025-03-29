@@ -169,7 +169,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           isPaid: true
         };
         
-        await saveBookingPaymentInfo(bookingId, user.uid, paymentInfo);
+        // Fixed: Correct order of parameters - bookingId, paymentInfo, user.uid
+        await saveBookingPaymentInfo(bookingId, paymentInfo, user.uid);
         
         // Send WhatsApp notification after successful booking
         if (contactData) {
