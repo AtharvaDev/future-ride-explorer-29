@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -218,11 +217,11 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   };
   
   const handleBackStep = () => {
-    setActiveStep(prevStep => Math.max(0, prevStep - 1));
+    setActiveStep(activeStep => Math.max(0, activeStep - 1));
     
     // Skip login step when going back if user is already logged in
-    if (prevStep === 1 && user) {
-      setActiveStep(prevStep => Math.max(0, prevStep - 1));
+    if (activeStep === 1 && user) {
+      setActiveStep(activeStep => Math.max(0, activeStep - 1));
     }
   };
   
