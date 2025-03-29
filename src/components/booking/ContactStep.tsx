@@ -52,11 +52,11 @@ const ContactStep: React.FC<ContactStepProps> = ({ initialValues, onSubmit, onBa
     },
   });
 
-  // Update form values when initialValues change
+  // Update form values when initialValues change, except for startCity
   useEffect(() => {
     if (initialValues) {
       Object.entries(initialValues).forEach(([key, value]) => {
-        if (value) {
+        if (value && key !== 'startCity') {
           form.setValue(key as keyof ContactFormData, value);
         }
       });

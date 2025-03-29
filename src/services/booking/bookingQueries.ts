@@ -106,7 +106,7 @@ export const getActiveBookingsByUserId = async (userId: string): Promise<Complet
     
     const q = query(
       bookingsRef,
-      where('basicInfo.status', 'in', ['draft', 'confirmed'])
+      where('basicInfo.status', '==', 'confirmed')
     );
     
     const querySnapshot = await getDocs(q);
