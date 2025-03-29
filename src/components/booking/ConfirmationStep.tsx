@@ -1,158 +1,264 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { format } from 'date-fns';
-import { Car } from '@/data/cars';
-import { Button } from '@/components/ui/button';
-import { Check, Download, WhatsApp } from 'lucide-react';
-import { generateBookingReceipt } from '@/services/pdfService';
-import { BookingNotificationDetails } from '@/services/notificationService';
+import { ArrowLeft, CheckCircle, Clock, Calendar, Car, Map, Phone, Mail, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { createBooking } from '@/services/bookingService';
+import { Car as CarType } from '@/data/cars';
+import { BookingFormState } from '@/hooks/useBookingFormState';
+import { toast } from 'sonner';
+import { sendBookingConfirmation } from '@/services/notificationService';
 
 interface ConfirmationStepProps {
-  car: Car;
-  startDate: Date;
-  endDate: Date;
-  numDays: number;
-  tokenAmount: number;
-  totalAmount: number;
-  baseKm: number;
-  pricePerKm: number;
-  onFinish: () => void;
-  contactInfo?: {
-    name: string;
-    email: string;
-    phone: string;
+  formState: BookingFormState;
+  bookingSummary: {
+    totalDays: number;
+    dailyRate: number;
+    subtotal: number;
+    tax: number;
+    totalAmount: number;
+    tokenAmount: number;
   };
-  paymentMethod?: string;
-  paymentId?: string;
+  car: CarType;
+  onPrevious: () => void;
 }
 
 const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
+  formState,
+  bookingSummary,
   car,
-  startDate,
-  endDate,
-  numDays,
-  tokenAmount,
-  totalAmount,
-  baseKm,
-  pricePerKm,
-  onFinish,
-  contactInfo,
-  paymentMethod = 'upi',
-  paymentId
+  onPrevious,
 }) => {
-  
-  const handleDownloadReceipt = async () => {
-    if (!contactInfo) return;
-    
-    const bookingDetails: BookingNotificationDetails = {
-      customerName: contactInfo.name,
-      customerEmail: contactInfo.email,
-      customerPhone: contactInfo.phone,
-      carModel: car.model,
-      carTitle: car.title,
-      startDate: format(startDate, 'dd MMM yyyy'),
-      endDate: format(endDate, 'dd MMM yyyy'),
-      numDays,
-      tokenAmount,
-      totalAmount,
-      paymentMethod,
-      paymentId
-    };
-    
-    await generateBookingReceipt(bookingDetails);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleConfirmBooking = async () => {
+    if (!formState.startDate || !formState.endDate) {
+      toast.error('Please select valid booking dates');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const bookingData = {
+        carId: car.id,
+        userId: user?.uid || 'guest',
+        startDate: formState.startDate,
+        endDate: formState.endDate,
+        startCity: formState.startCity,
+        status: 'confirmed',
+        contactInfo: {
+          name: formState.contactInfo.name,
+          email: formState.contactInfo.email,
+          phone: formState.contactInfo.phone,
+          address: formState.contactInfo.address,
+        },
+        paymentInfo: {
+          method: formState.paymentMethod,
+          totalAmount: bookingSummary.totalAmount,
+          tokenAmount: bookingSummary.tokenAmount,
+          isPaid: true,
+          paidAt: new Date(),
+        },
+        createdAt: new Date(),
+      };
+
+      const newBooking = await createBooking(bookingData);
+      
+      // Send confirmation notifications
+      await sendBookingConfirmation({
+        ...bookingData,
+        id: newBooking.id,
+        car: car
+      }, user);
+      
+      toast.success('Booking confirmed successfully!');
+      navigate('/my-bookings');
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast.error('Failed to confirm booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
-  const handleWhatsAppSupport = () => {
-    // Basic WhatsApp support link
-    const message = encodeURIComponent(
-      `Hello, I've just booked a ${car.model} ${car.title} (Booking Reference: ${paymentId || 'Pending'}). I have a question about my booking.`
-    );
-    const supportNumber = "+919876543210"; // Replace with actual support number
-    window.open(`https://api.whatsapp.com/send?phone=${supportNumber}&text=${message}`, '_blank');
-  };
-  
+
   return (
-    <div className="step-container space-y-6">
+    <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-        </div>
-        <h3 className="text-2xl font-bold">Booking Confirmed!</h3>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Your booking has been successfully confirmed. Thank you for choosing Future Ride.
+        <h2 className="text-2xl font-bold mb-2">Booking Summary</h2>
+        <p className="text-gray-500 dark:text-gray-400">
+          Please review your booking details before confirming
         </p>
       </div>
-      
-      <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
-        <h4 className="font-medium text-lg mb-4">Booking Summary</h4>
-        
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <img src={car.image} alt={car.title} className="w-20 h-20 object-contain" />
-            <div>
-              <h5 className="font-medium">{car.model} {car.title}</h5>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{format(startDate, 'dd MMM yyyy')} - {format(endDate, 'dd MMM yyyy')}</p>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Car className="w-5 h-5 mr-2 text-primary" />
+              Car Details
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <img 
+                  src={car.image} 
+                  alt={car.title} 
+                  className="w-20 h-20 object-cover rounded-lg mr-4" 
+                />
+                <div>
+                  <h4 className="font-medium">{car.title}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{car.model}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Daily Rate</p>
+                  <p className="font-medium">₹{bookingSummary.dailyRate}/day</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Mileage Fee</p>
+                  <p className="font-medium">₹{car.pricePerKm}/km</p>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-              <span>{numDays} {numDays === 1 ? 'day' : 'days'}</span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Calendar className="w-5 h-5 mr-2 text-primary" />
+              Trip Details
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Start Date</p>
+                  <p className="font-medium">
+                    {formState.startDate ? format(formState.startDate, 'MMM dd, yyyy') : 'Not selected'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">End Date</p>
+                  <p className="font-medium">
+                    {formState.endDate ? format(formState.endDate, 'MMM dd, yyyy') : 'Not selected'}
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Duration</p>
+                <div className="flex items-center">
+                  <Clock className="w-4 h-4 mr-1 text-primary" />
+                  <p className="font-medium">{bookingSummary.totalDays} days</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Pickup Location</p>
+                <div className="flex items-center">
+                  <Map className="w-4 h-4 mr-1 text-primary" />
+                  <p className="font-medium">{formState.startCity}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
-              <span>₹{car.pricePerDay.toLocaleString()}</span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <User className="w-5 h-5 mr-2 text-primary" />
+              Contact Information
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
+                <p className="font-medium">{formState.contactInfo.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <div className="flex items-center">
+                  <Mail className="w-4 h-4 mr-1 text-primary" />
+                  <p className="font-medium">{formState.contactInfo.email}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                <div className="flex items-center">
+                  <Phone className="w-4 h-4 mr-1 text-primary" />
+                  <p className="font-medium">{formState.contactInfo.phone}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
+                <p className="font-medium">{formState.contactInfo.address}</p>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Included kilometers:</span>
-              <span>{baseKm} km/day</span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <CheckCircle className="w-5 h-5 mr-2 text-primary" />
+              Payment Summary
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <p className="text-gray-500 dark:text-gray-400">Rental ({bookingSummary.totalDays} days × ₹{bookingSummary.dailyRate})</p>
+                <p>₹{bookingSummary.subtotal.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-gray-500 dark:text-gray-400">Tax (18% GST)</p>
+                <p>₹{bookingSummary.tax.toFixed(2)}</p>
+              </div>
+              <div className="border-t my-2"></div>
+              <div className="flex justify-between font-semibold">
+                <p>Total Amount</p>
+                <p>₹{bookingSummary.totalAmount.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between mt-4 pt-4 border-t">
+                <p className="text-primary font-medium">Token Amount (20%)</p>
+                <p className="text-primary font-semibold">₹{bookingSummary.tokenAmount.toFixed(2)}</p>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                * Remaining amount to be paid at pickup
+              </p>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Extra km rate:</span>
-              <span>₹{pricePerKm}/km</span>
-            </div>
-            <div className="flex justify-between text-green-600 dark:text-green-400 font-medium">
-              <span>Token amount paid:</span>
-              <span>₹{tokenAmount.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
-              <span>Balance due at pickup:</span>
-              <span>₹{(totalAmount - tokenAmount).toLocaleString()}</span>
-            </div>
-          </div>
-          
-          {paymentId && (
-            <div className="text-sm text-gray-500 dark:text-gray-400 pt-2">
-              Payment ID: {paymentId}
-            </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2"
-          onClick={handleDownloadReceipt}
-        >
-          <Download className="h-4 w-4" />
-          Download Receipt
+
+      <div className="flex justify-between mt-8">
+        <Button variant="outline" onClick={onPrevious}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
         </Button>
         
         <Button 
-          variant="outline" 
-          className="flex items-center gap-2"
-          onClick={handleWhatsAppSupport}
+          onClick={handleConfirmBooking} 
+          disabled={isSubmitting}
+          className="bg-primary text-white min-w-[150px]"
         >
-          <WhatsApp className="h-4 w-4" />
-          WhatsApp Support
-        </Button>
-        
-        <Button onClick={onFinish}>
-          View My Bookings
+          {isSubmitting ? (
+            <>
+              <span className="animate-spin mr-2">
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+              Processing...
+            </>
+          ) : (
+            'Confirm Booking'
+          )}
         </Button>
       </div>
     </div>

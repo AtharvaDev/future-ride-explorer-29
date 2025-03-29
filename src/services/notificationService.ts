@@ -1,237 +1,211 @@
 
-// Define the booking details interface
-export interface BookingNotificationDetails {
-  customerName: string;
-  carModel: string;
-  carTitle: string;
-  startDate: string;
-  endDate: string;
-  numDays: number;
-  tokenAmount: number;
-  totalAmount: number;
-  customerPhone: string;
-  customerEmail: string;
-  paymentMethod?: string;
-  paymentId?: string;
-}
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { emailConfig, whatsAppConfig } from '@/config/notifications';
+import { Booking } from '@/types/booking';
+import { User } from 'firebase/auth';
 
-// Admin contact details
-const ADMIN_PHONE_NUMBER = "+919876543210"; // Change this to the actual admin number
-const ADMIN_EMAIL = "admin@futureride.com"; // Change this to the actual admin email
+// Dummy functions for email and WhatsApp integration that would be replaced with actual API calls
+const sendEmail = async (to: string, subject: string, body: string, from: string) => {
+  console.log(`Sending email to ${to} from ${from}`);
+  console.log(`Subject: ${subject}`);
+  console.log(`Body: ${body}`);
+  
+  // In a real app, this would make an API call to your email service
+  // Example: return await emailServiceAPI.send({ to, subject, body, from });
+  
+  // For now, we'll just simulate a successful send
+  return { success: true, messageId: `email_${Date.now()}` };
+};
 
-/**
- * Sends a WhatsApp notification with booking details
- * @param bookingDetails Booking details to include in the notification
- */
-export const sendWhatsAppNotification = async (bookingDetails: BookingNotificationDetails): Promise<void> => {
+const sendWhatsApp = async (to: string, body: string, from: string) => {
+  console.log(`Sending WhatsApp message to ${to} from ${from}`);
+  console.log(`Message: ${body}`);
+  
+  // In a real app, this would make an API call to WhatsApp Business API or similar
+  // Example: return await whatsappAPI.send({ to, body, from });
+  
+  // For now, we'll just simulate a successful send
+  return { success: true, messageId: `whatsapp_${Date.now()}` };
+};
+
+// Helper function to replace template variables
+const replaceTemplateVariables = (template: string, variables: Record<string, string>) => {
+  let result = template;
+  Object.entries(variables).forEach(([key, value]) => {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    result = result.replace(regex, value);
+  });
+  return result;
+};
+
+// Get common template variables for a booking
+const getBookingTemplateVariables = (booking: Booking, user: User | null) => {
+  return {
+    name: user?.displayName || booking.contactInfo?.name || 'Customer',
+    bookingId: booking.id || '',
+    carTitle: booking.car?.title || '',
+    carModel: booking.car?.model || '',
+    startDate: booking.startDate ? format(booking.startDate, 'MMM dd, yyyy') : '',
+    endDate: booking.endDate ? format(booking.endDate, 'MMM dd, yyyy') : '',
+    startCity: booking.startCity || '',
+    totalAmount: booking.paymentInfo?.totalAmount?.toString() || '',
+    tokenAmount: booking.paymentInfo?.tokenAmount?.toString() || '',
+    bookingUrl: `${window.location.origin}/my-bookings`,
+    paymentDate: new Date().toLocaleDateString(),
+    paymentMethod: 'Credit Card', // This would normally come from the payment record
+    amountPaid: booking.paymentInfo?.tokenAmount?.toString() || ''
+  };
+};
+
+// Send booking confirmation notifications
+export const sendBookingConfirmation = async (booking: Booking, user: User | null) => {
   try {
-    const { 
-      customerName, 
-      carModel, 
-      carTitle, 
-      startDate, 
-      endDate, 
-      numDays, 
-      tokenAmount, 
-      totalAmount,
-      customerPhone,
-      paymentMethod,
-      paymentId
-    } = bookingDetails;
+    const variables = getBookingTemplateVariables(booking, user);
     
-    // Create the message text
-    const message = `
-🚗 *New Booking Confirmation* 🚗
-
-*Booking Details:*
-Car: ${carModel} ${carTitle}
-Duration: ${startDate} to ${endDate} (${numDays} days)
-Token Amount Paid: ₹${tokenAmount.toLocaleString()}
-Total Amount: ₹${totalAmount.toLocaleString()}
-Payment Method: ${paymentMethod || 'UPI'}
-${paymentId ? `Payment ID: ${paymentId}` : ''}
-
-*Customer Details:*
-Name: ${customerName}
-Phone: ${customerPhone}
-
-Thank you for your booking!
-    `.trim();
-    
-    // Encode the message for URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Create WhatsApp API URL
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${ADMIN_PHONE_NUMBER}&text=${encodedMessage}`;
-    
-    // For web-based applications, we'll open the WhatsApp URL in a new window
-    // This is a client-side approach, for production you might want to use a server-side API
-    if (typeof window !== 'undefined') {
-      // In a real application, you would use a proper WhatsApp Business API
-      // For demo purposes, we're using the web link approach
-      window.open(whatsappUrl, '_blank');
-    }
-    
-    // Also send to customer if customer phone is different from admin
-    if (customerPhone && customerPhone !== ADMIN_PHONE_NUMBER) {
-      const customerMessage = `
-🚗 *Your Booking Confirmation* 🚗
-
-Thank you for booking with Future Ride!
-
-*Booking Details:*
-Car: ${carModel} ${carTitle}
-Duration: ${startDate} to ${endDate} (${numDays} days)
-Token Amount Paid: ₹${tokenAmount.toLocaleString()}
-Total Amount: ₹${totalAmount.toLocaleString()}
-
-Our team will contact you shortly for further details.
-Thank you for choosing Future Ride!
-      `.trim();
+    // Send email notification if enabled
+    if (emailConfig.enabled && booking.contactInfo?.email) {
+      const subject = replaceTemplateVariables(emailConfig.templates.bookingConfirmation.subject, variables);
+      const body = replaceTemplateVariables(emailConfig.templates.bookingConfirmation.body, variables);
       
-      const encodedCustomerMessage = encodeURIComponent(customerMessage);
-      const customerWhatsappUrl = `https://api.whatsapp.com/send?phone=${customerPhone}&text=${encodedCustomerMessage}`;
+      await sendEmail(
+        booking.contactInfo.email,
+        subject,
+        body,
+        `${emailConfig.sender.name} <${emailConfig.sender.email}>`
+      );
+    }
+    
+    // Send WhatsApp notification if enabled
+    if (whatsAppConfig.enabled && booking.contactInfo?.phone) {
+      const message = replaceTemplateVariables(whatsAppConfig.templates.bookingConfirmation, variables);
       
-      // Open in a new window with slight delay
-      setTimeout(() => {
-        window.open(customerWhatsappUrl, '_blank');
-      }, 1000);
+      await sendWhatsApp(
+        booking.contactInfo.phone,
+        message,
+        whatsAppConfig.sender.phone
+      );
     }
     
-    return Promise.resolve();
+    toast.success('Booking confirmation notifications sent successfully');
+    return true;
   } catch (error) {
-    console.error('Error sending WhatsApp notification:', error);
-    return Promise.reject(error);
+    console.error('Error sending booking confirmation notifications:', error);
+    toast.error('Failed to send booking notifications');
+    return false;
   }
 };
 
-/**
- * Sends email notifications about the booking
- * In a real application, this would connect to an email service
- */
-export const sendEmailNotification = async (bookingDetails: BookingNotificationDetails): Promise<void> => {
+// Send payment confirmation notifications
+export const sendPaymentConfirmation = async (booking: Booking, user: User | null) => {
   try {
-    const { 
-      customerName, 
-      customerEmail,
-      carModel, 
-      carTitle, 
-      startDate, 
-      endDate, 
-      numDays, 
-      tokenAmount, 
-      totalAmount
-    } = bookingDetails;
+    const variables = getBookingTemplateVariables(booking, user);
     
-    console.log(`Email notification would be sent to ${ADMIN_EMAIL} and ${customerEmail}`);
-    
-    // In a real application, you would use an email service API here
-    // This is just a placeholder to show the concept
-    
-    // Log the admin email content
-    console.log(`
-Subject: New Booking - ${carModel} ${carTitle}
-
-Hello Admin,
-
-A new booking has been made:
-
-Customer: ${customerName}
-Car: ${carModel} ${carTitle}
-Duration: ${startDate} to ${endDate} (${numDays} days)
-Token Amount Paid: ₹${tokenAmount.toLocaleString()}
-Total Amount: ₹${totalAmount.toLocaleString()}
-
-Please contact the customer to confirm the details.
-
-Future Ride Team
-    `);
-    
-    // Log the customer email content
-    console.log(`
-Subject: Your Booking Confirmation - Future Ride
-
-Hello ${customerName},
-
-Thank you for booking with Future Ride!
-
-Booking Details:
-Car: ${carModel} ${carTitle}
-Duration: ${startDate} to ${endDate} (${numDays} days)
-Token Amount Paid: ₹${tokenAmount.toLocaleString()}
-Total Amount: ₹${totalAmount.toLocaleString()}
-
-Our team will contact you shortly for further details.
-Thank you for choosing Future Ride!
-
-Future Ride Team
-    `);
-    
-    return Promise.resolve();
-  } catch (error) {
-    console.error('Error sending email notification:', error);
-    return Promise.reject(error);
-  }
-};
-
-/**
- * Send all notifications (WhatsApp and Email)
- */
-export const sendAllNotifications = async (bookingDetails: BookingNotificationDetails): Promise<void> => {
-  try {
-    // Send WhatsApp notification
-    await sendWhatsAppNotification(bookingDetails);
-    
-    // Send Email notification
-    await sendEmailNotification(bookingDetails);
-    
-    console.log('All notifications sent successfully');
-    return Promise.resolve();
-  } catch (error) {
-    console.error('Error sending notifications:', error);
-    return Promise.reject(error);
-  }
-};
-
-/**
- * Send notification for new contact information
- */
-export const sendContactNotification = async (contactInfo: {
-  name: string;
-  email: string;
-  phone: string;
-  startCity: string;
-}): Promise<void> => {
-  try {
-    const { name, email, phone, startCity } = contactInfo;
-    
-    // Create the message text
-    const message = `
-👤 *New Customer Inquiry* 👤
-
-*Customer Details:*
-Name: ${name}
-Email: ${email}
-Phone: ${phone}
-Starting City: ${startCity}
-
-A new customer has filled in their contact details on your website.
-    `.trim();
-    
-    // Encode the message for URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Create WhatsApp API URL
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${ADMIN_PHONE_NUMBER}&text=${encodedMessage}`;
-    
-    // Open WhatsApp message in a new window
-    if (typeof window !== 'undefined') {
-      window.open(whatsappUrl, '_blank');
+    // Send email notification if enabled
+    if (emailConfig.enabled && booking.contactInfo?.email) {
+      const subject = replaceTemplateVariables(emailConfig.templates.paymentConfirmation.subject, variables);
+      const body = replaceTemplateVariables(emailConfig.templates.paymentConfirmation.body, variables);
+      
+      await sendEmail(
+        booking.contactInfo.email,
+        subject,
+        body,
+        `${emailConfig.sender.name} <${emailConfig.sender.email}>`
+      );
     }
     
-    return Promise.resolve();
+    // Send WhatsApp notification if enabled
+    if (whatsAppConfig.enabled && booking.contactInfo?.phone) {
+      const message = replaceTemplateVariables(whatsAppConfig.templates.paymentConfirmation, variables);
+      
+      await sendWhatsApp(
+        booking.contactInfo.phone,
+        message,
+        whatsAppConfig.sender.phone
+      );
+    }
+    
+    toast.success('Payment confirmation notifications sent successfully');
+    return true;
   } catch (error) {
-    console.error('Error sending contact notification:', error);
-    return Promise.reject(error);
+    console.error('Error sending payment confirmation notifications:', error);
+    toast.error('Failed to send payment notifications');
+    return false;
+  }
+};
+
+// Send booking reminder notifications
+export const sendBookingReminder = async (booking: Booking, user: User | null) => {
+  try {
+    const variables = getBookingTemplateVariables(booking, user);
+    
+    // Send email notification if enabled
+    if (emailConfig.enabled && booking.contactInfo?.email) {
+      const subject = replaceTemplateVariables(emailConfig.templates.bookingReminder.subject, variables);
+      const body = replaceTemplateVariables(emailConfig.templates.bookingReminder.body, variables);
+      
+      await sendEmail(
+        booking.contactInfo.email,
+        subject,
+        body,
+        `${emailConfig.sender.name} <${emailConfig.sender.email}>`
+      );
+    }
+    
+    // Send WhatsApp notification if enabled
+    if (whatsAppConfig.enabled && booking.contactInfo?.phone) {
+      const message = replaceTemplateVariables(whatsAppConfig.templates.bookingReminder, variables);
+      
+      await sendWhatsApp(
+        booking.contactInfo.phone,
+        message,
+        whatsAppConfig.sender.phone
+      );
+    }
+    
+    toast.success('Booking reminder notifications sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Error sending booking reminder notifications:', error);
+    toast.error('Failed to send reminder notifications');
+    return false;
+  }
+};
+
+// Send booking cancellation notifications
+export const sendBookingCancellation = async (booking: Booking, user: User | null) => {
+  try {
+    const variables = getBookingTemplateVariables(booking, user);
+    
+    // Send email notification if enabled
+    if (emailConfig.enabled && booking.contactInfo?.email) {
+      const subject = replaceTemplateVariables(emailConfig.templates.bookingCancellation.subject, variables);
+      const body = replaceTemplateVariables(emailConfig.templates.bookingCancellation.body, variables);
+      
+      await sendEmail(
+        booking.contactInfo.email,
+        subject,
+        body,
+        `${emailConfig.sender.name} <${emailConfig.sender.email}>`
+      );
+    }
+    
+    // Send WhatsApp notification if enabled
+    if (whatsAppConfig.enabled && booking.contactInfo?.phone) {
+      const message = replaceTemplateVariables(whatsAppConfig.templates.bookingCancellation, variables);
+      
+      await sendWhatsApp(
+        booking.contactInfo.phone,
+        message,
+        whatsAppConfig.sender.phone
+      );
+    }
+    
+    toast.success('Booking cancellation notifications sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Error sending booking cancellation notifications:', error);
+    toast.error('Failed to send cancellation notifications');
+    return false;
   }
 };

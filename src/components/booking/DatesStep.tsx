@@ -1,164 +1,256 @@
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarIcon, ChevronRight } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Car } from '@/data/cars';
-import { cn } from "@/lib/utils";
-import { DateRange } from "react-day-picker";
+import { format, addDays } from 'date-fns';
+import { ArrowRight, Calendar as CalendarIcon, Clock, Map } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from '@/lib/utils';
+import { BookingFormState } from '@/hooks/useBookingFormState';
 
 interface DatesStepProps {
-  onSubmit: (data: { startDate: Date; endDate: Date }) => void;
-  car?: Car;
-  startDate?: Date;
-  endDate?: Date;
-  numberOfDays?: number;
-  totalCost?: number;
-  tokenAmount?: number;
-  onBack?: () => void;
-  isLoading?: boolean;
+  formState: BookingFormState;
+  bookingSummary: {
+    totalDays: number;
+    dailyRate: number;
+    subtotal: number;
+    tax: number;
+    totalAmount: number;
+    tokenAmount: number;
+  };
+  onDateChange: (startDate: Date | null, endDate: Date | null) => void;
+  onCityChange: (city: string) => void;
+  onNext: () => void;
 }
 
-const DatesStep: React.FC<DatesStepProps> = ({
-  car,
-  startDate,
-  endDate,
-  numberOfDays = 0,
-  totalCost = 0,
-  tokenAmount = 1000,
-  onSubmit,
-  onBack,
-  isLoading = false
-}) => {
-  // Use the DateRange type for date selection
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(
-    startDate && endDate 
-      ? { from: startDate, to: endDate } 
-      : undefined
-  );
-  
-  const [calculatedDays, setCalculatedDays] = useState(numberOfDays);
-  const [calculatedCost, setCalculatedCost] = useState(totalCost);
-  
-  // Calculate number of days and total cost when date range changes
-  useEffect(() => {
-    if (dateRange?.from && dateRange?.to && car) {
-      const days = Math.max(1, differenceInDays(dateRange.to, dateRange.from) + 1);
-      setCalculatedDays(days);
-      
-      const cost = days * car.pricePerDay;
-      setCalculatedCost(cost);
-    }
-  }, [dateRange, car]);
+const CITIES = [
+  "Bangalore",
+  "Mumbai",
+  "Delhi",
+  "Chennai",
+  "Hyderabad",
+  "Kolkata",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Kochi",
+];
 
-  const handleSubmit = () => {
-    if (dateRange?.from && dateRange?.to) {
-      onSubmit({ 
-        startDate: dateRange.from, 
-        endDate: dateRange.to 
-      });
+const DatesStep: React.FC<DatesStepProps> = ({
+  formState,
+  bookingSummary,
+  onDateChange,
+  onCityChange,
+  onNext,
+}) => {
+  const [startDate, setStartDate] = useState<Date | null>(formState.startDate);
+  const [endDate, setEndDate] = useState<Date | null>(formState.endDate);
+  const [city, setCity] = useState(formState.startCity);
+  
+  // Calculate minimum end date (day after start date)
+  const minEndDate = startDate ? addDays(startDate, 1) : undefined;
+  
+  // Update parent component when dates change
+  useEffect(() => {
+    onDateChange(startDate, endDate);
+  }, [startDate, endDate, onDateChange]);
+  
+  // Handle start date selection
+  const handleStartDateSelect = (date: Date | null) => {
+    setStartDate(date);
+    
+    // If end date is before new start date, reset it
+    if (date && endDate && endDate < date) {
+      setEndDate(null);
     }
   };
+  
+  // Handle end date selection
+  const handleEndDateSelect = (date: Date | null) => {
+    setEndDate(date);
+  };
+  
+  // Handle city selection
+  const handleCityChange = (value: string) => {
+    setCity(value);
+    onCityChange(value);
+  };
+  
+  // Determine if form is valid to proceed
+  const isFormValid = startDate && endDate && city && formState.isDatesValid;
 
   return (
-    <div className="step-container space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold">Select Dates</h3>
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold mb-2">Select Trip Dates</h2>
         <p className="text-gray-500 dark:text-gray-400">
-          Please select your pickup and return dates.
+          Choose your pickup location and rental period
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Date Range</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Pickup Location</label>
+                <Select
+                  value={city}
+                  onValueChange={handleCityChange}
                 >
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, "PPP")} - {format(dateRange.to, "PPP")}
-                      </>
-                    ) : (
-                      format(dateRange.from, "PPP")
-                    )
-                  ) : (
-                    <span>Select date range</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={setDateRange}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-        
-        {car && (
-          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3">Booking Summary</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-                <span>{calculatedDays} {calculatedDays === 1 ? 'day' : 'days'}</span>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CITIES.map((cityName) => (
+                      <SelectItem key={cityName} value={cityName}>{cityName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Daily rate:</span>
-                <span>₹{car.pricePerDay.toLocaleString()}</span>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Start Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={startDate || undefined}
+                        onSelect={handleStartDateSelect}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">End Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !endDate && "text-muted-foreground"
+                        )}
+                        disabled={!startDate}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={endDate || undefined}
+                        onSelect={handleEndDateSelect}
+                        disabled={(date) => 
+                          date < (minEndDate || new Date())
+                        }
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Includes:</span>
-                <span>200 km/day</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Extra km rate:</span>
-                <span>₹{car.pricePerKm}/km</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Token amount:</span>
-                <span>₹{tokenAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <span>Total:</span>
-                <span>₹{calculatedCost.toLocaleString()}</span>
-              </div>
+              
+              {startDate && endDate && !formState.isDatesValid && (
+                <div className="text-red-500 text-sm mt-2">
+                  End date must be after start date.
+                </div>
+              )}
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              * A token amount of ₹{tokenAmount.toLocaleString()} is required to confirm your booking.
-            </p>
-          </div>
-        )}
-      </div>
-      
-      <div className="flex justify-between pt-4">
-        {onBack && (
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-        )}
+          </CardContent>
+        </Card>
         
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Trip Summary</h3>
+            
+            {startDate && endDate && formState.isDatesValid ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Map className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Pickup Location</p>
+                    <p className="font-medium">{city}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Trip Dates</p>
+                    <p className="font-medium">
+                      {format(startDate, "MMM dd, yyyy")} - {format(endDate, "MMM dd, yyyy")}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Duration</p>
+                    <p className="font-medium">{bookingSummary.totalDays} days</p>
+                  </div>
+                </div>
+                
+                <div className="border-t my-2 pt-2">
+                  <div className="flex justify-between my-1">
+                    <p className="text-gray-500 dark:text-gray-400">Daily Rate</p>
+                    <p>₹{bookingSummary.dailyRate}/day</p>
+                  </div>
+                  <div className="flex justify-between my-1">
+                    <p className="text-gray-500 dark:text-gray-400">Subtotal</p>
+                    <p>₹{bookingSummary.subtotal.toFixed(2)}</p>
+                  </div>
+                  <div className="flex justify-between my-1">
+                    <p className="text-gray-500 dark:text-gray-400">Tax (18%)</p>
+                    <p>₹{bookingSummary.tax.toFixed(2)}</p>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-2 border-t mt-2">
+                    <p>Total</p>
+                    <p>₹{bookingSummary.totalAmount.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-4">
+                <p className="text-gray-500 dark:text-gray-400">
+                  Select your dates to see the trip summary
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex justify-end">
         <Button 
-          onClick={handleSubmit}
-          disabled={!dateRange?.from || !dateRange?.to || isLoading}
+          onClick={onNext} 
+          disabled={!isFormValid}
+          className="bg-primary text-white"
         >
-          {isLoading ? "Processing..." : "Continue to Payment"}
-          <ChevronRight className="h-4 w-4 ml-1" />
+          Continue
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>
