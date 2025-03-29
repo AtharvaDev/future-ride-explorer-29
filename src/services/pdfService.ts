@@ -36,7 +36,7 @@ export const generateBookingPDF = (booking: BookingNotificationDetails): Blob =>
   doc.text(`Name: ${booking.contactInfo.name}`, 20, 75);
   doc.text(`Email: ${booking.contactInfo.email}`, 20, 82);
   doc.text(`Phone: ${booking.contactInfo.phone}`, 20, 89);
-  doc.text(`Address: ${booking.contactInfo.address}`, 20, 96);
+  doc.text(`Starting City: ${booking.contactInfo.startCity}`, 20, 96);
   
   // Booking details
   doc.setFontSize(14);
