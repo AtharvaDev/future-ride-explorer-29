@@ -28,6 +28,26 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   
   // If car or video URL isn't provided, don't render the dialog
   if (!car?.video) return null;
+  
+  // Extract YouTube video ID safely
+  const getYouTubeVideoId = (url: string): string | null => {
+    try {
+      // Handle different YouTube URL formats
+      if (url.includes('v=')) {
+        return url.split('v=')[1]?.split('&')[0] || null;
+      } else if (url.includes('youtu.be/')) {
+        return url.split('youtu.be/')[1]?.split('?')[0] || null;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error extracting YouTube video ID:", error);
+      return null;
+    }
+  };
+
+  const videoId = getYouTubeVideoId(car.video);
+  
+  if (!videoId) return null;
 
   return (
     <Dialog 
@@ -57,7 +77,7 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
           <iframe
             ref={videoRef}
             className="w-full h-full"
-            src={`https://www.youtube.com/embed/${car?.video?.split('v=')[1]?.split('&')[0]}?autoplay=1&mute=0`}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`}
             title={car?.title || "Toyota Video"}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

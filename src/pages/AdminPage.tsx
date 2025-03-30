@@ -19,7 +19,6 @@ const AdminPage = () => {
   const [carToDelete, setCarToDelete] = useState<Car | null>(null);
   const queryClient = useQueryClient();
 
-  // Fetch cars data
   const { 
     data: cars = [], 
     isLoading, 
@@ -30,7 +29,6 @@ const AdminPage = () => {
     queryFn: getAllCars
   });
 
-  // Mutations for car operations
   const saveCarMutation = useMutation({
     mutationFn: saveCar,
     onSuccess: () => {
@@ -56,9 +54,7 @@ const AdminPage = () => {
     }
   });
 
-  // Animation on component mount
   useEffect(() => {
-    // Animate the content in
     const tl = gsap.timeline();
     tl.from('.admin-title', {
       y: -50,
@@ -79,25 +75,21 @@ const AdminPage = () => {
     };
   }, []);
 
-  // Open dialog for creating a new car
   const handleAddCar = () => {
     setEditingCar(null);
     setIsDialogOpen(true);
   };
 
-  // Open dialog for editing an existing car
   const handleEditCar = (car: Car) => {
     setEditingCar(car);
     setIsDialogOpen(true);
   };
 
-  // Confirm deletion dialog
   const handleDeleteConfirm = (car: Car) => {
     setCarToDelete(car);
     setDeleteConfirmOpen(true);
   };
 
-  // Actually delete the car
   const handleDeleteCar = () => {
     if (carToDelete) {
       deleteCarMutation.mutate(carToDelete.id);
@@ -105,21 +97,21 @@ const AdminPage = () => {
     }
   };
 
-  // Handle form submission (create or update)
   const onSubmit = (data: CarFormValues, features: { icon: string; title: string; description: string }[]) => {
     if (editingCar) {
-      // Update existing car
       const updatedCar: Car = {
         ...editingCar,
         ...data,
-        ...(data.video ? { video: data.video } : {}),
-        features: features // Now using the features passed from the form
+        features: features
       };
+      
+      if (!data.video) {
+        delete updatedCar.video;
+      }
       
       saveCarMutation.mutate(updatedCar);
       toast.success(`${data.title} updated successfully`);
     } else {
-      // Create new car with features from the form
       const newCar: Car = {
         id: data.id,
         model: data.model,
@@ -129,9 +121,12 @@ const AdminPage = () => {
         pricePerKm: data.pricePerKm,
         image: data.image,
         color: data.color,
-        ...(data.video ? { video: data.video } : {}),
-        features: features // Now using the features passed from the form
+        features: features
       };
+      
+      if (data.video) {
+        newCar.video = data.video;
+      }
       
       saveCarMutation.mutate(newCar);
       toast.success(`${data.title} created successfully`);
@@ -176,7 +171,7 @@ const AdminPage = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-grow pt-24"> {/* Added padding-top to prevent overlap with navbar */}
+      <main className="flex-grow pt-24">
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold admin-title">Car Management</h1>
@@ -199,7 +194,6 @@ const AdminPage = () => {
         </div>
       </main>
 
-      {/* Car Form Dialog */}
       <CarForm
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -208,7 +202,6 @@ const AdminPage = () => {
         isSubmitting={saveCarMutation.isPending}
       />
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Car } from '@/data/cars';
 import { Loader, Plus, Trash, PencilLine } from 'lucide-react';
@@ -35,7 +34,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Form validation schema - Update video URL to be optional
+// Form validation schema - Fix video URL to be properly optional
 const carFormSchema = z.object({
   id: z.string().min(3, {
     message: "ID must be at least 3 characters.",
@@ -61,13 +60,8 @@ const carFormSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
     message: "Please enter a valid hex color code.",
   }),
-  // Make video optional and allow empty string
-  video: z.union([
-    z.string().url({
-      message: "Please enter a valid video URL or leave it empty.",
-    }),
-    z.string().max(0)
-  ]).optional(),
+  // Properly make video optional by allowing empty string
+  video: z.string().optional().transform(val => val === "" ? undefined : val),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;
@@ -158,8 +152,12 @@ const CarForm: React.FC<CarFormProps> = ({
     setEditingFeatureIndex(null);
   }, [editingCar, form, open]);
 
-  // Submit handler
+  // Submit handler - properly handle empty video string
   const handleSubmit = (data: CarFormValues) => {
+    // If video is empty string, set it to undefined
+    if (data.video === "") {
+      data.video = undefined;
+    }
     onSubmit(data, features);
   };
 
@@ -366,7 +364,10 @@ const CarForm: React.FC<CarFormProps> = ({
                     <FormItem>
                       <FormLabel>Video URL (optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://youtube.com/watch?v=..." {...field} />
+                        <Input 
+                          placeholder="https://youtube.com/watch?v=..." 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
