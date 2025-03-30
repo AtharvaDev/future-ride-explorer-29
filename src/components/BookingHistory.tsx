@@ -38,8 +38,26 @@ const BookingHistory: React.FC = () => {
         const active = await getActiveBookingsByUserId(user.uid);
         const past = await getPastBookingsByUserId(user.uid);
         
-        setActiveBookings(active);
-        setPastBookings(past);
+        // Filter bookings based on date criteria
+        const currentDate = new Date();
+        
+        // Confirmed bookings with startDate <= current date should be in active bookings
+        const filteredActive = active.filter(booking => 
+          booking.status === 'confirmed' &&
+          new Date(booking.startDate) <= currentDate
+        );
+        
+        // All completed/cancelled bookings + confirmed bookings with startDate > current date should be in past bookings
+        const filteredPast = [
+          ...past,
+          ...active.filter(booking => 
+            booking.status === 'confirmed' && 
+            new Date(booking.startDate) > currentDate
+          )
+        ];
+        
+        setActiveBookings(filteredActive);
+        setPastBookings(filteredPast);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       } finally {
