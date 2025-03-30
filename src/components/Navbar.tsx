@@ -44,6 +44,8 @@ const Navbar = () => {
   const actionButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
+  const brandName = "The Chauffeur Co.";
+
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
     
@@ -200,7 +202,7 @@ const Navbar = () => {
               }}
             >
               <Car className="h-6 w-6 text-blue-600" />
-              <span>FutureRide</span>
+              <span>{brandName}</span>
             </Link>
           </div>
           

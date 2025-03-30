@@ -77,7 +77,7 @@ const Hero = () => {
             ref={badgeRef} 
             className="inline-block mb-6 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium opacity-0"
           >
-            The future of transportation awaits
+            Luxury Transportation Redefined
           </div>
           <h1 
             ref={titleRef}
@@ -92,7 +92,7 @@ const Hero = () => {
             ref={subtitleRef}
             className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto opacity-0"
           >
-            Book cutting-edge vehicles with advanced features and unmatched comfort for your journey.
+            Book luxurious vehicles with advanced features and unmatched comfort for your journey.
           </p>
           <div 
             ref={buttonsRef}
