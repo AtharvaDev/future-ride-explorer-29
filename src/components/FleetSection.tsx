@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -112,6 +113,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
 
   const handleCarClick = (car: Car) => {
     if (car.video) {
+      // Only show video if car has a video URL
       setSelectedCar(car);
       setLoading(true);
       setVideoOpen(true);
@@ -225,44 +227,46 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         </div>
       </div>
 
-      {/* Video Dialog */}
-      <Dialog 
-        open={videoOpen} 
-        onOpenChange={(open) => {
-          setVideoOpen(open);
-          if (!open && redirectTimerRef.current) {
-            clearTimeout(redirectTimerRef.current);
-          }
-        }}
-      >
-        <DialogContent className={isFullscreen ? "sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none" : "sm:max-w-4xl"}>
-          {!isFullscreen && (
-            <DialogHeader>
-              <DialogTitle>{selectedCar?.title}</DialogTitle>
-            </DialogHeader>
-          )}
-          <div className={isFullscreen ? "w-full h-full bg-black relative" : "w-full h-[60vh] bg-black relative rounded-md overflow-hidden"}>
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                  <Loader className="h-12 w-12 animate-spin text-primary" />
-                  <p className="text-gray-100">Loading video...</p>
-                </div>
-              </div>
-            ) : (
-              <iframe
-                ref={videoRef}
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${selectedCar?.video?.split('v=')[1]?.split('&')[0]}?autoplay=1&mute=0`}
-                title={selectedCar?.title || "Toyota Video"}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+      {/* Video Dialog - Only shown when there's a selected car with a video */}
+      {selectedCar?.video && (
+        <Dialog 
+          open={videoOpen} 
+          onOpenChange={(open) => {
+            setVideoOpen(open);
+            if (!open && redirectTimerRef.current) {
+              clearTimeout(redirectTimerRef.current);
+            }
+          }}
+        >
+          <DialogContent className={isFullscreen ? "sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none" : "sm:max-w-4xl"}>
+            {!isFullscreen && (
+              <DialogHeader>
+                <DialogTitle>{selectedCar?.title}</DialogTitle>
+              </DialogHeader>
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+            <div className={isFullscreen ? "w-full h-full bg-black relative" : "w-full h-[60vh] bg-black relative rounded-md overflow-hidden"}>
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader className="h-12 w-12 animate-spin text-primary" />
+                    <p className="text-gray-100">Loading video...</p>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  ref={videoRef}
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${selectedCar?.video?.split('v=')[1]?.split('&')[0]}?autoplay=1&mute=0`}
+                  title={selectedCar?.title || "Toyota Video"}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </section>
   );
 };

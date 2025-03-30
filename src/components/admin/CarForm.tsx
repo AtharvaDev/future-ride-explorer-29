@@ -35,7 +35,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Form validation schema
+// Form validation schema - Update video URL to be optional
 const carFormSchema = z.object({
   id: z.string().min(3, {
     message: "ID must be at least 3 characters.",
@@ -61,7 +61,13 @@ const carFormSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
     message: "Please enter a valid hex color code.",
   }),
-  video: z.string().url().optional(),
+  // Make video optional and allow empty string
+  video: z.union([
+    z.string().url({
+      message: "Please enter a valid video URL or leave it empty.",
+    }),
+    z.string().max(0)
+  ]).optional(),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

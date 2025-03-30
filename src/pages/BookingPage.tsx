@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -21,22 +20,18 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const bookingFormRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all cars
   const { data: cars = [], isLoading: carsLoading } = useQuery({
     queryKey: ['cars'],
     queryFn: getAllCars
   });
 
-  // Determine the selected car based on the URL param
   const selectedCar = carId 
     ? cars.find(car => car.id === carId) || (cars.length > 0 ? cars[0] : null)
     : cars.length > 0 ? cars[0] : null;
 
   useEffect(() => {
-    // Scroll to top of page when component mounts
     window.scrollTo(0, 0);
 
-    // If we have a carId but couldn't find the car, show an error
     if (carId && cars.length > 0 && !cars.find(car => car.id === carId)) {
       toast.error("Car not found, redirecting to default options");
       if (cars.length > 0) {
@@ -44,7 +39,6 @@ const BookingPage = () => {
       }
     }
 
-    // GSAP animations for page entry - but without any scrolling effects
     const tl = gsap.timeline();
     tl.from('.page-title', {
       y: -50,
@@ -65,13 +59,11 @@ const BookingPage = () => {
       ease: 'power3.out'
     }, '-=0.4');
 
-    // Cleanup animation on component unmount
     return () => {
       tl.kill();
     };
   }, [carId, cars, navigate]);
 
-  // Add scroll to booking form function
   const scrollToBookingForm = () => {
     if (bookingFormRef.current) {
       bookingFormRef.current.scrollIntoView({ 
@@ -82,13 +74,14 @@ const BookingPage = () => {
   };
 
   const handleWatchVideo = () => {
-    setLoading(true);
-    setVideoOpen(true);
-    
-    // Simulate video loading for 1.5 seconds
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    if (selectedCar?.video) {
+      setLoading(true);
+      setVideoOpen(true);
+      
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
+    }
   };
 
   if (carsLoading || !selectedCar) {
@@ -187,33 +180,34 @@ const BookingPage = () => {
         </div>
       </main>
 
-      {/* Video Dialog */}
-      <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{selectedCar.title}</DialogTitle>
-          </DialogHeader>
-          <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                  <Loader className="h-12 w-12 animate-spin text-primary" />
-                  <p className="text-gray-100">Loading video...</p>
+      {selectedCar.video && (
+        <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
+          <DialogContent className="sm:max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{selectedCar.title}</DialogTitle>
+            </DialogHeader>
+            <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader className="h-12 w-12 animate-spin text-primary" />
+                    <p className="text-gray-100">Loading video...</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${selectedCar.video?.split('v=')[1]?.split('&')[0]}`}
-                title={selectedCar.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+              ) : (
+                <iframe
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${selectedCar.video?.split('v=')[1]?.split('&')[0]}`}
+                  title={selectedCar.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Footer />
     </div>

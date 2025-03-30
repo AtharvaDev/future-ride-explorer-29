@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import Navbar from '@/components/Navbar';
@@ -113,6 +112,7 @@ const AdminPage = () => {
       const updatedCar: Car = {
         ...editingCar,
         ...data,
+        ...(data.video ? { video: data.video } : {}),
         features: features // Now using the features passed from the form
       };
       
@@ -129,7 +129,7 @@ const AdminPage = () => {
         pricePerKm: data.pricePerKm,
         image: data.image,
         color: data.color,
-        video: data.video,
+        ...(data.video ? { video: data.video } : {}),
         features: features // Now using the features passed from the form
       };
       
