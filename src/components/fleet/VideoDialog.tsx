@@ -1,10 +1,11 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Loader } from 'lucide-react';
+import { Loader, SkipForward } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Car } from '@/data/cars';
 import { appConfig } from '@/config/appConfig';
 import { uiStrings } from '@/constants/uiStrings';
@@ -74,6 +75,14 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
     };
   }, [open, onVideoComplete, onOpenChange]);
 
+  const handleSkip = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    onOpenChange(false);
+    if (onVideoComplete) onVideoComplete();
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -85,14 +94,15 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
       }}
     >
       <DialogContent 
-        className="sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none fixed inset-0 z-50"
+        className="sm:max-w-none max-w-none w-full h-full p-0 border-0 rounded-none fixed inset-0 bg-black m-0"
+        style={{ width: '100vw', height: '100vh' }}
       >
         <div 
           ref={containerRef}
-          className="w-full h-full bg-black relative"
+          className="w-full h-full bg-black relative flex items-center justify-center"
         >
           {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center z-10">
               <div className="flex flex-col items-center gap-4">
                 <Loader className="h-12 w-12 animate-spin text-primary" />
                 <p className="text-gray-100">{uiStrings.video.loading}</p>
@@ -102,7 +112,7 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
           
           <iframe
             ref={videoRef}
-            className="w-full h-full"
+            className="w-full h-full absolute inset-0"
             src={`https://www.youtube.com/embed/${videoId}?autoplay=${appConfig.video.autoplay ? 1 : 0}&mute=0&controls=${appConfig.video.showControls ? 1 : 0}&showinfo=0&rel=0`}
             title={car?.title || uiStrings.video.title}
             frameBorder="0"
@@ -110,6 +120,18 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
             allowFullScreen
             onLoad={() => setLoading(false)}
           ></iframe>
+
+          {/* Skip button */}
+          <div className="absolute bottom-8 right-8 z-20">
+            <Button 
+              onClick={handleSkip}
+              variant="secondary"
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white"
+            >
+              <SkipForward className="mr-2 h-4 w-4" />
+              {uiStrings.video.skipButton}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

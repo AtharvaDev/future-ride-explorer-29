@@ -12,6 +12,7 @@ export const uiStrings = {
   video: {
     loading: "Loading video...",
     title: "Toyota Video",
+    skipButton: "Skip",
   },
   
   // Fleet section related strings

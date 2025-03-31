@@ -98,15 +98,21 @@ header.on-booking-page {
 .dialog-content-fullscreen {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
-  max-width: 100vw;
-  max-height: 100vh;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   z-index: 9999;
+  background-color: black;
+}
+
+/* Hide the dialog close button in video mode */
+.dialog-content-fullscreen [data-radix-dialog-close] {
+  display: none;
 }
 
 .glass-panel {
