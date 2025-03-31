@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -183,8 +184,8 @@ const Navbar = () => {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
         scrolled || isAdminPage
-          ? "py-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm" 
-          : "py-5 bg-transparent"
+          ? "py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm" 
+          : "py-5 bg-black/40 backdrop-blur-sm border-b border-white/10"
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -193,7 +194,7 @@ const Navbar = () => {
             <Link 
               ref={logoRef}
               to="/" 
-              className="text-2xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-80 transition-all duration-300 hover:scale-105"
+              className="text-2xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 hover:opacity-80 transition-all duration-300 hover:scale-105"
               onClick={(e) => {
                 if (!navigate) {
                   e.preventDefault();
@@ -201,7 +202,7 @@ const Navbar = () => {
                 }
               }}
             >
-              <Car className="h-6 w-6 text-blue-600" />
+              <Car className="h-6 w-6 text-purple-500" />
               <span>{brandName}</span>
             </Link>
           </div>
@@ -224,7 +225,8 @@ const Navbar = () => {
                          (location?.pathname === '/' && link.href.startsWith('#')))
                           ? "bg-primary/10 text-primary font-medium" 
                           : "",
-                        link.name === "Contact" ? "text-green-600 hover:text-green-700" : ""
+                        link.name === "Contact" ? "text-green-600 hover:text-green-700" : "",
+                        scrolled ? "text-gray-800 dark:text-white" : "text-white"
                       )}
                       onClick={(e) => {
                         e.preventDefault();
@@ -249,7 +251,11 @@ const Navbar = () => {
                 <Button 
                   onClick={() => handleNavigation('/profile')}
                   variant="outline"
-                  className="transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                  className={cn(
+                    "transition-all duration-300 hover:scale-105 flex items-center gap-2",
+                    scrolled ? "text-gray-800 border-gray-300 hover:text-gray-900 dark:text-white dark:border-gray-600" : 
+                    "text-white border-white/20 hover:text-white hover:bg-white/20"
+                  )}
                 >
                   <User className="h-4 w-4" />
                   Profile
@@ -257,7 +263,7 @@ const Navbar = () => {
                 <Button 
                   onClick={handleAuthAction}
                   variant="default"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
@@ -267,7 +273,7 @@ const Navbar = () => {
               <Button 
                 onClick={handleAuthAction}
                 variant="default"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Login
@@ -283,14 +289,17 @@ const Navbar = () => {
                   variant="ghost" 
                   size="icon" 
                   aria-label="Menu"
-                  className="transition-all duration-300 hover:scale-105"
+                  className={cn(
+                    "transition-all duration-300 hover:scale-105",
+                    scrolled ? "text-gray-800 dark:text-white" : "text-white hover:bg-white/20" 
+                  )}
                 >
                   {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-56 mt-2 dropdown-menu-content rounded-xl p-2"
+                className="w-56 mt-2 dropdown-menu-content rounded-xl p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
               >
                 {navigationLinks.map((link) => (
                   <DropdownMenuItem 
@@ -310,7 +319,7 @@ const Navbar = () => {
                 ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                  className="cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 mt-2 transition-all duration-200 rounded-lg p-3 flex justify-center"
+                  className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 mt-2 transition-all duration-200 rounded-lg p-3 flex justify-center"
                   onClick={handleAuthAction}
                 >
                   {user ? (
