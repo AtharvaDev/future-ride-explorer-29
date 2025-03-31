@@ -22,12 +22,7 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   onOpenChange,
   onVideoComplete 
 }) => {
-  const [loading, setLoading] = useState(true);
-  const videoRef = useRef<HTMLIFrameElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // If car or video URL isn't provided, don't render the dialog
+  // Early returns before any hooks
   if (!car?.video) return null;
   
   // Extract YouTube video ID safely
@@ -49,6 +44,12 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   const videoId = getYouTubeVideoId(car.video);
   
   if (!videoId) return null;
+  
+  // All hooks after all early returns
+  const [loading, setLoading] = useState(true);
+  const videoRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Setup timer for video completion
   useEffect(() => {
