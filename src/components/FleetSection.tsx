@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -21,6 +22,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
+    // Set initial opacity to 0 for all cards and the section title
     cardRefs.current.forEach(card => {
       if (card) gsap.set(card, { opacity: 0, y: 50, scale: 0.95 });
     });
@@ -29,6 +31,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
       gsap.set(headerRef.current, { opacity: 0, y: 30 });
     }
 
+    // Create staggered animations for the cards
     if (fleetGridRef.current && cardRefs.current.length > 0) {
       const elements = cardRefs.current.filter(el => el !== null) as Element[];
       
@@ -36,6 +39,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
+              // If entry is the header element
               if (entry.target === headerRef.current) {
                 gsap.to(entry.target, {
                   opacity: 1,
@@ -48,13 +52,14 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
               
               const index = cardRefs.current.findIndex(ref => ref === entry.target);
               
+              // Create a timeline for each card with multiple animations
               const tl = gsap.timeline();
               
               tl.to(entry.target, {
                 opacity: 1,
                 y: 0,
                 duration: 0.7,
-                delay: index * 0.1 % 0.6,
+                delay: index * 0.1 % 0.6, // Stagger effect but reset after every 6 items
                 ease: "power3.out"
               });
               
@@ -64,6 +69,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
                 ease: "back.out(1.7)"
               }, "-=0.4");
               
+              // Add a subtle bounce effect
               tl.to(entry.target, {
                 y: -8,
                 duration: 0.3,
@@ -93,10 +99,12 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         }
       );
       
+      // Observe all card elements
       elements.forEach(card => {
         observer.observe(card);
       });
       
+      // Also observe the header element
       if (headerRef.current) {
         observer.observe(headerRef.current);
       }
@@ -113,6 +121,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   }, []);
 
   useEffect(() => {
+    // Animate background pattern on section when it's in viewport
     if (sectionRef.current) {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -138,6 +147,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
     }
   }, []);
 
+  // Floating animation for hovered card
   useEffect(() => {
     if (hoveredIndex !== null) {
       const hoveredCard = cardRefs.current[hoveredIndex];
@@ -153,6 +163,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   }, [hoveredIndex]);
 
   useEffect(() => {
+    // Clean up timer when component unmounts
     return () => {
       if (redirectTimerRef.current) {
         clearTimeout(redirectTimerRef.current);
@@ -161,15 +172,18 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   }, []);
 
   useEffect(() => {
+    // Handle actual redirection after video plays
     if (videoOpen && selectedCar && selectedCar.video) {
+      // Clear any existing timer
       if (redirectTimerRef.current) {
         clearTimeout(redirectTimerRef.current);
       }
       
+      // Set a new timer to redirect after 5 seconds
       redirectTimerRef.current = setTimeout(() => {
         setVideoOpen(false);
         navigate(`/booking/${selectedCar.id}`);
-      }, 7000);
+      }, 5000);
     }
     
     return () => {
@@ -181,9 +195,11 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
 
   const handleCarClick = (car: Car) => {
     if (car.video) {
+      // Only show video if car has a video URL
       setSelectedCar(car);
       setVideoOpen(true);
     } else {
+      // If there's no video, navigate directly
       navigate(`/booking/${car.id}`);
     }
   };
@@ -219,6 +235,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
             Explore our diverse lineup of Toyota vehicles, from practical hatchbacks to luxurious SUVs
           </p>
           
+          {/* Decorative elements */}
           <div className="relative h-8 w-full my-6">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-1">
               <div className="absolute w-1/3 h-full left-0 bg-gradient-to-r from-transparent to-purple-400"></div>
@@ -248,6 +265,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         </div>
       </div>
 
+      {/* Video Dialog */}
       <VideoDialog
         car={selectedCar}
         open={videoOpen}
