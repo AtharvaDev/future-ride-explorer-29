@@ -1,14 +1,13 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Loader, Maximize2, Minimize2 } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { 
   Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
+  DialogContent
 } from '@/components/ui/dialog';
 import { Car } from '@/data/cars';
-import { Button } from '@/components/ui/button';
+import { appConfig } from '@/config/appConfig';
+import { uiStrings } from '@/constants/uiStrings';
 
 interface VideoDialogProps {
   car: Car | null;
@@ -24,9 +23,9 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   onVideoComplete 
 }) => {
   const [loading, setLoading] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   // If car or video URL isn't provided, don't render the dialog
   if (!car?.video) return null;
@@ -50,10 +49,29 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   const videoId = getYouTubeVideoId(car.video);
   
   if (!videoId) return null;
-
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
+  
+  // Setup timer for video completion
+  useEffect(() => {
+    if (open && onVideoComplete) {
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      
+      // Set new timer for video duration from config
+      timerRef.current = setTimeout(() => {
+        onOpenChange(false);
+        if (onVideoComplete) onVideoComplete();
+      }, appConfig.video.redirectDuration);
+    }
+    
+    // Cleanup timer on unmount or dialog close
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [open, onVideoComplete, onOpenChange]);
 
   return (
     <Dialog 
@@ -63,32 +81,20 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
         if (!open && onVideoComplete) {
           onVideoComplete();
         }
-        if (!open) {
-          setIsFullscreen(false);
-        }
       }}
     >
       <DialogContent 
-        className={isFullscreen 
-          ? "sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none fixed inset-0 z-50" 
-          : "sm:max-w-4xl"}
+        className="sm:max-w-none max-w-none w-screen h-screen p-0 border-0 rounded-none fixed inset-0 z-50"
       >
-        {!isFullscreen && (
-          <DialogHeader>
-            <DialogTitle>{car?.title}</DialogTitle>
-          </DialogHeader>
-        )}
         <div 
           ref={containerRef}
-          className={isFullscreen 
-            ? "w-full h-full bg-black relative" 
-            : "w-full h-[60vh] bg-black relative rounded-md overflow-hidden"}
+          className="w-full h-full bg-black relative"
         >
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
                 <Loader className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-gray-100">Loading video...</p>
+                <p className="text-gray-100">{uiStrings.video.loading}</p>
               </div>
             </div>
           ) : null}
@@ -96,22 +102,13 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
           <iframe
             ref={videoRef}
             className="w-full h-full"
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&showinfo=0&rel=0`}
-            title={car?.title || "Toyota Video"}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=${appConfig.video.autoplay ? 1 : 0}&mute=0&controls=${appConfig.video.showControls ? 1 : 0}&showinfo=0&rel=0`}
+            title={car?.title || uiStrings.video.title}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
             onLoad={() => setLoading(false)}
           ></iframe>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-4 right-4 bg-black/60 text-white border-white/30 hover:bg-black/80 z-10"
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

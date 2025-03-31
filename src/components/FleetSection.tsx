@@ -1,9 +1,12 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
 import gsap from 'gsap';
 import CarCard from './fleet/CarCard';
 import VideoDialog from './fleet/VideoDialog';
+import { appConfig } from '@/config/appConfig';
+import { uiStrings } from '@/constants/uiStrings';
 
 interface FleetSectionProps {
   cars: Car[];
@@ -17,7 +20,6 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [videoOpen, setVideoOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -152,33 +154,6 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
     }
   }, [hoveredIndex]);
 
-  useEffect(() => {
-    return () => {
-      if (redirectTimerRef.current) {
-        clearTimeout(redirectTimerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (videoOpen && selectedCar && selectedCar.video) {
-      if (redirectTimerRef.current) {
-        clearTimeout(redirectTimerRef.current);
-      }
-      
-      redirectTimerRef.current = setTimeout(() => {
-        setVideoOpen(false);
-        navigate(`/booking/${selectedCar.id}`);
-      }, 7000);
-    }
-    
-    return () => {
-      if (redirectTimerRef.current) {
-        clearTimeout(redirectTimerRef.current);
-      }
-    };
-  }, [videoOpen, selectedCar, navigate]);
-
   const handleCarClick = (car: Car) => {
     if (car.video) {
       setSelectedCar(car);
@@ -205,18 +180,18 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
             className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4 relative"
             style={{ overflow: 'hidden' }}
           >
-            <span className="relative z-10">Our Fleet</span>
+            <span className="relative z-10">{uiStrings.fleet.sectionTitle}</span>
             <div className="absolute inset-0 bg-primary/5 animate-pulse"></div>
           </div>
           <h2 
             className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600"
           >
-            Discover the Toyota range
+            {uiStrings.fleet.sectionSubtitle}
           </h2>
           <p 
             className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
           >
-            Explore our diverse lineup of Toyota vehicles, from practical hatchbacks to luxurious SUVs
+            {uiStrings.fleet.sectionDescription}
           </p>
           
           <div className="relative h-8 w-full my-6">

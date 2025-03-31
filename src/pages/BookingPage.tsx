@@ -13,6 +13,7 @@ import { Loader, Play } from 'lucide-react';
 import { getAllCars } from '@/services/carService';
 import { useQuery } from '@tanstack/react-query';
 import VideoDialog from '@/components/fleet/VideoDialog';
+import { uiStrings } from '@/constants/uiStrings';
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -102,7 +103,7 @@ const BookingPage = () => {
         <div className="flex-grow flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <Loader className="h-12 w-12 animate-spin text-primary" />
-            <p>Loading car data...</p>
+            <p>{uiStrings.common.loading}</p>
           </div>
         </div>
         <Footer />
@@ -191,13 +192,17 @@ const BookingPage = () => {
         </div>
       </main>
 
-      {/* Using our improved VideoDialog component */}
+      {/* Video Dialog */}
       {selectedCar.video && (
         <VideoDialog
           car={selectedCar}
           open={videoOpen}
           onOpenChange={setVideoOpen}
-          onVideoComplete={() => {}}
+          onVideoComplete={() => {
+            if (selectedCar) {
+              navigate(`/booking/${selectedCar.id}`);
+            }
+          }}
         />
       )}
 
