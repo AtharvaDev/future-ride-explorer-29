@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Loader, SkipForward } from 'lucide-react';
 import { 
   Dialog, 
@@ -50,6 +50,14 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
   const [loading, setLoading] = useState(true);
   const videoRef = useRef<HTMLIFrameElement>(null);
 
+  // Handle cleanup when dialog closes
+  useEffect(() => {
+    return () => {
+      // Ensure any resources are properly released
+      setLoading(false);
+    };
+  }, []);
+
   const handleSkip = () => {
     if (onVideoComplete) {
       onVideoComplete();
@@ -61,9 +69,17 @@ const VideoDialog: React.FC<VideoDialogProps> = ({
     <Dialog 
       open={open} 
       onOpenChange={(open) => {
-        onOpenChange(open);
-        if (!open && onVideoComplete) {
-          onVideoComplete();
+        // Ensure smooth transition when closing dialog
+        if (!open) {
+          setLoading(true); // Reset loading state
+          setTimeout(() => {
+            onOpenChange(open);
+            if (onVideoComplete) {
+              onVideoComplete();
+            }
+          }, 100);
+        } else {
+          onOpenChange(open);
         }
       }}
     >

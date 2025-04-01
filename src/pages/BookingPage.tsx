@@ -20,7 +20,9 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const [videoOpen, setVideoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
   const bookingFormRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   const { data: cars = [], isLoading: carsLoading } = useQuery({
     queryKey: ['cars'],
@@ -31,40 +33,61 @@ const BookingPage = () => {
     ? cars.find(car => car.id === carId) || (cars.length > 0 ? cars[0] : null)
     : cars.length > 0 ? cars[0] : null;
 
+  // Handle initial page load and animations
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Short timeout to ensure DOM elements are ready
+    const timer = setTimeout(() => {
+      setPageReady(true);
+    }, 100);
 
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle car selection and navigation
+  useEffect(() => {
     if (carId && cars.length > 0 && !cars.find(car => car.id === carId)) {
       toast.error("Car not found, redirecting to default options");
       if (cars.length > 0) {
         navigate(`/booking/${cars[0].id}`);
       }
     }
-
-    const tl = gsap.timeline();
-    tl.from('.page-title', {
-      y: -50,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power3.out'
-    })
-    .from('.car-details', {
-      x: -100,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power3.out'
-    }, '-=0.4')
-    .from('.booking-container', {
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power3.out'
-    }, '-=0.4');
-
-    return () => {
-      tl.kill();
-    };
   }, [carId, cars, navigate]);
+
+  // Initialize animations after page and data are ready
+  useEffect(() => {
+    if (pageReady && selectedCar && !carsLoading) {
+      const tl = gsap.timeline();
+      
+      // Clear any existing animations first
+      gsap.set(['.page-title', '.car-details', '.booking-container'], { clearProps: "all" });
+      
+      // Start new animations
+      tl.from('.page-title', {
+        y: -50,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out'
+      })
+      .from('.car-details', {
+        x: -100,
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power3.out'
+      }, '-=0.4')
+      .from('.booking-container', {
+        y: 50,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out'
+      }, '-=0.4');
+
+      return () => {
+        tl.kill();
+      };
+    }
+  }, [pageReady, selectedCar, carsLoading]);
 
   const scrollToBookingForm = () => {
     if (bookingFormRef.current) {
@@ -86,6 +109,15 @@ const BookingPage = () => {
     }
   };
 
+  // Handle video dialog closing
+  const handleVideoComplete = () => {
+    setVideoOpen(false);
+    // Ensure page animations run again after video closes
+    setTimeout(() => {
+      setPageReady(true);
+    }, 300);
+  };
+
   if (carsLoading || !selectedCar) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -102,7 +134,7 @@ const BookingPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" ref={pageRef}>
       <Navbar />
       <Card>
         <CarSection
@@ -187,9 +219,7 @@ const BookingPage = () => {
           car={selectedCar}
           open={videoOpen}
           onOpenChange={setVideoOpen}
-          onVideoComplete={() => {
-            setVideoOpen(false);
-          }}
+          onVideoComplete={handleVideoComplete}
         />
       )}
 

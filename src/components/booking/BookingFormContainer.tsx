@@ -12,6 +12,7 @@ import { UpiFormData } from './PaymentStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { BookingContactInfo } from '@/types/booking';
+import gsap from 'gsap';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -20,6 +21,7 @@ interface BookingFormContainerProps {
 const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [formReady, setFormReady] = useState(false);
   const { user } = useAuth();
   
   const {
@@ -42,6 +44,22 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       resetStep();
     }
   }, [user, resetStep]);
+
+  // Initialize form animations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFormReady(true);
+      
+      // Apply fade-in animation to the form container
+      gsap.fromTo(
+        ".booking-form-content",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+      );
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle various step submissions
   const handleLoginWithGoogle = async (): Promise<void> => {
@@ -129,7 +147,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
       <ProgressSteps activeStep={formState.step - 1} />
       
-      <div className="mt-8">
+      <div className="mt-8 booking-form-content">
         {formState.step === 1 && (
           <LoginStep 
             onLoginWithGoogle={handleLoginWithGoogle} 
