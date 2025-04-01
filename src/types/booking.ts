@@ -1,7 +1,6 @@
-
 import { Timestamp } from 'firebase/firestore';
 
-export type BookingStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled';
+export type BookingStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled' | 'pending';
 
 export interface BookingBasicInfo {
   id?: string;
@@ -46,7 +45,6 @@ export interface Booking {
   updatedAt: Date;
 }
 
-// Add missing types needed by bookingService.ts
 export interface BookingData {
   carId: string;
   startDate: Date | Timestamp;
@@ -79,7 +77,7 @@ export interface CompleteBookingData {
     id: string;
     title: string;
     image: string;
-    pricePerDay: number; // Changed from price to pricePerDay to match Car type
+    pricePerDay: number;
   };
   paymentInfo?: PaymentInfo;
   userId: string;

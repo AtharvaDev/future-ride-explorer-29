@@ -30,14 +30,14 @@ const BookingHistory: React.FC = () => {
         // Current date for comparison
         const currentDate = new Date();
         
-        // Active bookings: start date is less than or equal to current date
+        // Active bookings: end date is in the future or today
         const active = allBookings.filter(booking => {
-          return new Date(booking.startDate) <= currentDate;
+          return new Date(booking.endDate) >= currentDate;
         });
         
-        // Past bookings: start date is greater than current date
+        // Past bookings: end date is in the past
         const past = allBookings.filter(booking => {
-          return new Date(booking.startDate) > currentDate;
+          return new Date(booking.endDate) < currentDate;
         });
         
         console.log("Active bookings:", active);
