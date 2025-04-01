@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CompleteBookingData, getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
+import { CompleteBookingData, getBookingsByUserId } from '@/services/bookingService';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Car, Clock } from 'lucide-react';
@@ -35,8 +35,22 @@ const BookingHistory: React.FC = () => {
       
       try {
         setLoading(true);
-        const active = await getActiveBookingsByUserId(user.uid);
-        const past = await getPastBookingsByUserId(user.uid);
+        // Get all bookings for the user
+        const allBookings = await getBookingsByUserId(user.uid);
+        
+        // Current date for comparison
+        const currentDate = new Date();
+        
+        // Categorize bookings based on start date
+        // Active bookings: start date is less than or equal to current date
+        const active = allBookings.filter(booking => 
+          booking.startDate <= currentDate
+        );
+        
+        // Past bookings: start date is greater than current date
+        const past = allBookings.filter(booking => 
+          booking.startDate > currentDate
+        );
         
         setActiveBookings(active);
         setPastBookings(past);
