@@ -17,7 +17,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CompleteBookingData, getBookingsByUserId } from '@/services/bookingService';
+import { getBookingsByUserId } from '@/services/bookingService';
+import { CompleteBookingData } from '@/types/booking';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Car, Clock } from 'lucide-react';

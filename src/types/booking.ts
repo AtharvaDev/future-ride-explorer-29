@@ -1,4 +1,5 @@
 
+
 import { Timestamp } from 'firebase/firestore';
 
 export type BookingStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled';
@@ -46,6 +47,28 @@ export interface Booking {
   updatedAt: Date;
 }
 
+// Add missing types needed by bookingService.ts
+export interface BookingData {
+  carId: string;
+  startDate: Date | Timestamp;
+  endDate: Date | Timestamp;
+  startCity: string;
+  status: BookingStatus;
+  userId: string;
+  createdAt?: Date | Timestamp;
+  paymentInfo?: PaymentInfo;
+}
+
+export interface PaymentInfo {
+  paymentMethod: 'upi' | 'card' | 'cash' | 'razorpay';
+  upiId?: string;
+  paymentId?: string;
+  tokenAmount: number;
+  totalAmount: number;
+  isPaid: boolean;
+  paidAt?: Date;
+}
+
 export interface CompleteBookingData {
   id: string;
   carId: string;
@@ -59,6 +82,7 @@ export interface CompleteBookingData {
     image: string;
     price: number;
   };
-  paymentInfo?: BookingPaymentInfo;
+  paymentInfo?: PaymentInfo;
   userId: string;
+  createdAt?: Date;
 }
