@@ -177,15 +177,19 @@ const Navbar = () => {
   };
 
   const isAdminPage = location?.pathname === '/admin';
+  const isHomePage = location?.pathname === '/';
 
   return (
     <header 
       ref={navbarRef}
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
-        scrolled || isAdminPage
-          ? "py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm" 
-          : "py-5 bg-black/40 backdrop-blur-sm border-b border-white/10"
+        isHomePage && !scrolled 
+          ? "py-5 bg-black/40 backdrop-blur-sm border-b border-white/10" 
+          : "py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm",
+        isAdminPage 
+          ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-800/20 shadow-sm"
+          : ""
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -344,3 +348,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
