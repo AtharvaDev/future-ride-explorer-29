@@ -44,7 +44,7 @@ export const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
                   ? "bg-primary/10 text-primary font-medium" 
                   : "",
                 link.name === "Contact" ? "text-green-600 hover:text-green-700" : "",
-                scrolled ? "text-gray-800 dark:text-white" : "text-white"
+                scrolled || activeRoute !== "/" ? "text-gray-800" : "text-white"
               )}
               onClick={(e) => {
                 e.preventDefault();

@@ -44,7 +44,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           aria-label="Menu"
           className={cn(
             "transition-all duration-300 hover:scale-105",
-            scrolled ? "text-gray-800 dark:text-white" : "text-white hover:bg-white/20" 
+            scrolled || window.location.pathname !== "/" ? "text-gray-800 hover:bg-gray-100/80" : "text-white hover:bg-white/20" 
           )}
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -52,7 +52,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-56 mt-2 dropdown-menu-content rounded-xl p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
+        className="w-56 mt-2 dropdown-menu-content rounded-xl p-2 bg-white/95 backdrop-blur-md"
       >
         {links.map((link) => (
           <DropdownMenuItem 
