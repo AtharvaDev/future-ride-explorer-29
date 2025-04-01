@@ -54,7 +54,12 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
         startDate,
         endDate,
         createdAt,
-        car: car || undefined,
+        car: car ? {
+          id: car.id,
+          title: car.title,
+          image: car.image,
+          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+        } : undefined,
       });
     }
     
@@ -145,7 +150,12 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
         startDate,
         endDate,
         createdAt,
-        car: car || undefined,
+        car: car ? {
+          id: car.id,
+          title: car.title,
+          image: car.image,
+          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+        } : undefined,
       };
     } else {
       console.log("No such booking!");
@@ -193,7 +203,12 @@ export const getBookingsByCarId = async (carId: string): Promise<CompleteBooking
         startDate,
         endDate,
         createdAt,
-        car: car || undefined,
+        car: car ? {
+          id: car.id,
+          title: car.title,
+          image: car.image,
+          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+        } : undefined,
       });
     }
 

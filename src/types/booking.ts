@@ -1,5 +1,4 @@
 
-
 import { Timestamp } from 'firebase/firestore';
 
 export type BookingStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled';
@@ -80,7 +79,7 @@ export interface CompleteBookingData {
     id: string;
     title: string;
     image: string;
-    price: number;
+    pricePerDay: number; // Changed from price to pricePerDay to match Car type
   };
   paymentInfo?: PaymentInfo;
   userId: string;
