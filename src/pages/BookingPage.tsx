@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -174,7 +175,7 @@ const BookingPage = () => {
               </div>
             </div>
 
-            <div ref={bookingFormRef} className="lg:col-span-8 booking-container">
+            <div ref={bookingFormRef} id="booking-form-section" className="lg:col-span-8 booking-container">
               <BookingForm car={selectedCar} />
             </div>
           </div>

@@ -126,7 +126,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
       <ProgressSteps activeStep={formState.step - 1} />
       
       <div className="mt-8">
