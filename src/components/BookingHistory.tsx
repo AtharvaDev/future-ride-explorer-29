@@ -36,22 +36,27 @@ const BookingHistory: React.FC = () => {
       
       try {
         setLoading(true);
+        console.log("Fetching bookings for user:", user.uid);
+        
         // Get all bookings for the user
         const allBookings = await getBookingsByUserId(user.uid);
+        console.log("All bookings fetched:", allBookings);
         
         // Current date for comparison
         const currentDate = new Date();
         
-        // Categorize bookings based on start date
         // Active bookings: start date is less than or equal to current date
-        const active = allBookings.filter(booking => 
-          booking.startDate <= currentDate
-        );
+        const active = allBookings.filter(booking => {
+          return new Date(booking.startDate) <= currentDate;
+        });
         
         // Past bookings: start date is greater than current date
-        const past = allBookings.filter(booking => 
-          booking.startDate > currentDate
-        );
+        const past = allBookings.filter(booking => {
+          return new Date(booking.startDate) > currentDate;
+        });
+        
+        console.log("Active bookings:", active);
+        console.log("Past bookings:", past);
         
         setActiveBookings(active);
         setPastBookings(past);
@@ -138,11 +143,11 @@ const BookingHistory: React.FC = () => {
                             <TableCell>
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1 text-primary" />
-                                <span>{format(booking.startDate, 'MMM dd, yyyy')}</span>
+                                <span>{format(new Date(booking.startDate), 'MMM dd, yyyy')}</span>
                               </div>
                               <div className="flex items-center mt-1 text-muted-foreground text-sm">
                                 <Clock className="w-3 h-3 mr-1" />
-                                <span>For {Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                                <span>For {Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24))} days</span>
                               </div>
                             </TableCell>
                             <TableCell>{booking.startCity}</TableCell>
@@ -201,11 +206,11 @@ const BookingHistory: React.FC = () => {
                             <TableCell>
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1 text-primary" />
-                                <span>{format(booking.startDate, 'MMM dd, yyyy')}</span>
+                                <span>{format(new Date(booking.startDate), 'MMM dd, yyyy')}</span>
                               </div>
                               <div className="flex items-center mt-1 text-muted-foreground text-sm">
                                 <Clock className="w-3 h-3 mr-1" />
-                                <span>For {Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                                <span>For {Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24))} days</span>
                               </div>
                             </TableCell>
                             <TableCell>{booking.startCity}</TableCell>
