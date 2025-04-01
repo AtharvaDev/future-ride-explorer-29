@@ -7,11 +7,12 @@ import { toast } from 'sonner';
 import gsap from 'gsap';
 import { Card } from '@/components/ui/card';
 import CarSection from '@/components/CarSection';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import VideoDialog from '@/components/fleet/VideoDialog';
 import { Button } from '@/components/ui/button';
 import { Loader, Play } from 'lucide-react';
 import { getAllCars } from '@/services/carService';
 import { useQuery } from '@tanstack/react-query';
+import { videoConfig } from '@/config/videoConfig';
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -181,32 +182,14 @@ const BookingPage = () => {
       </main>
 
       {selectedCar.video && (
-        <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
-          <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>{selectedCar.title}</DialogTitle>
-            </DialogHeader>
-            <div className="w-full h-[60vh] bg-black relative rounded-md overflow-hidden">
-              {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader className="h-12 w-12 animate-spin text-primary" />
-                    <p className="text-gray-100">Loading video...</p>
-                  </div>
-                </div>
-              ) : (
-                <iframe
-                  className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${selectedCar.video?.split('v=')[1]?.split('&')[0]}`}
-                  title={selectedCar.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <VideoDialog
+          car={selectedCar}
+          open={videoOpen}
+          onOpenChange={setVideoOpen}
+          onVideoComplete={() => {
+            setVideoOpen(false);
+          }}
+        />
       )}
 
       <Footer />

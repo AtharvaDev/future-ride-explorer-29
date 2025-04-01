@@ -1,10 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
 import gsap from 'gsap';
 import CarCard from './fleet/CarCard';
 import VideoDialog from './fleet/VideoDialog';
+import { videoConfig } from '@/config/videoConfig';
 
 interface FleetSectionProps {
   cars: Car[];
@@ -179,11 +179,11 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
         clearTimeout(redirectTimerRef.current);
       }
       
-      // Set a new timer to redirect after 5 seconds
+      // Set a new timer to redirect after configured delay
       redirectTimerRef.current = setTimeout(() => {
         setVideoOpen(false);
         navigate(`/booking/${selectedCar.id}`);
-      }, 5000);
+      }, videoConfig.autoSkipDelay);
     }
     
     return () => {
