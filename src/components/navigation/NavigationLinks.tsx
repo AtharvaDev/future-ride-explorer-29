@@ -1,5 +1,5 @@
 
-import { Home, Car, Phone, Book, User, Shield } from 'lucide-react';
+import { Home, Car, Phone, Book, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type NavLink = {
@@ -19,7 +19,6 @@ export const useNavigationLinks = () => {
   
   if (user) {
     links.push({ name: "My Bookings", href: "/my-bookings", icon: Book });
-    links.push({ name: "Profile", href: "/profile", icon: User });
   }
   
   if (isAdmin) {

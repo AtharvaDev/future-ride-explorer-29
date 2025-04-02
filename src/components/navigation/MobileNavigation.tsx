@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Menu, X, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { NavLink } from './NavigationLinks';
 import {
@@ -70,6 +70,17 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
             {link.name}
           </DropdownMenuItem>
         ))}
+        
+        {user && (
+          <DropdownMenuItem 
+            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary/10 rounded-lg flex items-center gap-2 p-3"
+            onClick={() => handleNavigation('/profile')}
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
+        )}
+        
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 mt-2 transition-all duration-200 rounded-lg p-3 flex justify-center"

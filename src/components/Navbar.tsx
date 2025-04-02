@@ -11,6 +11,8 @@ import { MobileNavigation } from './navigation/MobileNavigation';
 import { useNavbarAnimations } from './navigation/useNavbarAnimations';
 import { useScrollBehavior } from './navigation/useScrollBehavior';
 import { useNavigation } from './navigation/useNavigation';
+import { Button } from './ui/button';
+import { User } from 'lucide-react';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -85,27 +87,44 @@ const Navbar = () => {
             />
           )}
           
-          {!isMobile && (
-            <DesktopActions
-              user={user}
-              handleNavigation={handleNavigation}
-              handleAuthAction={handleAuthAction}
-              scrolled={scrolled}
-            />
-          )}
-          
-          {isMobile && (
-            <MobileNavigation
-              links={navigationLinks}
-              user={user}
-              mobileMenuOpen={mobileMenuOpen}
-              setMobileMenuOpen={setMobileMenuOpen}
-              handleNavigation={handleNavigation}
-              handleAuthAction={handleAuthAction}
-              scrolled={scrolled}
-              mobileMenuButtonRef={mobileMenuButtonRef}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {!isMobile && user && (
+              <Button 
+                onClick={() => handleNavigation('/profile')}
+                variant="ghost"
+                className={cn(
+                  "transition-all duration-300 hover:scale-105 flex items-center gap-2",
+                  scrolled ? "text-gray-800 hover:text-gray-900 dark:text-white" : 
+                  "text-white hover:text-white/90"
+                )}
+              >
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
+            )}
+            
+            {!isMobile && (
+              <DesktopActions
+                user={user}
+                handleNavigation={handleNavigation}
+                handleAuthAction={handleAuthAction}
+                scrolled={scrolled}
+              />
+            )}
+            
+            {isMobile && (
+              <MobileNavigation
+                links={navigationLinks}
+                user={user}
+                mobileMenuOpen={mobileMenuOpen}
+                setMobileMenuOpen={setMobileMenuOpen}
+                handleNavigation={handleNavigation}
+                handleAuthAction={handleAuthAction}
+                scrolled={scrolled}
+                mobileMenuButtonRef={mobileMenuButtonRef}
+              />
+            )}
+          </div>
         </div>
       </div>
     </header>
