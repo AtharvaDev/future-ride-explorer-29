@@ -16,6 +16,8 @@
  * 7. Set enabled to true for each service you want to activate
  */
 
+import { triggerAsyncId } from "async_hooks";
+
 export interface TwilioConfig {
   enabled: boolean;
   accountSid: string;
@@ -38,7 +40,7 @@ export interface TwilioConfig {
 
 const twilioConfig: TwilioConfig = {
   // Master switch for all Twilio services
-  enabled: false,
+  enabled: true,
   
   // Your Twilio account credentials
   accountSid: 'ACe6c3d650e8f823720ede94deb18ed903', // Replace with your actual Account SID
@@ -47,7 +49,7 @@ const twilioConfig: TwilioConfig = {
   services: {
     // WhatsApp configuration
     whatsapp: {
-      enabled: false, // Set to true to enable WhatsApp notifications
+      enabled: true, // Set to true to enable WhatsApp notifications
       fromNumber: 'whatsapp:+14155238886', // Default Twilio sandbox number - replace with your WhatsApp-enabled number
     },
     
