@@ -1,254 +1,159 @@
+
 import { db } from '@/config/firebase';
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  query, 
-  where, 
-  addDoc, 
-  serverTimestamp,
-  orderBy,
-  Timestamp,
-  updateDoc,
-  deleteDoc
-} from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, orderBy, Timestamp, DocumentData, deleteDoc, updateDoc } from 'firebase/firestore';
 import { Car } from '@/data/cars';
 import { getCarById } from './carService';
-import { BookingData, BookingStatus, CompleteBookingData, PaymentInfo } from '@/types/booking';
+import { formatBookingDate } from '@/utils/bookingUtils';
+import { BookingStatus, CompleteBookingData, UserBooking } from '@/types/booking';
 
-// Retrieves all bookings for a user
+// Get all bookings for a user
 export const getBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
+    console.log("Fetching bookings for userId:", userId);
+    
     const bookingsRef = collection(db, 'bookings');
     const q = query(
-      bookingsRef,
+      bookingsRef, 
       where('userId', '==', userId),
       orderBy('createdAt', 'desc')
     );
     
     const querySnapshot = await getDocs(q);
+    console.log(`Found ${querySnapshot.docs.length} bookings for user ${userId}`);
     
-    const bookings: CompleteBookingData[] = [];
-    
-    for (const doc of querySnapshot.docs) {
-      const data = doc.data() as BookingData;
+    const bookingsPromises = querySnapshot.docs.map(async (doc) => {
+      const bookingData = doc.data() as UserBooking;
+      const car = await getCarById(bookingData.carId);
       
-      // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = data.startDate instanceof Timestamp ? 
-        data.startDate.toDate() : 
-        new Date(data.startDate);
-      
-      const endDate = data.endDate instanceof Timestamp ? 
-        data.endDate.toDate() : 
-        new Date(data.endDate);
-      
-      const createdAt = data.createdAt ? 
-        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
-        new Date();
-      
-      // Fetch the car data
-      let car: Car | null = null;
-      try {
-        car = await getCarById(data.carId);
-      } catch (err) {
-        console.error(`Error fetching car ${data.carId}:`, err);
+      if (!car) {
+        console.error(`Car with ID ${bookingData.carId} not found for booking ${doc.id}`);
+        return null;
       }
       
-      bookings.push({
+      return {
         id: doc.id,
-        ...data,
-        startDate,
-        endDate,
-        createdAt,
-        car: car ? {
-          id: car.id,
-          title: car.title,
-          image: car.image,
-          pricePerDay: car.pricePerDay
-        } : undefined,
-      });
-    }
-    
-    return bookings;
-  } catch (error) {
-    console.error('Error fetching bookings:', error);
-    throw error;
-  }
-};
-
-// Get active bookings for a user (where end date >= current date)
-export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
-  const allBookings = await getBookingsByUserId(userId);
-  const currentDate = new Date();
-  return allBookings.filter(booking => new Date(booking.endDate) >= currentDate);
-};
-
-// Get past bookings for a user (where end date < current date)
-export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
-  const allBookings = await getBookingsByUserId(userId);
-  const currentDate = new Date();
-  return allBookings.filter(booking => new Date(booking.endDate) < currentDate);
-};
-
-// Create a new booking
-export const createBooking = async (bookingData: BookingData): Promise<string> => {
-  try {
-    const bookingsRef = collection(db, 'bookings');
-    const docRef = await addDoc(bookingsRef, {
-      ...bookingData,
-      createdAt: serverTimestamp(),
-      status: 'pending' as BookingStatus, // Set initial status to 'pending'
+        ...bookingData,
+        car,
+        formattedStartDate: formatBookingDate(bookingData.startDate),
+        formattedEndDate: formatBookingDate(bookingData.endDate),
+        formattedCreatedAt: bookingData.createdAt ? 
+          (bookingData.createdAt as Timestamp).toDate().toLocaleDateString() : 
+          'Unknown date'
+      };
     });
-    return docRef.id;
+    
+    const bookings = await Promise.all(bookingsPromises);
+    return bookings.filter(booking => booking !== null) as CompleteBookingData[];
   } catch (error) {
-    console.error('Error creating booking:', error);
+    console.error("Error fetching bookings:", error);
     throw error;
   }
 };
 
-// Update an existing booking
-export const updateBooking = async (bookingId: string, updates: Partial<BookingData>): Promise<void> => {
+// Get active (current and future) bookings for a user
+export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
-    const bookingDocRef = doc(db, 'bookings', bookingId);
-    await updateDoc(bookingDocRef, updates);
+    console.log("Fetching active bookings for userId:", userId);
+    const now = new Date();
+    
+    // Get all bookings first
+    const allBookings = await getBookingsByUserId(userId);
+    
+    // Filter for active bookings (end date is in the future or booking is in progress)
+    const activeBookings = allBookings.filter(booking => {
+      const endDate = (booking.endDate as Timestamp).toDate();
+      return endDate >= now && booking.status !== BookingStatus.CANCELLED;
+    });
+    
+    console.log(`Found ${activeBookings.length} active bookings for user ${userId}`);
+    return activeBookings;
   } catch (error) {
-    console.error('Error updating booking:', error);
+    console.error("Error fetching active bookings:", error);
     throw error;
   }
 };
 
-// Delete a booking
-export const deleteBooking = async (bookingId: string): Promise<void> => {
+// Get past bookings for a user
+export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
-    const bookingDocRef = doc(db, 'bookings', bookingId);
-    await deleteDoc(bookingDocRef);
+    console.log("Fetching past bookings for userId:", userId);
+    const now = new Date();
+    
+    // Get all bookings first
+    const allBookings = await getBookingsByUserId(userId);
+    
+    // Filter for past bookings (end date is in the past or booking is cancelled)
+    const pastBookings = allBookings.filter(booking => {
+      const endDate = (booking.endDate as Timestamp).toDate();
+      return endDate < now || booking.status === BookingStatus.CANCELLED;
+    });
+    
+    console.log(`Found ${pastBookings.length} past bookings for user ${userId}`);
+    return pastBookings;
   } catch (error) {
-    console.error('Error deleting booking:', error);
+    console.error("Error fetching past bookings:", error);
     throw error;
   }
 };
 
-// Get booking by ID
+// Get booking by ID with car details
 export const getBookingById = async (bookingId: string): Promise<CompleteBookingData | null> => {
   try {
-    const bookingDocRef = doc(db, 'bookings', bookingId);
-    const docSnap = await getDoc(bookingDocRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data() as BookingData;
-
-      // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = data.startDate instanceof Timestamp ? 
-        data.startDate.toDate() : 
-        new Date(data.startDate);
-      
-      const endDate = data.endDate instanceof Timestamp ? 
-        data.endDate.toDate() : 
-        new Date(data.endDate);
-      
-      const createdAt = data.createdAt ? 
-        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
-        new Date();
-
-      // Fetch the car data
-      let car: Car | null = null;
-      try {
-        car = await getCarById(data.carId);
-      } catch (err) {
-        console.error(`Error fetching car ${data.carId}:`, err);
-      }
-
-      return {
-        id: docSnap.id,
-        ...data,
-        startDate,
-        endDate,
-        createdAt,
-        car: car ? {
-          id: car.id,
-          title: car.title,
-          image: car.image,
-          pricePerDay: car.pricePerDay
-        } : undefined,
-      };
-    } else {
-      console.log("No such booking!");
+    const bookingRef = doc(db, 'bookings', bookingId);
+    const bookingSnap = await getDoc(bookingRef);
+    
+    if (!bookingSnap.exists()) {
+      console.log(`No booking found with ID: ${bookingId}`);
       return null;
     }
-  } catch (error) {
-    console.error('Error fetching booking:', error);
-    throw error;
-  }
-};
-
-// Get bookings by car ID
-export const getBookingsByCarId = async (carId: string): Promise<CompleteBookingData[]> => {
-  try {
-    const bookingsRef = collection(db, 'bookings');
-    const q = query(
-      bookingsRef,
-      where('carId', '==', carId),
-      orderBy('createdAt', 'desc')
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    const bookings: CompleteBookingData[] = [];
-
-    for (const doc of querySnapshot.docs) {
-      const data = doc.data() as BookingData;
-
-      // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = data.startDate instanceof Timestamp ? 
-        data.startDate.toDate() : 
-        new Date(data.startDate);
-      
-      const endDate = data.endDate instanceof Timestamp ? 
-        data.endDate.toDate() : 
-        new Date(data.endDate);
-      
-      const createdAt = data.createdAt ? 
-        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
-        new Date();
-
-      // Fetch the car data (optional, depending on your needs)
-      let car: Car | null = null;
-      try {
-        car = await getCarById(data.carId);
-      } catch (err) {
-        console.error(`Error fetching car ${data.carId}:`, err);
-      }
-
-      bookings.push({
-        id: doc.id,
-        ...data,
-        startDate,
-        endDate,
-        createdAt,
-        car: car ? {
-          id: car.id,
-          title: car.title,
-          image: car.image,
-          pricePerDay: car.pricePerDay
-        } : undefined,
-      });
+    
+    const bookingData = bookingSnap.data() as UserBooking;
+    const car = await getCarById(bookingData.carId);
+    
+    if (!car) {
+      console.error(`Car with ID ${bookingData.carId} not found for booking ${bookingId}`);
+      return null;
     }
-
-    return bookings;
+    
+    return {
+      id: bookingId,
+      ...bookingData,
+      car,
+      formattedStartDate: formatBookingDate(bookingData.startDate),
+      formattedEndDate: formatBookingDate(bookingData.endDate),
+      formattedCreatedAt: bookingData.createdAt ? 
+        (bookingData.createdAt as Timestamp).toDate().toLocaleDateString() : 
+        'Unknown date'
+    };
   } catch (error) {
-    console.error('Error fetching bookings:', error);
+    console.error(`Error fetching booking ${bookingId}:`, error);
     throw error;
   }
 };
 
-// Update payment information for a booking
-export const updatePaymentInfo = async (bookingId: string, paymentInfo: PaymentInfo): Promise<void> => {
+// Cancel a booking
+export const cancelBooking = async (bookingId: string): Promise<void> => {
   try {
-    const bookingDocRef = doc(db, 'bookings', bookingId);
-    await updateDoc(bookingDocRef, { paymentInfo: paymentInfo });
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      status: BookingStatus.CANCELLED,
+      updatedAt: Timestamp.now()
+    });
+    console.log(`Booking ${bookingId} has been cancelled`);
   } catch (error) {
-    console.error('Error updating payment info:', error);
+    console.error(`Error cancelling booking ${bookingId}:`, error);
+    throw error;
+  }
+};
+
+// Delete a booking (admin only)
+export const deleteBooking = async (bookingId: string): Promise<void> => {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await deleteDoc(bookingRef);
+    console.log(`Booking ${bookingId} has been deleted from the database`);
+  } catch (error) {
+    console.error(`Error deleting booking ${bookingId}:`, error);
     throw error;
   }
 };

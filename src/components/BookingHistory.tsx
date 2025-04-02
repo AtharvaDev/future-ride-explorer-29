@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getBookingsByUserId, getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
+import { getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
 import { CompleteBookingData } from '@/types/booking';
 import BookingHistoryTabs from './booking-history/BookingHistoryTabs';
 
@@ -23,7 +23,7 @@ const BookingHistory: React.FC = () => {
         setLoading(true);
         console.log("Fetching bookings for user:", user.uid);
         
-        // Get active and past bookings using the fixed functions
+        // Get active and past bookings using the dedicated functions
         const active = await getActiveBookingsByUserId(user.uid);
         const past = await getPastBookingsByUserId(user.uid);
         
