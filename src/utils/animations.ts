@@ -1,9 +1,4 @@
-
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 
 // Entrance animations
 export const fadeInUp = (element: Element, delay: number = 0, duration: number = 0.6) => {

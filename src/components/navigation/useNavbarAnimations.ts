@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import gsap from 'gsap';
+import { gsap } from '@/lib/gsap';
 
 export const useNavbarAnimations = (
   navbarRef: React.RefObject<HTMLElement>,

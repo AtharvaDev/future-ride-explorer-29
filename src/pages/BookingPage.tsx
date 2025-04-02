@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BookingForm from '@/components/BookingForm';
 import { toast } from 'sonner';
-import gsap from 'gsap';
+import { gsap } from '@/lib/gsap';
 import { Card } from '@/components/ui/card';
 import CarSection from '@/components/CarSection';
 import VideoDialog from '@/components/fleet/VideoDialog';

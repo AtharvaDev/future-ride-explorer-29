@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
+import { gsap } from '@/lib/gsap';
 import { fadeInLeft, fadeInRight, createHoverAnimation } from '@/utils/animations';
 import { createRepeatingScrollAnimation, createStaggerScrollAnimation } from '@/utils/scroll-animations';
 

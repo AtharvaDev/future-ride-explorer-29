@@ -1,7 +1,7 @@
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import gsap from 'gsap';
+import { gsap } from '@/lib/gsap';
 
 interface NavigationConfig {
   mobileMenuOpen: boolean;
