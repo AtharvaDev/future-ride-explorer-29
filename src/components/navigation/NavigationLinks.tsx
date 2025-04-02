@@ -1,5 +1,5 @@
 
-import { Home, Car, Phone, Book, User, Shield } from 'lucide-react';
+import { Home, Car, Phone, Book, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type NavLink = {
