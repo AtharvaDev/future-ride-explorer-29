@@ -52,26 +52,30 @@ export interface Booking {
   updatedAt: Date;
 }
 
-export interface UserBooking {
-  carId: string;
-  startDate: Date | Timestamp;
-  endDate: Date | Timestamp;
-  startCity: string;
-  status: BookingStatus;
-  userId: string;
-  createdAt?: Date | Timestamp;
-  paymentInfo?: PaymentInfo;
-}
-
 export interface BookingData {
-  carId: string;
-  startDate: Date | Timestamp;
-  endDate: Date | Timestamp;
-  startCity: string;
-  status: BookingStatus;
-  userId: string;
+  carId?: string;
+  startDate?: Date | Timestamp;
+  endDate?: Date | Timestamp;
+  startCity?: string;
+  status?: BookingStatus;
+  userId?: string;
   createdAt?: Date | Timestamp;
   paymentInfo?: PaymentInfo;
+  car?: {
+    id: string;
+    title: string;
+    image: string;
+    pricePerDay: number;
+  };
+  basicInfo?: {
+    carId: string;
+    startDate: Date | Timestamp;
+    endDate: Date | Timestamp;
+    startCity: string;
+    status: BookingStatus;
+    userId: string;
+  };
+  contactInfo?: BookingContactInfo;
 }
 
 export interface PaymentInfo {

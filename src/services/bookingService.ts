@@ -3,18 +3,18 @@ import { db } from '@/config/firebase';
 import { collection, query, where, getDocs, doc, getDoc, orderBy, Timestamp, DocumentData, deleteDoc, updateDoc } from 'firebase/firestore';
 import { Car } from '@/data/cars';
 import { getCarById } from './carService';
-import { formatBookingDate } from '@/utils/bookingUtils';
-import { BookingStatus, CompleteBookingData, UserBooking } from '@/types/booking';
+import { ensureDate } from '@/utils/bookingUtils';
+import { BookingStatus, CompleteBookingData, BookingData } from '@/types/booking';
 
 // Get all bookings for a user
 export const getBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   try {
     console.log("Fetching bookings for userId:", userId);
     
-    const bookingsRef = collection(db, 'bookings');
+    // Updated to use the subcollection structure
+    const bookingsRef = collection(db, `users/${userId}/bookings`);
     const q = query(
       bookingsRef, 
-      where('userId', '==', userId),
       orderBy('createdAt', 'desc')
     );
     
@@ -22,22 +22,54 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
     console.log(`Found ${querySnapshot.docs.length} bookings for user ${userId}`);
     
     const bookingsPromises = querySnapshot.docs.map(async (doc) => {
-      const bookingData = doc.data() as UserBooking;
-      const car = await getCarById(bookingData.carId);
+      const bookingData = doc.data() as BookingData;
+      
+      // If the car data is already in the document, use it directly
+      let car;
+      if (bookingData.car) {
+        car = bookingData.car;
+      } else if (bookingData.carId || bookingData.basicInfo?.carId) {
+        const carId = bookingData.carId || bookingData.basicInfo?.carId;
+        if (carId) {
+          car = await getCarById(carId);
+        }
+      }
       
       if (!car) {
-        console.error(`Car with ID ${bookingData.carId} not found for booking ${doc.id}`);
+        console.error(`Car not found for booking ${doc.id}`);
         return null;
       }
+
+      // Handle both data structures (nested under basicInfo or flat)
+      const startDate = bookingData.startDate 
+        ? bookingData.startDate instanceof Timestamp 
+          ? bookingData.startDate.toDate() 
+          : new Date(bookingData.startDate)
+        : bookingData.basicInfo?.startDate instanceof Timestamp 
+          ? bookingData.basicInfo.startDate.toDate() 
+          : new Date(bookingData.basicInfo?.startDate);
+      
+      const endDate = bookingData.endDate 
+        ? bookingData.endDate instanceof Timestamp 
+          ? bookingData.endDate.toDate() 
+          : new Date(bookingData.endDate)
+        : bookingData.basicInfo?.endDate instanceof Timestamp 
+          ? bookingData.basicInfo.endDate.toDate() 
+          : new Date(bookingData.basicInfo?.endDate);
+      
+      const status = bookingData.status || bookingData.basicInfo?.status;
+      const startCity = bookingData.startCity || bookingData.basicInfo?.startCity;
       
       return {
         id: doc.id,
-        ...bookingData,
+        carId: bookingData.carId || bookingData.basicInfo?.carId || '',
+        startDate,
+        endDate,
+        startCity,
+        status,
         car,
-        startDate: bookingData.startDate instanceof Timestamp ? 
-          bookingData.startDate.toDate() : new Date(bookingData.startDate),
-        endDate: bookingData.endDate instanceof Timestamp ? 
-          bookingData.endDate.toDate() : new Date(bookingData.endDate)
+        paymentInfo: bookingData.paymentInfo,
+        userId
       } as CompleteBookingData;
     });
     
@@ -98,9 +130,10 @@ export const getPastBookingsByUserId = async (userId: string): Promise<CompleteB
 };
 
 // Get booking by ID with car details
-export const getBookingById = async (bookingId: string): Promise<CompleteBookingData | null> => {
+export const getBookingById = async (bookingId: string, userId: string): Promise<CompleteBookingData | null> => {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    // Updated path to use userId parameter
+    const bookingRef = doc(db, `users/${userId}/bookings`, bookingId);
     const bookingSnap = await getDoc(bookingRef);
     
     if (!bookingSnap.exists()) {
@@ -108,23 +141,48 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
       return null;
     }
     
-    const bookingData = bookingSnap.data() as UserBooking;
-    const car = await getCarById(bookingData.carId);
+    const bookingData = bookingSnap.data() as BookingData;
+    
+    // If car data is directly stored in the booking
+    let car = bookingData.car;
+    
+    // If not, fetch it
+    if (!car && (bookingData.carId || bookingData.basicInfo?.carId)) {
+      const carId = bookingData.carId || bookingData.basicInfo?.carId;
+      if (carId) {
+        car = await getCarById(carId);
+      }
+    }
     
     if (!car) {
-      console.error(`Car with ID ${bookingData.carId} not found for booking ${bookingId}`);
+      console.error(`Car not found for booking ${bookingId}`);
       return null;
     }
     
+    // Extract data with fallbacks for both data structures
+    const startDate = bookingData.startDate 
+      ? bookingData.startDate instanceof Timestamp 
+        ? bookingData.startDate.toDate() 
+        : new Date(bookingData.startDate)
+      : bookingData.basicInfo?.startDate instanceof Timestamp 
+        ? bookingData.basicInfo.startDate.toDate() 
+        : new Date(bookingData.basicInfo?.startDate);
+    
+    const endDate = bookingData.endDate 
+      ? bookingData.endDate instanceof Timestamp 
+        ? bookingData.endDate.toDate() 
+        : new Date(bookingData.endDate)
+      : bookingData.basicInfo?.endDate instanceof Timestamp 
+        ? bookingData.basicInfo.endDate.toDate() 
+        : new Date(bookingData.basicInfo?.endDate);
+    
     return {
       id: bookingId,
-      carId: bookingData.carId,
-      startDate: bookingData.startDate instanceof Timestamp ? 
-        bookingData.startDate.toDate() : new Date(bookingData.startDate),
-      endDate: bookingData.endDate instanceof Timestamp ? 
-        bookingData.endDate.toDate() : new Date(bookingData.endDate),
-      startCity: bookingData.startCity,
-      status: bookingData.status,
+      carId: bookingData.carId || bookingData.basicInfo?.carId || '',
+      startDate,
+      endDate,
+      startCity: bookingData.startCity || bookingData.basicInfo?.startCity || '',
+      status: bookingData.status || bookingData.basicInfo?.status || BookingStatus.DRAFT,
       car: {
         id: car.id,
         title: car.title,
@@ -132,7 +190,7 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
         pricePerDay: car.pricePerDay
       },
       paymentInfo: bookingData.paymentInfo,
-      userId: bookingData.userId
+      userId: bookingData.userId || bookingData.basicInfo?.userId || userId
     };
   } catch (error) {
     console.error(`Error fetching booking ${bookingId}:`, error);
@@ -141,9 +199,10 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
 };
 
 // Cancel a booking
-export const cancelBooking = async (bookingId: string): Promise<void> => {
+export const cancelBooking = async (bookingId: string, userId: string): Promise<void> => {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    // Updated to use userId parameter
+    const bookingRef = doc(db, `users/${userId}/bookings`, bookingId);
     await updateDoc(bookingRef, {
       status: BookingStatus.CANCELLED,
       updatedAt: Timestamp.now()
@@ -156,9 +215,10 @@ export const cancelBooking = async (bookingId: string): Promise<void> => {
 };
 
 // Delete a booking (admin only)
-export const deleteBooking = async (bookingId: string): Promise<void> => {
+export const deleteBooking = async (bookingId: string, userId: string): Promise<void> => {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    // Updated to use userId parameter
+    const bookingRef = doc(db, `users/${userId}/bookings`, bookingId);
     await deleteDoc(bookingRef);
     console.log(`Booking ${bookingId} has been deleted from the database`);
   } catch (error) {

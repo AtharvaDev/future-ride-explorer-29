@@ -23,7 +23,7 @@ const BookingHistory: React.FC = () => {
         setLoading(true);
         console.log("Fetching bookings for user:", user.uid);
         
-        // Get active and past bookings using the dedicated functions
+        // Use the updated service functions with the user ID
         const active = await getActiveBookingsByUserId(user.uid);
         const past = await getPastBookingsByUserId(user.uid);
         
