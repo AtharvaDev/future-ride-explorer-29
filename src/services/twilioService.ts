@@ -2,6 +2,7 @@
 // Twilio Service Implementation
 // This file contains mock implementations of Twilio services
 // Replace with actual Twilio SDK integration when ready for production
+import twilio from 'twilio'; // Replace require with import
 
 import twilioConfig from '@/config/twilioConfig';
 
@@ -20,7 +21,6 @@ interface TwilioEmailOptions {
 
 /**
  * Send a WhatsApp message using Twilio
- * This is a mock implementation that logs the message and returns a promise
  */
 export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promise<boolean> => {
   // Check if Twilio and WhatsApp service are enabled
@@ -51,13 +51,14 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
     
     // In a real implementation, you would use something like:
     
-    const client = require('twilio')(twilioConfig.accountSid, twilioConfig.authToken);
+    const client = twilio(twilioConfig.accountSid, twilioConfig.authToken);
     const message = await client.messages.create({
       body: body,
       from: from,
       to: formattedTo
     });
     console.log('Message SID:', message.sid);
+    // create a success
     
     // Return success after simulating API delay
     return new Promise(resolve => setTimeout(() => resolve(true), 500));
