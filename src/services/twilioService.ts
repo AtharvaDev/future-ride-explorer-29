@@ -21,7 +21,7 @@ const TWILIO_CONFIG = {
   authToken: 'mock-auth-token',
   whatsappFrom: 'whatsapp:+14155238886', // Default Twilio sandbox number
   smsFrom: '+15005550006', // Default Twilio test number
-  emailFrom: 'noreply@yourapp.com'
+  emailFrom: 'noreply@futureride.com'
 };
 
 /**

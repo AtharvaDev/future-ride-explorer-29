@@ -25,6 +25,13 @@ export interface EmailConfig {
     name: string;
     email: string;
   };
+  adminNotifications?: {
+    bookingConfirmation: boolean;
+    paymentConfirmation: boolean;
+    userSignup: boolean;
+    profileUpdate: boolean;
+    bookingAttempt: boolean;
+  };
 }
 
 export interface WhatsAppConfig {
@@ -39,6 +46,14 @@ export interface WhatsAppConfig {
     phone: string;
     businessName: string;
   };
+  adminNumber: string;
+  adminNotifications?: {
+    bookingConfirmation: boolean;
+    paymentConfirmation: boolean;
+    userSignup: boolean;
+    profileUpdate: boolean;
+    bookingAttempt: boolean;
+  };
 }
 
 export const emailConfig: EmailConfig = {
@@ -52,7 +67,7 @@ export const emailConfig: EmailConfig = {
         <p>Your booking for {{carModel}} has been confirmed. Here are the details:</p>
         <ul>
           <li>Booking ID: {{bookingId}}</li>
-          <li>Car: {{carTitle}}</li>
+          <li>Car: {{carModel}}</li>
           <li>Start Date: {{startDate}}</li>
           <li>End Date: {{endDate}}</li>
           <li>Total Amount: ₹{{totalAmount}}</li>
@@ -60,6 +75,7 @@ export const emailConfig: EmailConfig = {
         </ul>
         <p>You can view your booking details at any time by visiting your <a href="{{bookingUrl}}">booking dashboard</a>.</p>
         <p>Thank you for choosing FutureRide!</p>
+        <p>If you need any assistance, please contact our support team at: +91-9876543210</p>
       `
     },
     paymentConfirmation: {
@@ -75,6 +91,7 @@ export const emailConfig: EmailConfig = {
         </ul>
         <p>Your booking is now fully confirmed.</p>
         <p>Thank you for choosing FutureRide!</p>
+        <p>If you need any assistance, please contact our support team at: +91-9876543210</p>
       `
     },
     bookingReminder: {
@@ -84,12 +101,13 @@ export const emailConfig: EmailConfig = {
         <p>Dear {{name}},</p>
         <p>This is a friendly reminder that your FutureRide booking is coming up!</p>
         <ul>
-          <li>Car: {{carTitle}}</li>
+          <li>Car: {{carModel}}</li>
           <li>Start Date: {{startDate}}</li>
           <li>Starting Location: {{startCity}}</li>
         </ul>
         <p>Please remember to bring your license and payment method.</p>
         <p>Looking forward to seeing you soon!</p>
+        <p>If you need any assistance, please contact our support team at: +91-9876543210</p>
       `
     },
     bookingCancellation: {
@@ -100,12 +118,20 @@ export const emailConfig: EmailConfig = {
         <p>Your booking (ID: {{bookingId}}) has been cancelled as requested.</p>
         <p>If you paid a token amount, it will be refunded within 3-5 business days.</p>
         <p>We hope to serve you again in the future!</p>
+        <p>If you need any assistance, please contact our support team at: +91-9876543210</p>
       `
     }
   },
   sender: {
     name: "FutureRide Customer Service",
     email: "notifications@futureride.com"
+  },
+  adminNotifications: {
+    bookingConfirmation: true,
+    paymentConfirmation: true,
+    userSignup: true,
+    profileUpdate: true,
+    bookingAttempt: true
   }
 };
 
@@ -126,7 +152,9 @@ Your booking for {{carModel}} ({{bookingId}}) is confirmed.
 
 Click here to view details: {{bookingUrl}}
 
-Thank you for choosing FutureRide!`,
+Thank you for choosing FutureRide!
+
+For any assistance, please contact our support team at: +91-9876543210`,
 
     paymentConfirmation: `💰 *FutureRide Payment Received*
     
@@ -136,7 +164,9 @@ We've received your payment of ₹{{amountPaid}} for booking {{bookingId}}.
 
 Your booking is now fully confirmed.
 
-Thank you for choosing FutureRide!`,
+Thank you for choosing FutureRide!
+
+For any assistance, please contact our support team at: +91-9876543210`,
 
     bookingReminder: `🔔 *FutureRide Booking Reminder*
     
@@ -144,13 +174,15 @@ Hello {{name}},
 
 Your FutureRide booking is coming up soon!
 
-• Car: {{carTitle}}
+• Car: {{carModel}}
 • Date: {{startDate}}
 • Starting Location: {{startCity}}
 
 Please remember to bring your license and payment method.
 
-Looking forward to seeing you soon!`,
+Looking forward to seeing you soon!
+
+For any assistance, please contact our support team at: +91-9876543210`,
 
     bookingCancellation: `❌ *FutureRide Booking Cancelled*
     
@@ -160,10 +192,20 @@ Your booking ({{bookingId}}) has been cancelled as requested.
 
 If you paid a token amount, it will be refunded within 3-5 business days.
 
-We hope to serve you again soon!`
+We hope to serve you again soon!
+
+For any assistance, please contact our support team at: +91-9876543210`
   },
   sender: {
     phone: "+919876543210",
     businessName: "FutureRide"
+  },
+  adminNumber: "whatsapp:+919876543210", // Admin's WhatsApp number with proper format
+  adminNotifications: {
+    bookingConfirmation: true,
+    paymentConfirmation: true,
+    userSignup: true,
+    profileUpdate: true,
+    bookingAttempt: true
   }
 };

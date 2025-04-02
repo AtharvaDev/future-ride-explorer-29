@@ -9,7 +9,7 @@ export interface BookingNotificationDetails {
   startDate: Date;
   endDate: Date;
   startCity: string;
-  status: string;
+  status: BookingStatus;
   contactInfo: BookingContactInfo;
   paymentInfo: {
     method: string;

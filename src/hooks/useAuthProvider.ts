@@ -1,34 +1,85 @@
-import { useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut,
+import { auth, db } from "@/config/firebase";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithPopup,
-  updateProfile as firebaseUpdateProfile
-} from 'firebase/auth';
-import { auth, googleProvider, db } from '@/config/firebase';
-import { AuthUser } from '@/types/auth';
-import { getUserFromFirebase, updatePhoneNumber, updateProfile } from '@/utils/authUtils';
-import { toast } from 'sonner';
-import { doc, getDoc } from 'firebase/firestore';
+  signOut,
+  GoogleAuthProvider,
+  AuthError,
+  updateProfile,
+  User,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  DocumentData,
+  collection,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { UserRole, AuthUser } from "@/contexts/AuthContext";
+import { sendNewUserSignupNotification } from '@/services/notificationService';
 
-export const useAuthProvider = () => {
+export function useAuthProvider() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       if (firebaseUser) {
-        try {
-          const userData = await getUserFromFirebase(firebaseUser);
-          setUser(userData);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-          setUser(null);
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        const userData = userDoc.data();
+
+        const isAdmin = userData?.role === "admin";
+        setIsAdmin(isAdmin);
+
+        const authUser: AuthUser = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          displayName: firebaseUser.displayName || "",
+          photoURL: firebaseUser.photoURL || "",
+          phone: userData?.phone || "",
+          role: userData?.role || "user",
+          metadata: {
+            creationTime: firebaseUser.metadata.creationTime || "",
+            lastSignInTime: firebaseUser.metadata.lastSignInTime || "",
+          }
+        };
+
+        setUser(authUser);
+
+        const isNewUser = !userData;
+        
+        await setDoc(
+          doc(db, "users", firebaseUser.uid),
+          {
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            role: userData?.role || "user",
+            lastLogin: serverTimestamp(),
+            ...(isNewUser && { createdAt: serverTimestamp() }),
+          },
+          { merge: true }
+        );
+        
+        if (isNewUser) {
+          try {
+            await sendNewUserSignupNotification(authUser);
+          } catch (error) {
+            console.error("Error sending new user notification:", error);
+          }
         }
       } else {
         setUser(null);
+        setIsAdmin(false);
       }
       setLoading(false);
     });
@@ -86,7 +137,7 @@ export const useAuthProvider = () => {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, GoogleAuthProvider);
       const userData = await getUserFromFirebase(result.user);
       setUser(userData);
       toast.success("Successfully logged in with Google!");
@@ -101,7 +152,7 @@ export const useAuthProvider = () => {
   const signOut = async () => {
     setLoading(true);
     try {
-      await firebaseSignOut(auth);
+      await signOut(auth);
       toast.success("Successfully logged out!");
     } catch (error: any) {
       toast.error(error.message || "Failed to logout");
@@ -130,12 +181,12 @@ export const useAuthProvider = () => {
   return {
     user,
     loading,
+    isAdmin,
     signIn,
     signInWithGoogle,
     signOut,
-    isAdmin: user?.role === 'admin',
     updateUserPhone,
     updateUserProfile,
     refreshUserData
   };
-};
+}
