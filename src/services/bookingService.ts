@@ -34,12 +34,11 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
         id: doc.id,
         ...bookingData,
         car,
-        formattedStartDate: formatBookingDate(bookingData.startDate),
-        formattedEndDate: formatBookingDate(bookingData.endDate),
-        formattedCreatedAt: bookingData.createdAt ? 
-          formatBookingDate(bookingData.createdAt) : 
-          'Unknown date'
-      };
+        startDate: bookingData.startDate instanceof Timestamp ? 
+          bookingData.startDate.toDate() : new Date(bookingData.startDate),
+        endDate: bookingData.endDate instanceof Timestamp ? 
+          bookingData.endDate.toDate() : new Date(bookingData.endDate)
+      } as CompleteBookingData;
     });
     
     const bookings = await Promise.all(bookingsPromises);
@@ -119,13 +118,21 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
     
     return {
       id: bookingId,
-      ...bookingData,
-      car,
-      formattedStartDate: formatBookingDate(bookingData.startDate),
-      formattedEndDate: formatBookingDate(bookingData.endDate),
-      formattedCreatedAt: bookingData.createdAt ? 
-        formatBookingDate(bookingData.createdAt) : 
-        'Unknown date'
+      carId: bookingData.carId,
+      startDate: bookingData.startDate instanceof Timestamp ? 
+        bookingData.startDate.toDate() : new Date(bookingData.startDate),
+      endDate: bookingData.endDate instanceof Timestamp ? 
+        bookingData.endDate.toDate() : new Date(bookingData.endDate),
+      startCity: bookingData.startCity,
+      status: bookingData.status,
+      car: {
+        id: car.id,
+        title: car.title,
+        image: car.image,
+        pricePerDay: car.pricePerDay
+      },
+      paymentInfo: bookingData.paymentInfo,
+      userId: bookingData.userId
     };
   } catch (error) {
     console.error(`Error fetching booking ${bookingId}:`, error);

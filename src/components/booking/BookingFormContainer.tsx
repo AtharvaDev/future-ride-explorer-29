@@ -13,7 +13,7 @@ import { useBookingFormState } from '@/hooks/useBookingFormState';
 import { UpiFormData } from './PaymentStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { BookingContactInfo } from '@/types/booking';
+import { BookingContactInfo, BookingStatus } from '@/types/booking';
 import { gsap } from '@/lib/gsap';
 import { createBooking } from '@/services/booking/createBookingService';
 import { 
