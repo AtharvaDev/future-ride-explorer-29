@@ -17,8 +17,8 @@ interface TwilioEmailOptions {
 
 // Mock Twilio configuration
 const TWILIO_CONFIG = {
-  accountSid: 'mock-account-sid',
-  authToken: 'mock-auth-token',
+  accountSid: 'ACe6c3d650e8f823720ede94deb18ed903',
+  authToken: 'c108c1ce858b84449c62370ebff94e22',
   whatsappFrom: 'whatsapp:+14155238886', // Default Twilio sandbox number
   smsFrom: '+15005550006', // Default Twilio test number
   emailFrom: 'noreply@futureride.com'
