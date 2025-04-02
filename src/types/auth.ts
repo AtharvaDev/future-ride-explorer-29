@@ -9,6 +9,11 @@ export interface AuthUser {
   role: UserRole;
   phone?: string;
   displayName?: string | null;
+  photoURL?: string | null;
+  metadata?: {
+    creationTime?: string;
+    lastSignInTime?: string;
+  };
 }
 
 export interface AuthContextType {

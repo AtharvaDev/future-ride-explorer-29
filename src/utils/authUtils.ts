@@ -22,7 +22,8 @@ export const getUserFromFirebase = async (firebaseUser: User): Promise<AuthUser 
     let userData: Partial<AuthUser> = {
       uid: firebaseUser.uid,
       email: firebaseUser.email,
-      displayName: firebaseUser.displayName
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL
     };
     
     if (userSnap.exists()) {
@@ -79,7 +80,6 @@ export const updatePhoneNumber = async (userId: string, phone: string): Promise<
 
 export const updateProfile = async (
   userId: string, 
-  currentUser: User, 
   data: { displayName?: string }
 ): Promise<void> => {
   try {

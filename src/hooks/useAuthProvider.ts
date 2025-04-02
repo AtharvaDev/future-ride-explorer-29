@@ -1,3 +1,4 @@
+
 import { auth, db } from "@/config/firebase";
 import {
   createUserWithEmailAndPassword,
@@ -5,10 +6,10 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signOut,
+  signOut as firebaseSignOut,
   GoogleAuthProvider,
   AuthError,
-  updateProfile,
+  updateProfile as firebaseUpdateProfile,
   User,
 } from "firebase/auth";
 import {
@@ -23,8 +24,10 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { useState, useEffect, useCallback } from "react";
-import { UserRole, AuthUser } from "@/contexts/AuthContext";
+import { UserRole, AuthUser } from "@/types/auth";
 import { sendNewUserSignupNotification } from '@/services/notificationService';
+import { toast } from "sonner";
+import { getUserFromFirebase, updatePhoneNumber, updateProfile } from "@/utils/authUtils";
 
 export function useAuthProvider() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -110,7 +113,7 @@ export function useAuthProvider() {
         await firebaseUpdateProfile(auth.currentUser, { displayName: data.displayName });
       }
       
-      await updateProfile(user.uid, auth.currentUser, data);
+      await updateProfile(user.uid, data);
       
       setUser({
         ...user,
@@ -137,7 +140,8 @@ export function useAuthProvider() {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, GoogleAuthProvider);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
       const userData = await getUserFromFirebase(result.user);
       setUser(userData);
       toast.success("Successfully logged in with Google!");
@@ -152,7 +156,7 @@ export function useAuthProvider() {
   const signOut = async () => {
     setLoading(true);
     try {
-      await signOut(auth);
+      await firebaseSignOut(auth);
       toast.success("Successfully logged out!");
     } catch (error: any) {
       toast.error(error.message || "Failed to logout");
