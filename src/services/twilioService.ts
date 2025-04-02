@@ -50,7 +50,7 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
     console.log(`[TWILIO MOCK] Message: ${body}`);
     
     // In a real implementation, you would use something like:
-    /*
+    
     const client = require('twilio')(twilioConfig.accountSid, twilioConfig.authToken);
     const message = await client.messages.create({
       body: body,
@@ -58,7 +58,6 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
       to: formattedTo
     });
     console.log('Message SID:', message.sid);
-    */
     
     // Return success after simulating API delay
     return new Promise(resolve => setTimeout(() => resolve(true), 500));
