@@ -1,4 +1,3 @@
-
 import { AuthUser } from '@/types/auth';
 import { format } from 'date-fns';
 import { emailConfig, whatsAppConfig } from '@/config/notifications';
@@ -8,6 +7,7 @@ import {
   sendWhatsAppMessage, 
   sendSmsMessage 
 } from './twilioService';
+import twilioConfig from '@/config/twilioConfig';
 
 // Function to replace template variables
 const replaceTemplateVariables = (template: string, variables: Record<string, string | number>) => {
@@ -20,7 +20,11 @@ const replaceTemplateVariables = (template: string, variables: Record<string, st
 
 // Send booking confirmation email
 export const sendBookingConfirmationEmail = async (booking: BookingNotificationDetails, user: AuthUser | null) => {
-  if (!emailConfig.enabled) return;
+  // Early return if either emailConfig or twilioConfig email service is disabled
+  if (!emailConfig.enabled || !twilioConfig.services.email.enabled || !twilioConfig.enabled) {
+    console.log('[NOTIFICATION] Email notifications are disabled');
+    return false;
+  }
 
   try {
     const variables = {
@@ -70,7 +74,11 @@ export const sendBookingConfirmationEmail = async (booking: BookingNotificationD
 
 // Send booking confirmation WhatsApp message
 export const sendBookingConfirmationWhatsApp = async (booking: BookingNotificationDetails) => {
-  if (!whatsAppConfig.enabled) return;
+  // Early return if either whatsAppConfig or twilioConfig whatsapp service is disabled
+  if (!whatsAppConfig.enabled || !twilioConfig.services.whatsapp.enabled || !twilioConfig.enabled) {
+    console.log('[NOTIFICATION] WhatsApp notifications are disabled');
+    return false;
+  }
 
   try {
     const variables = {
@@ -87,18 +95,9 @@ export const sendBookingConfirmationWhatsApp = async (booking: BookingNotificati
 
     const message = replaceTemplateVariables(whatsAppConfig.templates.bookingConfirmation, variables);
     
-    // Format the phone number for WhatsApp (add whatsapp: prefix if not present)
+    // Format the phone number for WhatsApp
     let phoneNumber = booking.contactInfo.phone;
-    if (!phoneNumber.startsWith('whatsapp:')) {
-      // Remove any non-digit characters for standardization
-      phoneNumber = phoneNumber.replace(/\D/g, '');
-      // Add country code if not present (assuming India +91)
-      if (!phoneNumber.startsWith('91') && phoneNumber.length === 10) {
-        phoneNumber = `91${phoneNumber}`;
-      }
-      phoneNumber = `whatsapp:+${phoneNumber}`;
-    }
-
+    
     // Send to user
     await sendWhatsAppMessage({
       to: phoneNumber,
@@ -149,7 +148,11 @@ export const sendBookingConfirmation = async (
 
 // Send notification about new user signup
 export const sendNewUserSignupNotification = async (user: AuthUser) => {
-  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.userSignup) return;
+  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.userSignup || 
+      !twilioConfig.services.whatsapp.enabled || !twilioConfig.enabled) {
+    console.log('[NOTIFICATION] WhatsApp admin notifications are disabled');
+    return false;
+  }
 
   try {
     const message = `
@@ -178,7 +181,11 @@ A new user has registered:
 
 // Send notification about user profile update
 export const sendProfileUpdateNotification = async (user: AuthUser, updatedFields: Record<string, any>) => {
-  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.profileUpdate) return;
+  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.profileUpdate || 
+      !twilioConfig.services.whatsapp.enabled || !twilioConfig.enabled) {
+    console.log('[NOTIFICATION] WhatsApp admin notifications are disabled');
+    return false;
+  }
 
   try {
     let updatedFieldsList = '';
@@ -213,7 +220,11 @@ ${updatedFieldsList}
 
 // Send notification about booking attempt (when user starts the booking process)
 export const sendBookingAttemptNotification = async (user: AuthUser | null, carDetails: any, contactInfo: any) => {
-  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.bookingAttempt) return;
+  if (!whatsAppConfig.enabled || !whatsAppConfig.adminNotifications?.bookingAttempt || 
+      !twilioConfig.services.whatsapp.enabled || !twilioConfig.enabled) {
+    console.log('[NOTIFICATION] WhatsApp admin notifications are disabled');
+    return false;
+  }
 
   try {
     const message = `

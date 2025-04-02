@@ -4,6 +4,7 @@ import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
 import { UI_STRINGS } from '@/constants/uiStrings';
+import twilioConfig from '@/config/twilioConfig';
 
 const WhatsAppButton: React.FC = () => {
   const location = useLocation();
@@ -16,14 +17,19 @@ const WhatsAppButton: React.FC = () => {
     // Hide on home page and booking pages
     const shouldHide = 
       path === '/' || 
-      path.includes('/booking');
+      path.includes('/booking') ||
+      // Hide if WhatsApp service is disabled in Twilio config
+      !twilioConfig.enabled || 
+      !twilioConfig.services.whatsapp.enabled;
     
     setIsVisible(!shouldHide);
   }, [location]);
   
   const handleWhatsAppClick = () => {
-    // WhatsApp number - replace with your actual customer service number
-    const phoneNumber = '919876543210'; // Add country code without +
+    // Get WhatsApp number from config, remove the 'whatsapp:+' prefix if present
+    let phoneNumber = twilioConfig.services.whatsapp.fromNumber;
+    phoneNumber = phoneNumber.replace('whatsapp:+', '');
+    
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(UI_STRINGS.WHATSAPP.DEFAULT_MESSAGE)}`, '_blank');
   };
 
