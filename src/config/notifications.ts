@@ -200,7 +200,7 @@ For any assistance, please contact our support team at: +91-9876543210`
     phone: "+919876543210",
     businessName: "FutureRide"
   },
-  adminNumber: "whatsapp:+919876543210", // Admin's WhatsApp number with proper format
+  adminNumber: "whatsapp:+918850414839", // Admin's WhatsApp number with proper format
   adminNotifications: {
     bookingConfirmation: true,
     paymentConfirmation: true,
