@@ -16,12 +16,11 @@
  * 7. Set enabled to true for each service you want to activate
  */
 
-import { triggerAsyncId } from "async_hooks";
-
 export interface TwilioConfig {
   enabled: boolean;
   accountSid: string;
   authToken: string;
+  useRealTwilioApi: boolean; // Set to true to make real API calls (requires CORS setup)
   services: {
     whatsapp: {
       enabled: boolean;
@@ -45,6 +44,10 @@ const twilioConfig: TwilioConfig = {
   // Your Twilio account credentials
   accountSid: 'ACe6c3d650e8f823720ede94deb18ed903', // Replace with your actual Account SID
   authToken: 'c108c1ce858b84449c62370ebff94e22',    // Replace with your actual Auth Token
+
+  // IMPORTANT: Set to false for testing/development, true for production
+  // Note: If true, you'll need to set up a proxy server for Twilio API calls to handle CORS
+  useRealTwilioApi: false,
   
   services: {
     // WhatsApp configuration

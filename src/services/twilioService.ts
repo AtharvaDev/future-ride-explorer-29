@@ -45,20 +45,31 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
       formattedTo = `whatsapp:+${formattedTo}`;
     }
     
-    // In a real implementation, this would use the Twilio SDK
+    // In a real implementation, we would use the Twilio SDK
     console.log(`[TWILIO MOCK] Sending WhatsApp message to ${formattedTo} from ${from}:`);
     console.log(`[TWILIO MOCK] Message: ${body}`);
     
-    // In a real implementation, you would use something like:
-    
-    const client = twilio(twilioConfig.accountSid, twilioConfig.authToken);
-    const message = await client.messages.create({
-      body: body,
-      from: from,
-      to: formattedTo
-    });
-    console.log('Message SID:', message.sid);
-    // create a success
+    // Real implementation would use Twilio's REST API with fetch instead of require
+    if (twilioConfig.useRealTwilioApi) {
+      // Use fetch API for browser environments instead of require
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${twilioConfig.accountSid}/Messages.json`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${btoa(`${twilioConfig.accountSid}:${twilioConfig.authToken}`)}`
+        },
+        body: new URLSearchParams({
+          To: formattedTo,
+          From: from,
+          Body: body
+        })
+      });
+      
+      const data = await response.json();
+      console.log('Message SID:', data.sid);
+    }
     
     // Return success after simulating API delay
     return new Promise(resolve => setTimeout(() => resolve(true), 500));
@@ -85,6 +96,27 @@ export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boo
     // In a real implementation, this would use the Twilio SDK
     console.log(`[TWILIO MOCK] Sending SMS to ${to} from ${from}:`);
     console.log(`[TWILIO MOCK] Message: ${body}`);
+    
+    // Real implementation with fetch API if enabled
+    if (twilioConfig.useRealTwilioApi) {
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${twilioConfig.accountSid}/Messages.json`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${btoa(`${twilioConfig.accountSid}:${twilioConfig.authToken}`)}`
+        },
+        body: new URLSearchParams({
+          To: to,
+          From: from,
+          Body: body
+        })
+      });
+      
+      const data = await response.json();
+      console.log('Message SID:', data.sid);
+    }
     
     // Return success after simulating API delay
     return new Promise(resolve => setTimeout(() => resolve(true), 500));
