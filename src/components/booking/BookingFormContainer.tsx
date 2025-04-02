@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import { useNavigate } from 'react-router-dom';
@@ -50,19 +49,18 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     resetStep
   } = useBookingFormState(car);
 
-  // Reset to step 1 (Login) if no user is logged in
+  const formContainerRef = React.useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!user) {
       resetStep();
     }
   }, [user, resetStep]);
 
-  // Initialize form animations
   useEffect(() => {
     const timer = setTimeout(() => {
       setFormReady(true);
       
-      // Apply fade-in animation to the form container
       gsap.fromTo(
         ".booking-form-content",
         { opacity: 0, y: 20 },
@@ -73,27 +71,22 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle various step submissions
   const handleLoginWithGoogle = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      // We'll use the actual Firebase authentication in the LoginStep component
-      // Just simulating the login process success here
       return new Promise<void>((resolve) => {
         setTimeout(() => {
           setIsLoading(false);
           if (user) {
             setLoginMethod('google');
             
-            // Send notification about successful login
             if (user.metadata && user.metadata.creationTime) {
               const creationTime = new Date(user.metadata.creationTime);
               const now = new Date();
               const timeDiff = Math.abs(now.getTime() - creationTime.getTime());
-              const isNewUser = timeDiff < 60000; // Less than 1 minute old account
+              const isNewUser = timeDiff < 60000;
               
               if (isNewUser) {
-                // Send notification for new user signup
                 sendNewUserSignupNotification(user).catch(console.error);
               }
             }
@@ -110,10 +103,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     }
   };
 
-  // Auto-populate contact info when user is available
   useEffect(() => {
     if (user && formState.step >= 2) {
-      // Populate contact info from user data
       setContactInfo({
         name: user.displayName || '',
         email: user.email || '',
@@ -126,21 +117,16 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
 
   const handleContactSubmit = (contactData: BookingContactInfo) => {
     setContactInfo(contactData);
-    // Set the startCity from the contact form
     setStartCity(contactData.startCity);
     
-    // Send notification about booking attempt
     if (user) {
-      // Check if phone number was updated
       if (user.phone !== contactData.phone) {
-        // Send notification about profile update
         sendProfileUpdateNotification(user, {
           phone: contactData.phone
         }).catch(console.error);
       }
     }
     
-    // Notify admin about booking attempt
     sendBookingAttemptNotification(user, car, contactData).catch(console.error);
     
     nextStep();
@@ -158,16 +144,13 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     setIsLoading(true);
     setPaymentMethod(data.paymentMethod);
     
-    // If paymentId is provided, set it
     if (data.paymentId) {
       setPaymentId(data.paymentId);
     } else {
-      // Generate a fake payment ID for non-Razorpay payments
       setPaymentId("pay_" + Math.random().toString(36).substring(2, 15));
     }
     
     try {
-      // Create booking in the database
       if (user) {
         const bookingData = {
           userId: user.uid,
@@ -175,7 +158,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           startDate: formState.startDate!,
           endDate: formState.endDate!,
           startCity: formState.contactInfo.startCity,
-          status: BookingStatus.CONFIRMED, // Use enum value instead of string literal
+          status: BookingStatus.CONFIRMED,
           contactInfo: formState.contactInfo,
           paymentInfo: {
             method: data.paymentMethod,
@@ -187,11 +170,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           }
         };
         
-        // Create the booking
         const result = await createBooking(bookingData);
         
         if (result && result.id) {
-          // Create notification details
           const notificationDetails: BookingNotificationDetails = {
             id: result.id,
             userId: user.uid,
@@ -199,7 +180,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             startDate: formState.startDate!,
             endDate: formState.endDate!,
             startCity: formState.contactInfo.startCity,
-            status: BookingStatus.CONFIRMED, // Use enum value here too
+            status: BookingStatus.CONFIRMED,
             contactInfo: formState.contactInfo,
             paymentInfo: {
               method: data.paymentMethod,
@@ -216,10 +197,8 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             }
           };
           
-          // Send confirmation notifications
           await sendBookingConfirmation(notificationDetails, user);
           
-          // Show success state
           setBookingCreated(notificationDetails);
           nextStep();
           toast.success("Booking confirmed successfully!");
@@ -245,20 +224,36 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     navigate('/my-bookings');
   };
 
-  // Prevent accessing steps beyond login if not logged in
   const isStepAccessible = (step: number) => {
-    if (step === 1) return true; // Login step is always accessible
-    return !!user; // Other steps require user to be logged in
+    if (step === 1) return true;
+    return !!user;
   };
 
-  // Define the steps with proper names for progress indicator
   const steps = ["Login", "Contact", "Dates", "Review", "Payment", "Complete"];
 
+  useEffect(() => {
+    if (formContainerRef.current) {
+      gsap.to(formContainerRef.current.querySelector('.booking-form-content'), {
+        opacity: 0,
+        y: -10,
+        duration: 0.2,
+        onComplete: () => {
+          gsap.to(formContainerRef.current?.querySelector('.booking-form-content'), {
+            opacity: 1,
+            y: 0,
+            duration: 0.3,
+            delay: 0.1
+          });
+        }
+      });
+    }
+  }, [formState.step]);
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
+    <div ref={formContainerRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
       <ProgressSteps 
         activeStep={formState.step - 1} 
-        steps={steps.slice(0, formState.step > 5 ? 6 : 5)} // Only show Complete step when done
+        steps={steps.slice(0, formState.step > 5 ? 6 : 5)}
       />
       
       <div className="mt-8 booking-form-content">
