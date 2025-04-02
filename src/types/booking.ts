@@ -1,6 +1,13 @@
+
 import { Timestamp } from 'firebase/firestore';
 
-export type BookingStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled' | 'pending';
+export enum BookingStatus {
+  DRAFT = 'draft',
+  CONFIRMED = 'confirmed',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  PENDING = 'pending'
+}
 
 export interface BookingBasicInfo {
   id?: string;
@@ -43,6 +50,17 @@ export interface Booking {
   };
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface UserBooking {
+  carId: string;
+  startDate: Date | Timestamp;
+  endDate: Date | Timestamp;
+  startCity: string;
+  status: BookingStatus;
+  userId: string;
+  createdAt?: Date | Timestamp;
+  paymentInfo?: PaymentInfo;
 }
 
 export interface BookingData {

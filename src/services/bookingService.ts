@@ -37,7 +37,7 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
         formattedStartDate: formatBookingDate(bookingData.startDate),
         formattedEndDate: formatBookingDate(bookingData.endDate),
         formattedCreatedAt: bookingData.createdAt ? 
-          (bookingData.createdAt as Timestamp).toDate().toLocaleDateString() : 
+          formatBookingDate(bookingData.createdAt) : 
           'Unknown date'
       };
     });
@@ -61,7 +61,8 @@ export const getActiveBookingsByUserId = async (userId: string): Promise<Complet
     
     // Filter for active bookings (end date is in the future or booking is in progress)
     const activeBookings = allBookings.filter(booking => {
-      const endDate = (booking.endDate as Timestamp).toDate();
+      const endDate = booking.endDate instanceof Timestamp ? 
+        booking.endDate.toDate() : new Date(booking.endDate);
       return endDate >= now && booking.status !== BookingStatus.CANCELLED;
     });
     
@@ -84,7 +85,8 @@ export const getPastBookingsByUserId = async (userId: string): Promise<CompleteB
     
     // Filter for past bookings (end date is in the past or booking is cancelled)
     const pastBookings = allBookings.filter(booking => {
-      const endDate = (booking.endDate as Timestamp).toDate();
+      const endDate = booking.endDate instanceof Timestamp ? 
+        booking.endDate.toDate() : new Date(booking.endDate);
       return endDate < now || booking.status === BookingStatus.CANCELLED;
     });
     
@@ -122,7 +124,7 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
       formattedStartDate: formatBookingDate(bookingData.startDate),
       formattedEndDate: formatBookingDate(bookingData.endDate),
       formattedCreatedAt: bookingData.createdAt ? 
-        (bookingData.createdAt as Timestamp).toDate().toLocaleDateString() : 
+        formatBookingDate(bookingData.createdAt) : 
         'Unknown date'
     };
   } catch (error) {

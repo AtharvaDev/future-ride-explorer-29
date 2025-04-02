@@ -14,3 +14,15 @@ export const convertTimestampToDate = (timestamp: Timestamp): Date => {
 export const ensureDate = (value: Timestamp | Date): Date => {
   return value instanceof Timestamp ? convertTimestampToDate(value) : value;
 };
+
+/**
+ * Format a date or timestamp into a readable string
+ */
+export const formatBookingDate = (date: Date | Timestamp): string => {
+  const dateObject = date instanceof Timestamp ? date.toDate() : date;
+  return dateObject.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+};
