@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, Calendar, Car, Map, Phone, Mail, User } from 'lucide-react';
 import { Car as CarType } from '@/data/cars';
 import { BookingFormState, BookingSummary } from '@/hooks/useBookingFormState';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface ConfirmationStepProps {
   formState: BookingFormState;
@@ -25,9 +26,9 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Review Your Booking</h2>
+        <h2 className="text-2xl font-bold mb-2">{UI_STRINGS.BOOKING.SUMMARY.REVIEW_TITLE}</h2>
         <p className="text-gray-500 dark:text-gray-400">
-          Please review your booking details before proceeding to payment
+          {UI_STRINGS.BOOKING.SUMMARY.REVIEW_SUBTITLE}
         </p>
       </div>
 
@@ -36,7 +37,7 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <Car className="w-5 h-5 mr-2 text-primary" />
-              Car Details
+              {UI_STRINGS.BOOKING.SUMMARY.CAR_DETAILS}
             </h3>
             <div className="space-y-4">
               <div className="flex items-center">
@@ -53,11 +54,11 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
               
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Daily Rate</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.DAILY_RATE}</p>
                   <p className="font-medium">₹{bookingSummary.dailyRate}/day</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Extra KM Rate</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.EXTRA_KM_RATE}</p>
                   <p className="font-medium">₹{bookingSummary.extraKmRate}/km after {bookingSummary.baseKm} km</p>
                 </div>
               </div>
@@ -69,18 +70,18 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-primary" />
-              Trip Details
+              {UI_STRINGS.BOOKING.SUMMARY.TRIP_DETAILS}
             </h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Start Date</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.START_DATE}</p>
                   <p className="font-medium">
                     {formState.startDate ? format(formState.startDate, 'MMM dd, yyyy') : 'Not selected'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">End Date</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.END_DATE}</p>
                   <p className="font-medium">
                     {formState.endDate ? format(formState.endDate, 'MMM dd, yyyy') : 'Not selected'}
                   </p>
@@ -88,15 +89,15 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Duration</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.DURATION}</p>
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-1 text-primary" />
-                  <p className="font-medium">{bookingSummary.totalDays} days</p>
+                  <p className="font-medium">{bookingSummary.totalDays} {UI_STRINGS.BOOKING.SUMMARY.DAYS}</p>
                 </div>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Pickup Location</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.PICKUP_LOCATION}</p>
                 <div className="flex items-center">
                   <Map className="w-4 h-4 mr-1 text-primary" />
                   <p className="font-medium">{formState.contactInfo.startCity}</p>
@@ -110,22 +111,22 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <User className="w-5 h-5 mr-2 text-primary" />
-              Contact Information
+              {UI_STRINGS.BOOKING.SUMMARY.CONTACT_INFORMATION}
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.FULL_NAME}</p>
                 <p className="font-medium">{formState.contactInfo.name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.EMAIL}</p>
                 <div className="flex items-center">
                   <Mail className="w-4 h-4 mr-1 text-primary" />
                   <p className="font-medium">{formState.contactInfo.email}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.PHONE}</p>
                 <div className="flex items-center">
                   <Phone className="w-4 h-4 mr-1 text-primary" />
                   <p className="font-medium">{formState.contactInfo.phone}</p>
@@ -139,28 +140,28 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <CheckCircle className="w-5 h-5 mr-2 text-primary" />
-              Payment Summary
+              {UI_STRINGS.BOOKING.SUMMARY.PAYMENT_SUMMARY}
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <p className="text-gray-500 dark:text-gray-400">Rental ({bookingSummary.totalDays} days × ₹{bookingSummary.dailyRate})</p>
+                <p className="text-gray-500 dark:text-gray-400">{UI_STRINGS.BOOKING.SUMMARY.RENTAL} ({bookingSummary.totalDays} days × ₹{bookingSummary.dailyRate})</p>
                 <p>₹{bookingSummary.subtotal.toFixed(2)}</p>
               </div>
               <div className="border-t my-2"></div>
               <div className="flex justify-between font-semibold">
-                <p>Total Amount</p>
+                <p>{UI_STRINGS.BOOKING.SUMMARY.TOTAL_AMOUNT}</p>
                 <p>₹{bookingSummary.totalAmount.toFixed(2)}</p>
               </div>
               <div className="flex justify-between mt-2">
-                <p className="text-sm text-gray-500">Extra KM charges</p>
+                <p className="text-sm text-gray-500">{UI_STRINGS.BOOKING.SUMMARY.EXTRA_KM_CHARGES}</p>
                 <p className="text-sm">₹{bookingSummary.extraKmRate}/km after {bookingSummary.baseKm} km</p>
               </div>
               <div className="flex justify-between mt-4 pt-4 border-t">
-                <p className="text-primary font-medium">Token Amount</p>
+                <p className="text-primary font-medium">{UI_STRINGS.BOOKING.SUMMARY.TOKEN_AMOUNT}</p>
                 <p className="text-primary font-semibold">₹{bookingSummary.tokenAmount.toFixed(2)}</p>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                * Remaining amount to be paid at pickup
+                {UI_STRINGS.BOOKING.SUMMARY.REMAINING_AMOUNT}
               </p>
             </div>
           </CardContent>
@@ -170,14 +171,14 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
       <div className="flex justify-between mt-8">
         <Button variant="outline" onClick={onPrevious}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {UI_STRINGS.BOOKING.BUTTONS.BACK}
         </Button>
         
         <Button 
           onClick={onNext} 
           className="bg-primary text-white min-w-[150px]"
         >
-          Proceed to Payment
+          {UI_STRINGS.BOOKING.BUTTONS.PROCEED_TO_PAYMENT}
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>

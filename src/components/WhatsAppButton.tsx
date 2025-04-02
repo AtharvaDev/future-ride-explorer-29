@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 const WhatsAppButton: React.FC = () => {
   const location = useLocation();
@@ -23,7 +24,7 @@ const WhatsAppButton: React.FC = () => {
   const handleWhatsAppClick = () => {
     // WhatsApp number - replace with your actual customer service number
     const phoneNumber = '919876543210'; // Add country code without +
-    window.open(`https://wa.me/${phoneNumber}?text=Hello!%20I'm%20interested%20in%20FutureRide%20services.`, '_blank');
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(UI_STRINGS.WHATSAPP.DEFAULT_MESSAGE)}`, '_blank');
   };
 
   return (

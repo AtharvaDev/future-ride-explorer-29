@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface CarListProps {
   cars: Car[];
@@ -35,8 +36,8 @@ const CarList: React.FC<CarListProps> = ({
   return (
     <Card className="admin-card">
       <CardHeader>
-        <CardTitle>Available Cars</CardTitle>
-        <CardDescription>Manage your fleet of vehicles here. You can add, edit, or remove cars.</CardDescription>
+        <CardTitle>{UI_STRINGS.ADMIN.CAR_LIST.TITLE}</CardTitle>
+        <CardDescription>{UI_STRINGS.ADMIN.CAR_LIST.DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>

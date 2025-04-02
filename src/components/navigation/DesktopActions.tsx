@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
 import { LogIn, LogOut } from 'lucide-react';
 import { AuthUser } from '@/contexts/AuthContext';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface DesktopActionsProps {
   user: AuthUser | null;
@@ -27,7 +28,7 @@ export const DesktopActions: React.FC<DesktopActionsProps> = ({
           className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
         >
           <LogOut className="h-4 w-4 mr-2" />
-          Logout
+          {UI_STRINGS.NAVIGATION.LOGOUT}
         </Button>
       ) : (
         <Button 
@@ -36,7 +37,7 @@ export const DesktopActions: React.FC<DesktopActionsProps> = ({
           className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-md"
         >
           <LogIn className="h-4 w-4 mr-2" />
-          Login
+          {UI_STRINGS.NAVIGATION.LOGIN}
         </Button>
       )}
     </div>

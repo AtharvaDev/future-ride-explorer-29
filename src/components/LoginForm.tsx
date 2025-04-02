@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface LoginFormProps {
   returnUrl?: string;
@@ -30,8 +31,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
   return (
     <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Welcome to FutureRide</h2>
-        <p className="text-gray-600 dark:text-gray-400">Sign in to manage your bookings and more</p>
+        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{UI_STRINGS.LOGIN.TITLE}</h2>
+        <p className="text-gray-600 dark:text-gray-400">{UI_STRINGS.LOGIN.SUBTITLE}</p>
       </div>
       
       <Button 
@@ -42,7 +43,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
         {isLoading ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Signing in...
+            {UI_STRINGS.LOGIN.SIGNING_IN}
           </>
         ) : (
           <>
@@ -65,14 +66,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
               />
               <path d="M1 1h22v22H1z" fill="none" />
             </svg>
-            Continue with Google
+            {UI_STRINGS.LOGIN.GOOGLE_BUTTON}
           </>
         )}
       </Button>
       
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          By signing in, you agree to our terms of service and privacy policy
+          {UI_STRINGS.LOGIN.TERMS}
         </p>
       </div>
     </div>

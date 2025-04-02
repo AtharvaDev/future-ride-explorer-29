@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -31,7 +32,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-destructive">Confirm Deletion</DialogTitle>
+          <DialogTitle className="text-destructive">{UI_STRINGS.ADMIN.CONFIRM_DELETE.TITLE}</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete "{car?.title}"? This action cannot be undone.
           </DialogDescription>
@@ -44,7 +45,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
             disabled={isDeleting}
           >
             <XCircle className="h-4 w-4" />
-            Cancel
+            {UI_STRINGS.ADMIN.CONFIRM_DELETE.CANCEL}
           </Button>
           <Button
             variant="destructive"
@@ -55,12 +56,12 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
             {isDeleting ? (
               <>
                 <Loader className="h-4 w-4 animate-spin" />
-                Deleting...
+                {UI_STRINGS.ADMIN.CONFIRM_DELETE.DELETING}
               </>
             ) : (
               <>
                 <CheckCircle className="h-4 w-4" />
-                Delete
+                {UI_STRINGS.ADMIN.CONFIRM_DELETE.DELETE}
               </>
             )}
           </Button>

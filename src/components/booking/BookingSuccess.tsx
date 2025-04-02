@@ -8,6 +8,7 @@ import { BookingNotificationDetails } from '@/types/notifications';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 interface BookingSuccessProps {
   bookingDetails: BookingNotificationDetails;
@@ -42,9 +43,9 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
             <CheckCircle className="w-14 h-14 text-green-600 dark:text-green-400" />
           </div>
           
-          <h2 className="text-3xl font-bold mb-2">Booking Confirmed!</h2>
+          <h2 className="text-3xl font-bold mb-2">{UI_STRINGS.BOOKING.CONFIRMATION.TITLE}</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-md">
-            Your booking has been successfully processed. A confirmation has been sent to your email and WhatsApp.
+            {UI_STRINGS.BOOKING.CONFIRMATION.SUBTITLE}
           </p>
         </div>
         
@@ -54,29 +55,29 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Booking ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.BOOKING_ID}</p>
                 <p className="font-medium">{bookingDetails.id}</p>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Payment Status</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.PAYMENT_STATUS}</p>
                 <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                  Paid
+                  {UI_STRINGS.BOOKING.CONFIRMATION.PAID}
                 </div>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Car</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.CAR}</p>
                 <p className="font-medium">{bookingDetails.car.name}</p>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Payment Amount</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.PAYMENT_AMOUNT}</p>
                 <p className="font-medium">₹{bookingDetails.paymentInfo.tokenAmount.toFixed(2)}</p>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Dates</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.DATES}</p>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1 text-gray-500" />
                   <p className="font-medium">
@@ -86,7 +87,7 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Pickup Location</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{UI_STRINGS.BOOKING.CONFIRMATION.PICKUP_LOCATION}</p>
                 <p className="font-medium">{bookingDetails.startCity}</p>
               </div>
             </div>
@@ -94,7 +95,7 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center text-gray-800 dark:text-gray-200">
                 <Phone className="h-4 w-4 mr-2" />
-                <p>Need assistance? Contact our support team at: <span className="font-semibold">+91-9876543210</span></p>
+                <p>{UI_STRINGS.BOOKING.CONFIRMATION.NEED_ASSISTANCE} <span className="font-semibold">{UI_STRINGS.BOOKING.CONFIRMATION.SUPPORT_PHONE}</span></p>
               </div>
             </div>
           </CardContent>
@@ -107,14 +108,14 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
             className="min-w-[140px]"
           >
             <Home className="mr-2 h-4 w-4" />
-            Go Home
+            {UI_STRINGS.BOOKING.BUTTONS.GO_HOME}
           </Button>
           
           <Button 
             onClick={onViewBookings}
             className={cn("min-w-[140px]")}
           >
-            View My Bookings
+            {UI_STRINGS.BOOKING.BUTTONS.VIEW_MY_BOOKINGS}
           </Button>
         </div>
       </div>

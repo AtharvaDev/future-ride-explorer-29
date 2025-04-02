@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import BookingHistory from '@/components/BookingHistory';
 import { initializeAdminUser } from '@/services/authService';
 import { toast } from 'sonner';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 const MyBookingsPage = () => {
   const { user, loading } = useAuth();
@@ -39,12 +40,12 @@ const MyBookingsPage = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">My Bookings</h1>
+        <h1 className="text-3xl font-bold mb-6">{UI_STRINGS.BOOKING_HISTORY.TITLE}</h1>
         {user ? (
           <BookingHistory />
         ) : (
           <div className="text-center py-12">
-            <p>Please log in to view your bookings</p>
+            <p>{UI_STRINGS.BOOKING_HISTORY.PLEASE_LOGIN}</p>
           </div>
         )}
       </main>

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 const NotFound = () => {
   const location = useLocation();
@@ -20,14 +21,14 @@ const NotFound = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
           <span className="text-2xl font-bold">404</span>
         </div>
-        <h1 className="text-3xl font-bold mb-4">Page Not Found</h1>
+        <h1 className="text-3xl font-bold mb-4">{UI_STRINGS.NOT_FOUND.TITLE}</h1>
         <p className="text-gray-600 dark:text-gray-300 mb-8">
-          The page you are looking for doesn't exist or has been moved.
+          {UI_STRINGS.NOT_FOUND.SUBTITLE}
         </p>
         <Button asChild className="inline-flex items-center">
           <a href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Return to Home
+            {UI_STRINGS.NOT_FOUND.RETURN_HOME}
           </a>
         </Button>
       </div>
