@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getBookingsByUserId } from '@/services/bookingService';
+import { getBookingsByUserId, getActiveBookingsByUserId, getPastBookingsByUserId } from '@/services/bookingService';
 import { CompleteBookingData } from '@/types/booking';
 import BookingHistoryTabs from './booking-history/BookingHistoryTabs';
 
@@ -23,22 +23,9 @@ const BookingHistory: React.FC = () => {
         setLoading(true);
         console.log("Fetching bookings for user:", user.uid);
         
-        // Get all bookings for the user
-        const allBookings = await getBookingsByUserId(user.uid);
-        console.log("All bookings fetched:", allBookings);
-        
-        // Current date for comparison
-        const currentDate = new Date();
-        
-        // Active bookings: end date is in the future or today
-        const active = allBookings.filter(booking => {
-          return new Date(booking.endDate) >= currentDate;
-        });
-        
-        // Past bookings: end date is in the past
-        const past = allBookings.filter(booking => {
-          return new Date(booking.endDate) < currentDate;
-        });
+        // Get active and past bookings using the fixed functions
+        const active = await getActiveBookingsByUserId(user.uid);
+        const past = await getPastBookingsByUserId(user.uid);
         
         console.log("Active bookings:", active);
         console.log("Past bookings:", past);

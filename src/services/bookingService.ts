@@ -1,4 +1,3 @@
-
 import { db } from '@/config/firebase';
 import { 
   collection, 
@@ -36,9 +35,17 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
       const data = doc.data() as BookingData;
       
       // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = (data.startDate as unknown as Timestamp).toDate();
-      const endDate = (data.endDate as unknown as Timestamp).toDate();
-      const createdAt = data.createdAt ? (data.createdAt as unknown as Timestamp).toDate() : new Date();
+      const startDate = data.startDate instanceof Timestamp ? 
+        data.startDate.toDate() : 
+        new Date(data.startDate);
+      
+      const endDate = data.endDate instanceof Timestamp ? 
+        data.endDate.toDate() : 
+        new Date(data.endDate);
+      
+      const createdAt = data.createdAt ? 
+        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
+        new Date();
       
       // Fetch the car data
       let car: Car | null = null;
@@ -58,7 +65,7 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
           id: car.id,
           title: car.title,
           image: car.image,
-          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+          pricePerDay: car.pricePerDay
         } : undefined,
       });
     }
@@ -70,18 +77,18 @@ export const getBookingsByUserId = async (userId: string): Promise<CompleteBooki
   }
 };
 
-// Get active bookings for a user (where start date <= current date)
+// Get active bookings for a user (where end date >= current date)
 export const getActiveBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   const allBookings = await getBookingsByUserId(userId);
   const currentDate = new Date();
-  return allBookings.filter(booking => booking.startDate <= currentDate);
+  return allBookings.filter(booking => new Date(booking.endDate) >= currentDate);
 };
 
-// Get past bookings for a user (where start date > current date)
+// Get past bookings for a user (where end date < current date)
 export const getPastBookingsByUserId = async (userId: string): Promise<CompleteBookingData[]> => {
   const allBookings = await getBookingsByUserId(userId);
   const currentDate = new Date();
-  return allBookings.filter(booking => booking.startDate > currentDate);
+  return allBookings.filter(booking => new Date(booking.endDate) < currentDate);
 };
 
 // Create a new booking
@@ -132,9 +139,17 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
       const data = docSnap.data() as BookingData;
 
       // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = (data.startDate as unknown as Timestamp).toDate();
-      const endDate = (data.endDate as unknown as Timestamp).toDate();
-      const createdAt = data.createdAt ? (data.createdAt as unknown as Timestamp).toDate() : new Date();
+      const startDate = data.startDate instanceof Timestamp ? 
+        data.startDate.toDate() : 
+        new Date(data.startDate);
+      
+      const endDate = data.endDate instanceof Timestamp ? 
+        data.endDate.toDate() : 
+        new Date(data.endDate);
+      
+      const createdAt = data.createdAt ? 
+        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
+        new Date();
 
       // Fetch the car data
       let car: Car | null = null;
@@ -154,7 +169,7 @@ export const getBookingById = async (bookingId: string): Promise<CompleteBooking
           id: car.id,
           title: car.title,
           image: car.image,
-          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+          pricePerDay: car.pricePerDay
         } : undefined,
       };
     } else {
@@ -185,9 +200,17 @@ export const getBookingsByCarId = async (carId: string): Promise<CompleteBooking
       const data = doc.data() as BookingData;
 
       // Convert Firestore Timestamps to JavaScript Date objects
-      const startDate = (data.startDate as unknown as Timestamp).toDate();
-      const endDate = (data.endDate as unknown as Timestamp).toDate();
-      const createdAt = data.createdAt ? (data.createdAt as unknown as Timestamp).toDate() : new Date();
+      const startDate = data.startDate instanceof Timestamp ? 
+        data.startDate.toDate() : 
+        new Date(data.startDate);
+      
+      const endDate = data.endDate instanceof Timestamp ? 
+        data.endDate.toDate() : 
+        new Date(data.endDate);
+      
+      const createdAt = data.createdAt ? 
+        (data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt)) : 
+        new Date();
 
       // Fetch the car data (optional, depending on your needs)
       let car: Car | null = null;
@@ -207,7 +230,7 @@ export const getBookingsByCarId = async (carId: string): Promise<CompleteBooking
           id: car.id,
           title: car.title,
           image: car.image,
-          pricePerDay: car.pricePerDay // Use pricePerDay instead of price
+          pricePerDay: car.pricePerDay
         } : undefined,
       });
     }
