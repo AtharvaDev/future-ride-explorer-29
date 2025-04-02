@@ -175,7 +175,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           startDate: formState.startDate!,
           endDate: formState.endDate!,
           startCity: formState.contactInfo.startCity,
-          status: 'confirmed' as const,
+          status: BookingStatus.CONFIRMED, // Use enum value instead of string literal
           contactInfo: formState.contactInfo,
           paymentInfo: {
             method: data.paymentMethod,
@@ -199,7 +199,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
             startDate: formState.startDate!,
             endDate: formState.endDate!,
             startCity: formState.contactInfo.startCity,
-            status: 'confirmed',
+            status: BookingStatus.CONFIRMED, // Use enum value here too
             contactInfo: formState.contactInfo,
             paymentInfo: {
               method: data.paymentMethod,
