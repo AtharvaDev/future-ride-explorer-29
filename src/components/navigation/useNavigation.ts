@@ -42,6 +42,26 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
           },
           ease: "power2.inOut"
         });
+      } else if (location && location.pathname !== '/') {
+        // If on a different page and trying to navigate to a home page section,
+        // navigate to home page first
+        if (navigate) {
+          navigate('/');
+          // Set a timeout to scroll to the element after navigation
+          setTimeout(() => {
+            const homeElement = document.getElementById(href.substring(1));
+            if (homeElement) {
+              gsap.to(window, {
+                duration: 1,
+                scrollTo: {
+                  y: homeElement,
+                  offsetY: 80
+                },
+                ease: "power2.inOut"
+              });
+            }
+          }, 500);
+        }
       }
     } else if (navigate) {
       navigate(href);
@@ -52,11 +72,13 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
 
   const isAdminPage = location?.pathname === '/admin';
   const isHomePage = location?.pathname === '/';
+  const isBookingPage = location?.pathname.includes('/booking');
   
   return { 
     handleNavigation, 
     location, 
-    isAdminPage, 
-    isHomePage 
+    isAdminPage,
+    isHomePage,
+    isBookingPage
   };
 };

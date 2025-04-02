@@ -22,7 +22,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
+      <main className="flex-grow flex items-center justify-center px-4 py-24">
         <div className="max-w-md w-full relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-xl rounded-xl"></div>
           <div className="relative z-10">

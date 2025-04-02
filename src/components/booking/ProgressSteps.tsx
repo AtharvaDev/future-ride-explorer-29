@@ -3,21 +3,21 @@ import React from 'react';
 import { cn } from "@/lib/utils";
 
 // Updated to include login as first step
-export type BookingStep = 'login' | 'contact' | 'dates' | 'payment' | 'confirmation';
+export type BookingStep = 'login' | 'contact' | 'dates' | 'confirmation' | 'payment';
 
 interface ProgressStepsProps {
   activeStep: number;
 }
 
 const ProgressSteps: React.FC<ProgressStepsProps> = ({ activeStep }) => {
-  // Updated step order: login, contact, dates, payment, confirmation
+  // Updated step order: login, contact, dates, confirmation, payment
   const getStepName = (index: number): BookingStep => {
     switch(index) {
       case 0: return 'login';
       case 1: return 'contact';
       case 2: return 'dates';
-      case 3: return 'payment';
-      case 4: return 'confirmation';
+      case 3: return 'confirmation';
+      case 4: return 'payment';
       default: return 'login';
     }
   };
@@ -48,8 +48,8 @@ const ProgressSteps: React.FC<ProgressStepsProps> = ({ activeStep }) => {
                   step === 'login' ? 'Login' :
                   step === 'contact' ? 'Contact' : 
                   step === 'dates' ? 'Dates' : 
-                  step === 'payment' ? 'Payment' : 
-                  'Confirmation'
+                  step === 'confirmation' ? 'Review' : 
+                  'Payment'
                 }</span>
               </div>
               

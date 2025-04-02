@@ -15,6 +15,7 @@ import MyBookingsPage from "./pages/MyBookingsPage";
 import { toast } from "sonner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { initializeAppData } from "./services/initService";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,23 +81,25 @@ const AppContent = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/booking/:carId?" element={<BookingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/my-bookings" element={<MyBookingsPage />} />
-      <Route 
-        path="/admin" 
-        element={
-          <ProtectedAdminRoute>
-            <AdminPage />
-          </ProtectedAdminRoute>
-        } 
-      />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/booking/:carId?" element={<BookingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/my-bookings" element={<MyBookingsPage />} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminPage />
+            </ProtectedAdminRoute>
+          } 
+        />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 };
 

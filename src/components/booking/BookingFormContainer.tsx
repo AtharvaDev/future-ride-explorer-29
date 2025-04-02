@@ -12,7 +12,7 @@ import { UpiFormData } from './PaymentStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { BookingContactInfo } from '@/types/booking';
-import gsap from 'gsap';
+import { gsap } from '@/lib/gsap';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -109,6 +109,10 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     nextStep();
   };
 
+  const handleConfirmationSubmit = () => {
+    nextStep();
+  };
+
   const handlePaymentSubmit = (data: UpiFormData & { paymentMethod: string, paymentId?: string }) => {
     setIsLoading(true);
     setPaymentMethod(data.paymentMethod);
@@ -124,17 +128,12 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
       if (!data.paymentId) {
         setPaymentId("pay_" + Math.random().toString(36).substring(2, 15));
       }
-      nextStep();
+      // This is the final step - you might want to reset or navigate somewhere
     }, 1500);
   };
 
   const handleBackStep = () => {
     prevStep();
-  };
-
-  const handleFinish = () => {
-    // Implementation for finishing the booking process
-    goToStep(1);
   };
 
   // Prevent accessing steps beyond login if not logged in
@@ -177,21 +176,22 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
         )}
         
         {formState.step === 4 && isStepAccessible(4) && (
+          <ConfirmationStep
+            formState={formState}
+            bookingSummary={bookingSummary}
+            car={car} 
+            onPrevious={handleBackStep}
+            onNext={handleConfirmationSubmit}
+          />
+        )}
+        
+        {formState.step === 5 && isStepAccessible(5) && (
           <PaymentStep 
             tokenAmount={bookingSummary.tokenAmount} 
             onSubmit={handlePaymentSubmit} 
             onBack={handleBackStep}
             isLoading={isLoading}
             contactInfo={formState.contactInfo}
-          />
-        )}
-        
-        {formState.step === 5 && isStepAccessible(5) && (
-          <ConfirmationStep
-            formState={formState}
-            bookingSummary={bookingSummary}
-            car={car} 
-            onPrevious={handleBackStep}
           />
         )}
       </div>

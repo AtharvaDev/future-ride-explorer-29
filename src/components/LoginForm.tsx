@@ -29,7 +29,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Login to FutureRide</h2>
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Welcome to FutureRide</h2>
+        <p className="text-gray-600 dark:text-gray-400">Sign in to manage your bookings and more</p>
+      </div>
       
       <Button 
         onClick={handleGoogleSignIn} 
@@ -67,9 +70,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
         )}
       </Button>
       
-      <div className="mt-6 text-center text-sm">
-        <p className="text-gray-600 dark:text-gray-400 font-medium">
-          Demo admin login: admin@futureride.com / password123
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          By signing in, you agree to our terms of service and privacy policy
         </p>
       </div>
     </div>
