@@ -30,8 +30,10 @@ const WhatsAppButton: React.FC = () => {
   const handleWhatsAppClick = () => {
     // Get WhatsApp number from config, remove the 'whatsapp:+' prefix if present
     let phoneNumber = whatsAppConfig.sender.phone;
+    phoneNumber = phoneNumber.replace(/^whatsapp:\+/, ''); // Remove 'whatsapp:+' prefix if present
     phoneNumber = phoneNumber.replace(/\D/g, ''); // Remove all non-digit characters
     
+    // Open WhatsApp web or app with the phone number and default message
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(UI_STRINGS.WHATSAPP.DEFAULT_MESSAGE)}`, '_blank');
   };
 

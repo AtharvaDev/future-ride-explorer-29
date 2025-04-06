@@ -1,6 +1,5 @@
 
 // Twilio Service and Email Service Implementation
-import { Twilio } from 'twilio';
 import twilioConfig from '@/config/twilioConfig';
 import emailConfig, { EmailProvider } from '@/config/emailConfig';
 import { SmtpClient } from '@/utils/smtpClient';
@@ -28,24 +27,7 @@ interface EmailOptions {
 }
 
 /**
- * Initialize Twilio client if enabled
- */
-const initializeTwilioClient = () => {
-  if (!twilioConfig.enabled) return null;
-  
-  try {
-    return new Twilio(twilioConfig.accountSid, twilioConfig.authToken);
-  } catch (error) {
-    console.error('Failed to initialize Twilio client:', error);
-    return null;
-  }
-};
-
-// Initialize the client outside of the functions for better performance
-const twilioClient = initializeTwilioClient();
-
-/**
- * Send a WhatsApp message using Twilio
+ * Send a WhatsApp message using Twilio or mock service
  */
 export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promise<boolean> => {
   // Check if Twilio and WhatsApp service are enabled
@@ -70,21 +52,14 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
       formattedTo = `whatsapp:+${formattedTo}`;
     }
     
-    // Use mock implementation if real API is disabled or client is not initialized
-    if (!twilioConfig.useRealTwilioApi || !twilioClient) {
-      console.log(`[TWILIO MOCK] Sending WhatsApp message to ${formattedTo} from ${from}:`);
-      console.log(`[TWILIO MOCK] Message: ${body}`);
-      return new Promise(resolve => setTimeout(() => resolve(true), 500));
-    }
+    // Always use mock implementation in browser environment
+    console.log(`[TWILIO MOCK] Sending WhatsApp message to ${formattedTo} from ${from}:`);
+    console.log(`[TWILIO MOCK] Message: ${body}`);
     
-    // Use the Twilio SDK to send the WhatsApp message
-    const message = await twilioClient.messages.create({
-      to: formattedTo,
-      from: from,
-      body: body
-    });
+    // In a real-world scenario, you would use a backend API endpoint here
+    // that would handle the Twilio API call server-side
     
-    console.log('WhatsApp message sent! SID:', message.sid);
+    console.log('WhatsApp message sent via mock service!');
     return true;
   } catch (error) {
     console.error('Error sending WhatsApp message:', error);
@@ -93,7 +68,7 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
 };
 
 /**
- * Send an SMS message using Twilio
+ * Send an SMS message using Twilio or mock service
  */
 export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boolean> => {
   // Check if Twilio and SMS service are enabled
@@ -105,21 +80,14 @@ export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boo
   const { to, body, from = twilioConfig.services.sms.fromNumber } = options;
   
   try {
-    // Use mock implementation if real API is disabled or client is not initialized
-    if (!twilioConfig.useRealTwilioApi || !twilioClient) {
-      console.log(`[TWILIO MOCK] Sending SMS to ${to} from ${from}:`);
-      console.log(`[TWILIO MOCK] Message: ${body}`);
-      return new Promise(resolve => setTimeout(() => resolve(true), 500));
-    }
+    // Always use mock implementation in browser environment
+    console.log(`[TWILIO MOCK] Sending SMS to ${to} from ${from}:`);
+    console.log(`[TWILIO MOCK] Message: ${body}`);
     
-    // Use the Twilio SDK to send the SMS message
-    const message = await twilioClient.messages.create({
-      to: to,
-      from: from,
-      body: body
-    });
+    // In a real-world scenario, you would use a backend API endpoint here
+    // that would handle the Twilio API call server-side
     
-    console.log('SMS message sent! SID:', message.sid);
+    console.log('SMS message sent via mock service!');
     return true;
   } catch (error) {
     console.error('Error sending SMS message:', error);
@@ -140,48 +108,14 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
   const { to, subject, body, from = { name: emailConfig.sender.name, email: emailConfig.sender.email }, attachments = [] } = options;
   
   try {
-    // Use mock implementation if testing mode is enabled
-    if (!twilioConfig.useRealTwilioApi) {
-      console.log(`[EMAIL MOCK] Sending email to ${to.join(', ')} from ${from.name} <${from.email}>:`);
-      console.log(`[EMAIL MOCK] Subject: ${subject}`);
-      console.log(`[EMAIL MOCK] Body: ${body}`);
-      console.log(`[EMAIL MOCK] Attachments: ${attachments.length}`);
-      return new Promise(resolve => setTimeout(() => resolve(true), 500));
-    }
-
-    // Choose the email provider based on configuration
-    const provider: EmailProvider = emailConfig.provider;
+    // Use mock implementation in browser environment
+    console.log(`[EMAIL MOCK] Sending email to ${to.join(', ')} from ${from.name} <${from.email}>:`);
+    console.log(`[EMAIL MOCK] Subject: ${subject}`);
+    console.log(`[EMAIL MOCK] Body: ${body}`);
+    console.log(`[EMAIL MOCK] Attachments: ${attachments.length}`);
     
-    if (provider === 'nodemailer') {
-      // Use Nodemailer with Gmail
-      const smtpClient = new SmtpClient(emailConfig.nodemailerConfig);
-      await smtpClient.sendMail({
-        from: `"${from.name}" <${from.email}>`,
-        to: to.join(', '),
-        subject,
-        html: body,
-        attachments
-      });
-      console.log(`Email sent via Nodemailer to ${to.join(', ')}`);
-    } else if (provider === 'sendgrid') {
-      // Use SendGrid
-      const sendGridClient = new SendGridClient(emailConfig.sendgridConfig.apiKey);
-      await sendGridClient.send({
-        from: { name: from.name, email: from.email },
-        to: to.map(email => ({ email })),
-        subject,
-        html: body,
-        attachments: attachments.map(attachment => ({
-          content: attachment.content.toString('base64'),
-          filename: attachment.filename,
-          type: attachment.contentType || 'application/octet-stream',
-          disposition: 'attachment'
-        }))
-      });
-      console.log(`Email sent via SendGrid to ${to.join(', ')}`);
-    } else {
-      throw new Error(`Unsupported email provider: ${provider}`);
-    }
+    // In a real-world scenario, you would use a backend API endpoint here
+    // that would handle the email sending via appropriate provider
     
     return true;
   } catch (error) {
