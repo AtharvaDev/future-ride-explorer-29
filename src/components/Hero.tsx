@@ -122,16 +122,12 @@ const Hero = () => {
         className="relative h-full flex flex-col items-center justify-center text-center px-4"
         style={{ transition: 'opacity 0.3s ease, transform 0.3s ease' }}
       >
-        {/* Decorative elements */}
+        {/* Decorative elements - Removed all circles and decorative elements */}
         <div 
           ref={decorationRef}
           className="absolute inset-0 pointer-events-none opacity-30"
         >
-          <div className="absolute top-20 left-20 w-40 h-40 border border-white/10 rounded-full"></div>
-          <div className="absolute top-40 right-40 w-20 h-20 border border-white/20 rounded-full"></div>
-          <div className="absolute bottom-40 left-1/4 w-60 h-60 border border-white/5 rounded-full"></div>
-          <div className="absolute -top-20 right-1/3 w-80 h-80 border border-white/10 rounded-full"></div>
-          
+          {/* Vertical lines are kept */}
           <div className="absolute top-1/4 left-20 w-1 h-20 bg-gradient-to-b from-white/0 via-white/30 to-white/0"></div>
           <div className="absolute top-1/3 right-40 w-1 h-40 bg-gradient-to-b from-white/0 via-white/20 to-white/0"></div>
         </div>

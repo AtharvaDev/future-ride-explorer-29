@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Script from "@/components/ui/script";
+import paymentConfig from '@/config/paymentConfig';
 
 const upiFormSchema = z.object({
   upiId: z.string().min(5, {
@@ -38,7 +39,18 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   isLoading = false,
   contactInfo
 }) => {
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'razorpay' | 'card'>('upi');
+  // Get available payment methods from config
+  const availablePaymentMethods = Object.entries(paymentConfig.paymentMethods)
+    .filter(([_, enabled]) => enabled)
+    .map(([method]) => method);
+  
+  // Set default payment method to the first available one
+  const defaultPaymentMethod = availablePaymentMethods.length > 0 ? 
+    availablePaymentMethods[0] : 'razorpay';
+  
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'razorpay' | 'card'>(
+    defaultPaymentMethod as any
+  );
   const [paymentId, setPaymentId] = useState<string>('');
   const [loadingRazorpay, setLoadingRazorpay] = useState(false);
 
@@ -126,6 +138,39 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     }
   };
 
+  // Create array of payment method tabs
+  const getPaymentTabs = () => {
+    const tabs = [];
+    
+    if (paymentConfig.paymentMethods.razorpay) {
+      tabs.push({
+        id: 'razorpay',
+        label: 'Razorpay',
+        icon: <Wallet className="h-4 w-4" />
+      });
+    }
+    
+    if (paymentConfig.paymentMethods.upi) {
+      tabs.push({
+        id: 'upi',
+        label: 'UPI',
+        icon: <IndianRupee className="h-4 w-4" />
+      });
+    }
+    
+    if (paymentConfig.paymentMethods.card) {
+      tabs.push({
+        id: 'card',
+        label: 'Card',
+        icon: <CreditCard className="h-4 w-4" />
+      });
+    }
+    
+    return tabs;
+  };
+  
+  const paymentTabs = getPaymentTabs();
+
   return (
     <div className="step-container space-y-6">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" />
@@ -137,94 +182,98 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         </p>
       </div>
       
-      <Tabs defaultValue="razorpay" className="w-full" onValueChange={(value) => setPaymentMethod(value as any)}>
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="razorpay" className="flex items-center gap-2">
-            <Wallet className="h-4 w-4" />
-            Razorpay
-          </TabsTrigger>
-          <TabsTrigger value="upi" className="flex items-center gap-2">
-            <IndianRupee className="h-4 w-4" />
-            UPI
-          </TabsTrigger>
-          <TabsTrigger value="card" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Card
-          </TabsTrigger>
+      <Tabs 
+        defaultValue={defaultPaymentMethod} 
+        className="w-full" 
+        onValueChange={(value) => setPaymentMethod(value as any)}
+      >
+        <TabsList className={`grid grid-cols-${paymentTabs.length} mb-4`}>
+          {paymentTabs.map(tab => (
+            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+              {tab.icon}
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         
-        <TabsContent value="razorpay" className="space-y-4">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
-            <p className="text-sm">
-              Pay securely using Razorpay. You'll be redirected to the Razorpay payment page.
-            </p>
-          </div>
-          
-          <div className="pt-4">
-            <Button 
-              className="w-full" 
-              onClick={handleRazorpayPayment}
-              disabled={loadingRazorpay || isLoading}
-            >
-              {loadingRazorpay ? "Processing..." : `Pay ₹${tokenAmount.toLocaleString()} with Razorpay`}
-            </Button>
-          </div>
-        </TabsContent>
+        {paymentConfig.paymentMethods.razorpay && (
+          <TabsContent value="razorpay" className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+              <p className="text-sm">
+                Pay securely using Razorpay. You'll be redirected to the Razorpay payment page.
+              </p>
+            </div>
+            
+            <div className="pt-4">
+              <Button 
+                className="w-full" 
+                onClick={handleRazorpayPayment}
+                disabled={loadingRazorpay || isLoading}
+              >
+                {loadingRazorpay ? "Processing..." : `Pay ₹${tokenAmount.toLocaleString()} with Razorpay`}
+              </Button>
+            </div>
+          </TabsContent>
+        )}
         
-        <TabsContent value="upi" className="space-y-4">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
-            <p className="text-sm">
-              Pay using any UPI app like Google Pay, PhonePe, Paytm, or BHIM UPI.
-            </p>
-          </div>
-          
-          <Form {...upiForm}>
-            <form onSubmit={upiForm.handleSubmit(handleUpiSubmit)} className="space-y-4">
-              <FormField
-                control={upiForm.control}
-                name="upiId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>UPI ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="yourname@bankname" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="pt-4">
-                <Button 
-                  type="submit" 
-                  className="w-full pay-btn"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : `Pay ₹${tokenAmount.toLocaleString()} with UPI`}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </TabsContent>
+        {paymentConfig.paymentMethods.upi && (
+          <TabsContent value="upi" className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+              <p className="text-sm">
+                Pay using any UPI app like Google Pay, PhonePe, Paytm, or BHIM UPI.
+              </p>
+            </div>
+            
+            <Form {...upiForm}>
+              <form onSubmit={upiForm.handleSubmit(handleUpiSubmit)} className="space-y-4">
+                <FormField
+                  control={upiForm.control}
+                  name="upiId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>UPI ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="yourname@bankname" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    className="w-full pay-btn"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : `Pay ₹${tokenAmount.toLocaleString()} with UPI`}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+        )}
         
-        <TabsContent value="card" className="space-y-4">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
-            <p className="text-sm">
-              This is a demo. In a real application, this would integrate with a payment gateway.
-            </p>
-          </div>
-          
-          <div className="pt-4">
-            <Button 
-              className="w-full" 
-              onClick={() => {
-                toast("Card payment is not available in this demo. Please use UPI or Razorpay.");
-              }}
-            >
-              Pay ₹{tokenAmount.toLocaleString()} with Card
-            </Button>
-          </div>
-        </TabsContent>
+        {paymentConfig.paymentMethods.card && (
+          <TabsContent value="card" className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+              <p className="text-sm">
+                This is a demo. In a real application, this would integrate with a payment gateway.
+              </p>
+            </div>
+            
+            <div className="pt-4">
+              <Button 
+                className="w-full" 
+                onClick={() => {
+                  toast("Card payment is not available in this demo. Please use UPI or Razorpay.");
+                }}
+              >
+                Pay ₹{tokenAmount.toLocaleString()} with Card
+              </Button>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
       
       <div className="flex justify-between pt-4">

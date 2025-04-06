@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import {
   sendProfileUpdateNotification
 } from '@/services/notificationService';
 import { BookingNotificationDetails } from '@/types/notifications';
+import paymentConfig from '@/config/paymentConfig';
 
 interface BookingFormContainerProps {
   car: Car;
@@ -34,6 +36,9 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   const [bookingCreated, setBookingCreated] = useState<BookingNotificationDetails | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Check if payment step is enabled in config
+  const isPaymentStepEnabled = paymentConfig.enabled && paymentConfig.paymentStep.enabled;
   
   const {
     formState,
@@ -137,7 +142,82 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
   };
 
   const handleConfirmationSubmit = () => {
-    nextStep();
+    // If payment step is disabled, complete the booking immediately
+    if (!isPaymentStepEnabled) {
+      handleBookingWithoutPayment();
+    } else {
+      nextStep(); // Go to payment step
+    }
+  };
+  
+  // New function to handle booking creation without payment
+  const handleBookingWithoutPayment = async () => {
+    setIsLoading(true);
+    
+    try {
+      if (user) {
+        const bookingData = {
+          userId: user.uid,
+          carId: car.id,
+          startDate: formState.startDate!,
+          endDate: formState.endDate!,
+          startCity: formState.contactInfo.startCity,
+          status: BookingStatus.CONFIRMED,
+          contactInfo: formState.contactInfo,
+          paymentInfo: {
+            method: 'pending', // No payment yet
+            paymentId: null,
+            totalAmount: bookingSummary.totalAmount,
+            tokenAmount: 0, // No token paid
+            isPaid: false,
+            paidAt: null
+          }
+        };
+        
+        const result = await createBooking(bookingData);
+        
+        if (result && result.id) {
+          const notificationDetails: BookingNotificationDetails = {
+            id: result.id,
+            userId: user.uid,
+            carId: car.id,
+            startDate: formState.startDate!,
+            endDate: formState.endDate!,
+            startCity: formState.contactInfo.startCity,
+            status: BookingStatus.CONFIRMED,
+            contactInfo: formState.contactInfo,
+            paymentInfo: {
+              method: 'pending',
+              totalAmount: bookingSummary.totalAmount,
+              tokenAmount: 0,
+              isPaid: false,
+              paidAt: null
+            },
+            car: {
+              id: car.id,
+              name: `${car.model} ${car.title}`,
+              image: car.image,
+              pricePerDay: car.pricePerDay
+            }
+          };
+          
+          await sendBookingConfirmation(notificationDetails, user);
+          
+          setBookingCreated(notificationDetails);
+          goToStep(6); // Skip to success step
+          toast.success("Booking confirmed successfully!");
+        } else {
+          toast.error("Failed to create booking. Please try again.");
+        }
+      } else {
+        toast.error("User not logged in. Please log in and try again.");
+      }
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast.error("An error occurred while processing your booking.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePaymentSubmit = async (data: UpiFormData & { paymentMethod: string, paymentId?: string }) => {
@@ -229,7 +309,16 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     return !!user;
   };
 
-  const steps = ["Login", "Contact", "Dates", "Review", "Payment", "Complete"];
+  // Determine steps based on payment config
+  const getSteps = () => {
+    const baseSteps = ["Login", "Contact", "Dates", "Review"];
+    if (isPaymentStepEnabled) {
+      return [...baseSteps, "Payment", "Complete"];
+    }
+    return [...baseSteps, "Complete"];
+  };
+
+  const steps = getSteps();
 
   useEffect(() => {
     if (formContainerRef.current) {
@@ -253,7 +342,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
     <div ref={formContainerRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
       <ProgressSteps 
         activeStep={formState.step - 1} 
-        steps={steps.slice(0, formState.step > 5 ? 6 : 5)}
+        steps={steps.slice(0, formState.step > steps.length ? steps.length : 5)}
       />
       
       <div className="mt-8 booking-form-content">
@@ -295,7 +384,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           />
         )}
         
-        {formState.step === 5 && isStepAccessible(5) && (
+        {isPaymentStepEnabled && formState.step === 5 && isStepAccessible(5) && (
           <PaymentStep 
             tokenAmount={bookingSummary.tokenAmount} 
             onSubmit={handlePaymentSubmit} 
@@ -305,7 +394,7 @@ const BookingFormContainer: React.FC<BookingFormContainerProps> = ({ car }) => {
           />
         )}
         
-        {formState.step === 6 && bookingCreated && (
+        {formState.step === (isPaymentStepEnabled ? 6 : 5) && bookingCreated && (
           <BookingSuccess 
             bookingDetails={bookingCreated}
             onViewBookings={handleViewBookings}

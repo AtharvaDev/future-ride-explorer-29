@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Car } from '@/data/cars';
 import { differenceInDays } from 'date-fns';
 import { BookingContactInfo } from '@/types/booking';
+import paymentConfig from '@/config/paymentConfig';
 
 export interface BookingFormState {
   step: number;
@@ -31,6 +31,9 @@ export interface BookingSummary {
 }
 
 export function useBookingFormState(car: Car) {
+  // Get token amount from config
+  const configuredTokenAmount = paymentConfig.paymentStep.tokenAmount;
+  
   const [formState, setFormState] = useState<BookingFormState>({
     step: 1,
     startDate: null,
@@ -47,7 +50,7 @@ export function useBookingFormState(car: Car) {
     paymentMethod: 'creditCard',
     totalDays: 0,
     totalAmount: 0,
-    tokenAmount: 1000, // Fixed token amount of 1000 Rs
+    tokenAmount: configuredTokenAmount, // Use token amount from config
     isDatesValid: false,
     baseKm: 100,
     extraKmRate: car.pricePerKm || 10,
@@ -58,7 +61,7 @@ export function useBookingFormState(car: Car) {
     dailyRate: car.pricePerDay,
     subtotal: 0,
     totalAmount: 0,
-    tokenAmount: 1000, // Fixed token amount of 1000 Rs
+    tokenAmount: configuredTokenAmount, // Use token amount from config
     baseKm: 100,
     extraKmRate: car.pricePerKm || 10,
   });
@@ -77,7 +80,7 @@ export function useBookingFormState(car: Car) {
           dailyRate: car.pricePerDay,
           subtotal,
           totalAmount,
-          tokenAmount: 1000, // Fixed token amount of 1000 Rs
+          tokenAmount: configuredTokenAmount, // Use token amount from config
           baseKm: 100,
           extraKmRate: car.pricePerKm || 10,
         });
@@ -86,7 +89,7 @@ export function useBookingFormState(car: Car) {
           ...prev,
           totalDays: days,
           totalAmount,
-          tokenAmount: 1000, // Fixed token amount of 1000 Rs
+          tokenAmount: configuredTokenAmount, // Use token amount from config
           isDatesValid,
         }));
       } else {
@@ -96,7 +99,7 @@ export function useBookingFormState(car: Car) {
         }));
       }
     }
-  }, [formState.startDate, formState.endDate, car.pricePerDay, car.pricePerKm]);
+  }, [formState.startDate, formState.endDate, car.pricePerDay, car.pricePerKm, configuredTokenAmount]);
 
   const setDates = (startDate: Date | null, endDate: Date | null) => {
     setFormState(prev => ({
