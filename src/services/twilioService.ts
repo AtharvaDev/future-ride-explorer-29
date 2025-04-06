@@ -2,8 +2,6 @@
 // Twilio Service Implementation
 // This file contains mock implementations of Twilio services
 // Replace with actual Twilio SDK integration when ready for production
-import twilio from 'twilio'; // Replace require with import
-
 import twilioConfig from '@/config/twilioConfig';
 
 interface TwilioMessageOptions {
