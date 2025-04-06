@@ -9,6 +9,7 @@ import { WHATSAPP_STRINGS } from './strings/whatsappStrings';
 import { COMPANY_STRINGS } from './strings/companyStrings';
 import { FOOTER_STRINGS } from './strings/footerStrings';
 import { NOTIFICATION_STRINGS } from './strings/notificationStrings';
+import { BOOKING_HISTORY_STRINGS } from './strings/bookingHistoryStrings';
 
 export const UI_STRINGS = {
   VIDEO: VIDEO_STRINGS,
@@ -17,6 +18,7 @@ export const UI_STRINGS = {
     ...BOOKING_STRINGS,
     HISTORY: BOOKING_STRINGS.HISTORY
   },
+  BOOKING_HISTORY: BOOKING_HISTORY_STRINGS,
   LOGIN: LOGIN_STRINGS,
   NOT_FOUND: NOT_FOUND_STRINGS,
   ADMIN: ADMIN_STRINGS,
