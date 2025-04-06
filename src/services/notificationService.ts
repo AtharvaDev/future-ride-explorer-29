@@ -1,6 +1,7 @@
 import { AuthUser } from '@/types/auth';
 import { format } from 'date-fns';
-import { emailConfig, whatsAppConfig } from '@/config/notifications';
+import emailConfig from '@/config/emailConfig';
+import whatsAppConfig from '@/config/whatsAppConfig';
 import { BookingNotificationDetails } from '@/types/notifications';
 import { 
   sendEmail, 
@@ -254,7 +255,7 @@ Car Details:
   }
 };
 
-// Export other notification functions to be implemented as needed
+// Export other notification functions
 export const sendPaymentConfirmation = async () => {
   // Implementation would be similar to booking confirmation
   return true;

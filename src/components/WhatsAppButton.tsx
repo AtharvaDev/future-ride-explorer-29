@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
 import { UI_STRINGS } from '@/constants/uiStrings';
 import twilioConfig from '@/config/twilioConfig';
+import whatsAppConfig from '@/config/whatsAppConfig';
 
 const WhatsAppButton: React.FC = () => {
   const location = useLocation();
@@ -20,15 +21,16 @@ const WhatsAppButton: React.FC = () => {
       path.includes('/booking') ||
       // Hide if WhatsApp service is disabled in Twilio config
       !twilioConfig.enabled || 
-      !twilioConfig.services.whatsapp.enabled;
+      !twilioConfig.services.whatsapp.enabled ||
+      !whatsAppConfig.enabled;
     
     setIsVisible(!shouldHide);
   }, [location]);
   
   const handleWhatsAppClick = () => {
     // Get WhatsApp number from config, remove the 'whatsapp:+' prefix if present
-    let phoneNumber = twilioConfig.services.whatsapp.fromNumber;
-    phoneNumber = phoneNumber.replace('whatsapp:+', '');
+    let phoneNumber = whatsAppConfig.sender.phone;
+    phoneNumber = phoneNumber.replace(/\D/g, ''); // Remove all non-digit characters
     
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(UI_STRINGS.WHATSAPP.DEFAULT_MESSAGE)}`, '_blank');
   };

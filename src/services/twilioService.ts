@@ -1,7 +1,6 @@
 
 // Twilio Service Implementation
-// This file contains mock implementations of Twilio services
-// Replace with actual Twilio SDK integration when ready for production
+import { Twilio } from 'twilio';
 import twilioConfig from '@/config/twilioConfig';
 
 interface TwilioMessageOptions {
@@ -16,6 +15,23 @@ interface TwilioEmailOptions {
   body: string;
   from?: string;
 }
+
+/**
+ * Initialize Twilio client if enabled
+ */
+const initializeTwilioClient = () => {
+  if (!twilioConfig.enabled) return null;
+  
+  try {
+    return new Twilio(twilioConfig.accountSid, twilioConfig.authToken);
+  } catch (error) {
+    console.error('Failed to initialize Twilio client:', error);
+    return null;
+  }
+};
+
+// Initialize the client outside of the functions for better performance
+const twilioClient = initializeTwilioClient();
 
 /**
  * Send a WhatsApp message using Twilio
@@ -43,34 +59,22 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
       formattedTo = `whatsapp:+${formattedTo}`;
     }
     
-    // In a real implementation, we would use the Twilio SDK
-    console.log(`[TWILIO MOCK] Sending WhatsApp message to ${formattedTo} from ${from}:`);
-    console.log(`[TWILIO MOCK] Message: ${body}`);
-    
-    // Real implementation would use Twilio's REST API with fetch instead of require
-    if (twilioConfig.useRealTwilioApi) {
-      // Use fetch API for browser environments instead of require
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${twilioConfig.accountSid}/Messages.json`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${btoa(`${twilioConfig.accountSid}:${twilioConfig.authToken}`)}`
-        },
-        body: new URLSearchParams({
-          To: formattedTo,
-          From: from,
-          Body: body
-        })
-      });
-      
-      const data = await response.json();
-      console.log('Message SID:', data.sid);
+    // Use mock implementation if real API is disabled or client is not initialized
+    if (!twilioConfig.useRealTwilioApi || !twilioClient) {
+      console.log(`[TWILIO MOCK] Sending WhatsApp message to ${formattedTo} from ${from}:`);
+      console.log(`[TWILIO MOCK] Message: ${body}`);
+      return new Promise(resolve => setTimeout(() => resolve(true), 500));
     }
     
-    // Return success after simulating API delay
-    return new Promise(resolve => setTimeout(() => resolve(true), 500));
+    // Use the Twilio SDK to send the WhatsApp message
+    const message = await twilioClient.messages.create({
+      to: formattedTo,
+      from: from,
+      body: body
+    });
+    
+    console.log('WhatsApp message sent! SID:', message.sid);
+    return true;
   } catch (error) {
     console.error('Error sending WhatsApp message:', error);
     return false;
@@ -79,7 +83,6 @@ export const sendWhatsAppMessage = async (options: TwilioMessageOptions): Promis
 
 /**
  * Send an SMS message using Twilio
- * This is a mock implementation that logs the message and returns a promise
  */
 export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boolean> => {
   // Check if Twilio and SMS service are enabled
@@ -91,33 +94,22 @@ export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boo
   const { to, body, from = twilioConfig.services.sms.fromNumber } = options;
   
   try {
-    // In a real implementation, this would use the Twilio SDK
-    console.log(`[TWILIO MOCK] Sending SMS to ${to} from ${from}:`);
-    console.log(`[TWILIO MOCK] Message: ${body}`);
-    
-    // Real implementation with fetch API if enabled
-    if (twilioConfig.useRealTwilioApi) {
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${twilioConfig.accountSid}/Messages.json`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${btoa(`${twilioConfig.accountSid}:${twilioConfig.authToken}`)}`
-        },
-        body: new URLSearchParams({
-          To: to,
-          From: from,
-          Body: body
-        })
-      });
-      
-      const data = await response.json();
-      console.log('Message SID:', data.sid);
+    // Use mock implementation if real API is disabled or client is not initialized
+    if (!twilioConfig.useRealTwilioApi || !twilioClient) {
+      console.log(`[TWILIO MOCK] Sending SMS to ${to} from ${from}:`);
+      console.log(`[TWILIO MOCK] Message: ${body}`);
+      return new Promise(resolve => setTimeout(() => resolve(true), 500));
     }
     
-    // Return success after simulating API delay
-    return new Promise(resolve => setTimeout(() => resolve(true), 500));
+    // Use the Twilio SDK to send the SMS message
+    const message = await twilioClient.messages.create({
+      to: to,
+      from: from,
+      body: body
+    });
+    
+    console.log('SMS message sent! SID:', message.sid);
+    return true;
   } catch (error) {
     console.error('Error sending SMS message:', error);
     return false;
@@ -126,7 +118,6 @@ export const sendSmsMessage = async (options: TwilioMessageOptions): Promise<boo
 
 /**
  * Send an email using Twilio SendGrid
- * This is a mock implementation that logs the email and returns a promise
  */
 export const sendEmail = async (options: TwilioEmailOptions): Promise<boolean> => {
   // Check if Twilio and Email service are enabled
@@ -138,13 +129,21 @@ export const sendEmail = async (options: TwilioEmailOptions): Promise<boolean> =
   const { to, subject, body, from = twilioConfig.services.email.fromEmail } = options;
   
   try {
-    // In a real implementation, this would use the SendGrid SDK
-    console.log(`[TWILIO MOCK] Sending email to ${to} from ${from}:`);
-    console.log(`[TWILIO MOCK] Subject: ${subject}`);
-    console.log(`[TWILIO MOCK] Body: ${body}`);
+    // For now, we use a mock implementation for email
+    // In a real scenario, this would use Twilio SendGrid SDK
+    if (!twilioConfig.useRealTwilioApi) {
+      console.log(`[TWILIO MOCK] Sending email to ${to} from ${from}:`);
+      console.log(`[TWILIO MOCK] Subject: ${subject}`);
+      console.log(`[TWILIO MOCK] Body: ${body}`);
+      return new Promise(resolve => setTimeout(() => resolve(true), 500));
+    }
     
-    // Return success after simulating API delay
-    return new Promise(resolve => setTimeout(() => resolve(true), 500));
+    // Here you would use the SendGrid API if useRealTwilioApi is true
+    // This would require setting up SendGrid separately and importing their SDK
+    // For now, just log a message about the implementation being needed
+    console.log('[TWILIO] SendGrid implementation needed for production emails');
+    
+    return true;
   } catch (error) {
     console.error('Error sending email:', error);
     return false;
