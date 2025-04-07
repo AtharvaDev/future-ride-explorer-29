@@ -1,16 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { Car } from '@/data/cars';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { PlusCircle, Loader } from 'lucide-react';
+import { PlusCircle, Loader, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import gsap from 'gsap';
-import { getAllCars, saveCar, deleteCar as deleteCarService } from '@/services/carService';
+import { getAllCars, saveCar, deleteCar as deleteCarService, resetCarsData } from '@/services/carService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CarList from '@/components/admin/CarList';
 import CarForm, { CarFormValues } from '@/components/admin/CarForm';
 import DeleteConfirmationDialog from '@/components/admin/DeleteConfirmationDialog';
+import { cars as defaultCars } from '@/data/cars';
+import { UI_STRINGS } from '@/constants/uiStrings';
 
 const AdminPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,6 +54,18 @@ const AdminPage = () => {
     onError: (error) => {
       console.error('Error deleting car:', error);
       toast.error('Failed to delete car');
+    }
+  });
+
+  const resetCarsMutation = useMutation({
+    mutationFn: () => resetCarsData(defaultCars),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cars'] });
+      toast.success(UI_STRINGS.ADMIN.REFRESH_CARS.SUCCESS);
+    },
+    onError: (error) => {
+      console.error('Error resetting cars:', error);
+      toast.error(UI_STRINGS.ADMIN.REFRESH_CARS.ERROR);
     }
   });
 
@@ -95,6 +110,10 @@ const AdminPage = () => {
       deleteCarMutation.mutate(carToDelete.id);
       toast.success(`${carToDelete.title} deleted successfully`);
     }
+  };
+
+  const handleResetCars = () => {
+    resetCarsMutation.mutate();
   };
 
   const onSubmit = (data: CarFormValues, features: { icon: string; title: string; description: string }[]) => {
@@ -175,14 +194,27 @@ const AdminPage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold admin-title">Car Management</h1>
-            <Button 
-              onClick={handleAddCar} 
-              className="flex items-center gap-2 admin-card"
-              disabled={saveCarMutation.isPending}
-            >
-              <PlusCircle className="h-4 w-4" />
-              Add New Car
-            </Button>
+            <div className="flex gap-2 admin-card">
+              <Button 
+                onClick={handleResetCars} 
+                className="flex items-center gap-2"
+                variant="outline"
+                disabled={resetCarsMutation.isPending}
+              >
+                <RefreshCw className={`h-4 w-4 ${resetCarsMutation.isPending ? 'animate-spin' : ''}`} />
+                {resetCarsMutation.isPending 
+                  ? UI_STRINGS.ADMIN.REFRESH_CARS.LOADING 
+                  : UI_STRINGS.ADMIN.REFRESH_CARS.BUTTON}
+              </Button>
+              <Button 
+                onClick={handleAddCar} 
+                className="flex items-center gap-2"
+                disabled={saveCarMutation.isPending}
+              >
+                <PlusCircle className="h-4 w-4" />
+                Add New Car
+              </Button>
+            </div>
           </div>
 
           <CarList 

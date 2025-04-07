@@ -11,4 +11,10 @@ export const ADMIN_STRINGS = {
     TITLE: "Available Cars",
     DESCRIPTION: "Manage your fleet of vehicles here. You can add, edit, or remove cars.",
   },
+  REFRESH_CARS: {
+    BUTTON: "Reset Car Data",
+    LOADING: "Resetting...",
+    SUCCESS: "Car data has been reset successfully",
+    ERROR: "Failed to reset car data"
+  }
 };

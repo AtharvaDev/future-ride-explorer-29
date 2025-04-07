@@ -9,7 +9,8 @@ import {
   deleteDoc, 
   query, 
   orderBy,
-  getDoc
+  getDoc,
+  writeBatch
 } from 'firebase/firestore';
 
 const CARS_COLLECTION = 'cars';
@@ -98,6 +99,40 @@ export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> =
     }
   } catch (error) {
     console.error("Error initializing default cars:", error);
+    throw error;
+  }
+};
+
+// Reset cars data in Firestore with default cars
+export const resetCarsData = async (defaultCars: Car[]): Promise<void> => {
+  try {
+    console.log("Resetting cars data in Firestore...");
+    
+    const batch = writeBatch(db);
+    
+    // First, get all existing cars to delete them
+    const carsQuery = query(collection(db, CARS_COLLECTION));
+    const querySnapshot = await getDocs(carsQuery);
+    
+    // Delete all existing cars
+    querySnapshot.forEach((document) => {
+      batch.delete(doc(db, CARS_COLLECTION, document.id));
+    });
+    
+    // Add all default cars
+    defaultCars.forEach(car => {
+      const cleanCar = JSON.parse(JSON.stringify(car));
+      const carRef = doc(db, CARS_COLLECTION, car.id);
+      batch.set(carRef, cleanCar);
+    });
+    
+    // Commit the batch
+    await batch.commit();
+    console.log("Cars data successfully reset in Firestore!");
+    
+    return;
+  } catch (error) {
+    console.error("Error resetting cars data:", error);
     throw error;
   }
 };
