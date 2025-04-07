@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Car } from '@/data/cars';
-import { Loader, Plus, Trash, PencilLine } from 'lucide-react';
+import { Loader, Plus, Trash, PencilLine, ImageIcon, ImagesIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,7 +77,7 @@ interface Feature {
 interface CarFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CarFormValues, features: Feature[]) => void;
+  onSubmit: (data: CarFormValues, features: Feature[], additionalImages: string[], insights: string[]) => void;
   editingCar: Car | null;
   isSubmitting: boolean;
 }
@@ -100,6 +101,14 @@ const CarForm: React.FC<CarFormProps> = ({
   const [newFeatureTitle, setNewFeatureTitle] = useState("");
   const [newFeatureDesc, setNewFeatureDesc] = useState("");
   const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
+  
+  // State for additional images
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+  
+  // State for rental insights
+  const [insights, setInsights] = useState<string[]>([]);
+  const [newInsight, setNewInsight] = useState("");
 
   // Initialize form
   const form = useForm<CarFormValues>({
@@ -132,6 +141,8 @@ const CarForm: React.FC<CarFormProps> = ({
         video: editingCar.video || "",
       });
       setFeatures(editingCar.features || []);
+      setAdditionalImages(editingCar.images?.slice(1) || []); // First image is the main image
+      setInsights(editingCar.insights || []);
     } else {
       form.reset({
         id: "",
@@ -145,20 +156,28 @@ const CarForm: React.FC<CarFormProps> = ({
         video: "",
       });
       setFeatures([]);
+      setAdditionalImages([]);
+      setInsights([]);
     }
     setNewFeatureIcon("zap");
     setNewFeatureTitle("");
     setNewFeatureDesc("");
     setEditingFeatureIndex(null);
+    setNewImageUrl("");
+    setNewInsight("");
   }, [editingCar, form, open]);
 
-  // Submit handler - properly handle empty video string
+  // Submit handler
   const handleSubmit = (data: CarFormValues) => {
     // If video is empty string, set it to undefined
     if (data.video === "") {
       data.video = undefined;
     }
-    onSubmit(data, features);
+    
+    // Combine main image with additional images
+    const allImages = [data.image, ...additionalImages];
+    
+    onSubmit(data, features, allImages, insights);
   };
 
   // Feature handlers
@@ -203,6 +222,30 @@ const CarForm: React.FC<CarFormProps> = ({
       setNewFeatureTitle("");
       setNewFeatureDesc("");
     }
+  };
+  
+  // Additional images handlers
+  const addImage = () => {
+    if (newImageUrl.trim() === "") return;
+    setAdditionalImages([...additionalImages, newImageUrl.trim()]);
+    setNewImageUrl("");
+  };
+  
+  const deleteImage = (index: number) => {
+    const newImages = additionalImages.filter((_, i) => i !== index);
+    setAdditionalImages(newImages);
+  };
+  
+  // Insights handlers
+  const addInsight = () => {
+    if (newInsight.trim() === "") return;
+    setInsights([...insights, newInsight.trim()]);
+    setNewInsight("");
+  };
+  
+  const deleteInsight = (index: number) => {
+    const newInsights = insights.filter((_, i) => i !== index);
+    setInsights(newInsights);
   };
 
   return (
@@ -321,12 +364,12 @@ const CarForm: React.FC<CarFormProps> = ({
                 name="image"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URL</FormLabel>
+                    <FormLabel>Main Image URL (transparent background)</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/car-image.jpg" {...field} />
+                      <Input placeholder="https://example.com/car-image.png" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Enter a URL for the car image
+                      Enter a URL for the main car image (with transparent background)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -375,9 +418,143 @@ const CarForm: React.FC<CarFormProps> = ({
                 />
               </div>
 
-              <Accordion type="single" collapsible className="w-full mt-6 border rounded-md">
+              <Accordion type="multiple" className="w-full mt-6 border rounded-md">
+                {/* Additional Images Section */}
+                <AccordionItem value="additional-images">
+                  <AccordionTrigger className="px-4">
+                    <div className="flex items-center gap-2">
+                      <ImagesIcon className="h-5 w-5" />
+                      <span>Additional Images (Carousel)</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      {additionalImages.length > 0 ? (
+                        <div className="space-y-2">
+                          {additionalImages.map((image, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
+                              <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="w-16 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                  <img src={image} alt={`Image ${index + 1}`} className="w-full h-full object-contain" />
+                                </div>
+                                <div className="truncate">
+                                  <p className="text-sm truncate">{image}</p>
+                                </div>
+                              </div>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => deleteImage(index)}
+                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No additional images added yet. Add some images below.</p>
+                      )}
+
+                      <div className="flex items-end gap-2">
+                        <div className="flex-grow">
+                          <Label htmlFor="newImageUrl">Image URL</Label>
+                          <Input
+                            id="newImageUrl"
+                            value={newImageUrl}
+                            onChange={(e) => setNewImageUrl(e.target.value)}
+                            placeholder="https://example.com/car-image.jpg"
+                          />
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={addImage}
+                          variant="outline"
+                          className="mb-0.5"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Note: These images will appear in the carousel on the car details page
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Rental Insights Section */}
+                <AccordionItem value="rental-insights">
+                  <AccordionTrigger className="px-4">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5" />
+                      <span>Rental Insights</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      {insights.length > 0 ? (
+                        <div className="space-y-2">
+                          {insights.map((insight, index) => (
+                            <div key={index} className="flex items-start justify-between p-3 border rounded-md bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="text-xs font-bold">{index + 1}</span>
+                                </div>
+                                <p className="text-sm">{insight}</p>
+                              </div>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => deleteInsight(index)}
+                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No rental insights added yet. Add some insights below.</p>
+                      )}
+
+                      <div className="flex items-end gap-2">
+                        <div className="flex-grow">
+                          <Label htmlFor="newInsight">Insight</Label>
+                          <Input
+                            id="newInsight"
+                            value={newInsight}
+                            onChange={(e) => setNewInsight(e.target.value)}
+                            placeholder="e.g. Perfect for family trips with up to 8 passengers"
+                          />
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={addInsight}
+                          variant="outline"
+                          className="mb-0.5"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        These insights will be displayed on the booking page to help customers choose the right car
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Car Features */}
                 <AccordionItem value="features">
-                  <AccordionTrigger className="px-4">Car Features</AccordionTrigger>
+                  <AccordionTrigger className="px-4">
+                    <div className="flex items-center gap-2">
+                      <settings className="h-5 w-5" />
+                      <span>Car Features</span>
+                    </div>
+                  </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-4">
                       {features.length > 0 ? (

@@ -94,12 +94,19 @@ export const useCarManagement = () => {
     resetCarsMutation.mutate();
   };
 
-  const onSubmit = (data: CarFormValues, features: { icon: string; title: string; description: string }[]) => {
+  const onSubmit = (
+    data: CarFormValues, 
+    features: { icon: string; title: string; description: string }[],
+    additionalImages: string[],
+    insights: string[]
+  ) => {
     if (editingCar) {
       const updatedCar: Car = {
         ...editingCar,
         ...data,
-        features: features
+        features: features,
+        images: additionalImages.length > 0 ? additionalImages : undefined,
+        insights: insights.length > 0 ? insights : undefined
       };
       
       if (!data.video) {
@@ -120,6 +127,15 @@ export const useCarManagement = () => {
         color: data.color,
         features: features
       };
+      
+      // Add optional fields only if they have values
+      if (additionalImages.length > 0) {
+        newCar.images = additionalImages;
+      }
+      
+      if (insights.length > 0) {
+        newCar.insights = insights;
+      }
       
       if (data.video) {
         newCar.video = data.video;

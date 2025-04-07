@@ -16,7 +16,10 @@ interface CarImageCarouselProps {
 }
 
 const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) => {
-  if (!images || images.length === 0) {
+  // Filter out any undefined or empty strings
+  const validImages = images.filter(img => img && img.trim() !== '');
+  
+  if (!validImages || validImages.length === 0) {
     return (
       <div className="w-full h-64 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
         <div className="flex flex-col items-center gap-2 text-gray-400">
@@ -30,7 +33,7 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
   return (
     <Carousel className="w-full">
       <CarouselContent>
-        {images.map((image, index) => (
+        {validImages.map((image, index) => (
           <CarouselItem key={index}>
             <div className="p-1">
               <Card>
@@ -41,7 +44,7 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
                     className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                    {index + 1}/{images.length}
+                    {index + 1}/{validImages.length}
                   </div>
                 </CardContent>
               </Card>
