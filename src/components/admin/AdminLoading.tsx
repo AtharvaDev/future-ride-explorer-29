@@ -7,7 +7,7 @@ const AdminLoading: React.FC = () => {
     <div className="flex-grow flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader className="h-12 w-12 animate-spin text-primary" />
-        <p>Loading car data...</p>
+        <p className="text-gray-600 dark:text-gray-300">Loading car data...</p>
       </div>
     </div>
   );

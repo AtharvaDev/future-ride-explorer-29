@@ -9,6 +9,8 @@ import { gsap } from '@/lib/gsap';
 import { Card } from '@/components/ui/card';
 import CarSection from '@/components/CarSection';
 import VideoDialog from '@/components/fleet/VideoDialog';
+import CarImageCarousel from '@/components/fleet/CarImageCarousel';
+import RentalInsights from '@/components/fleet/RentalInsights';
 import { Button } from '@/components/ui/button';
 import { Loader, Play } from 'lucide-react';
 import { getAllCars } from '@/services/carService';
@@ -160,14 +162,23 @@ const BookingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-4 car-details">
               <div className="glass-panel p-6 rounded-2xl">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-xl rounded-xl"></div>
-                  <img 
-                    src={selectedCar.image} 
-                    alt={selectedCar.title} 
-                    className="w-full h-48 object-contain relative z-10"
-                  />
-                </div>
+                {selectedCar.images && selectedCar.images.length > 0 ? (
+                  <div className="mb-6">
+                    <CarImageCarousel 
+                      images={selectedCar.images} 
+                      title={selectedCar.title}
+                    />
+                  </div>
+                ) : (
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-xl rounded-xl"></div>
+                    <img 
+                      src={selectedCar.image} 
+                      alt={selectedCar.title} 
+                      className="w-full h-48 object-contain relative z-10"
+                    />
+                  </div>
+                )}
                 
                 <h2 className="text-2xl font-bold mb-2">{selectedCar.model} {selectedCar.title}</h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">{selectedCar.description}</p>
@@ -205,6 +216,11 @@ const BookingPage = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Rental Insights */}
+              {selectedCar.insights && (
+                <RentalInsights insights={selectedCar.insights} />
+              )}
             </div>
 
             <div ref={bookingFormRef} id="booking-form-section" className="lg:col-span-8 booking-container">

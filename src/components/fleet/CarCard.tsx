@@ -19,6 +19,9 @@ const CarCard = forwardRef<HTMLDivElement, CarCardProps>(({ car, onCardClick }, 
     navigate(`/booking/${car.id}`);
   };
 
+  // Use the main transparent image
+  const displayImage = car.image;
+
   return (
     <Card 
       ref={ref}
@@ -30,9 +33,9 @@ const CarCard = forwardRef<HTMLDivElement, CarCardProps>(({ car, onCardClick }, 
           className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         ></div>
         <img 
-          src={car.image} 
+          src={displayImage} 
           alt={car.title} 
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500"
         />
         {car.video && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -54,7 +57,8 @@ const CarCard = forwardRef<HTMLDivElement, CarCardProps>(({ car, onCardClick }, 
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">From</p>
-            <p className="text-lg font-bold">₹{car.pricePerKm}/km</p>
+            <p className="text-lg font-bold">₹{car.pricePerDay}/day</p>
+            <p className="text-xs text-gray-500">₹{car.pricePerKm}/km</p>
           </div>
           <div>
             <Button 
