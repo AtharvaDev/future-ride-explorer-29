@@ -1,73 +1,38 @@
 
-import React, { useState, useEffect } from 'react';
-import { Car } from '@/data/cars';
+import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { PlusCircle, Loader, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import gsap from 'gsap';
-import { getAllCars, saveCar, deleteCar as deleteCarService, resetCarsData } from '@/services/carService';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCarManagement } from '@/hooks/useCarManagement';
 import CarList from '@/components/admin/CarList';
-import CarForm, { CarFormValues } from '@/components/admin/CarForm';
+import CarForm from '@/components/admin/CarForm';
 import DeleteConfirmationDialog from '@/components/admin/DeleteConfirmationDialog';
-import { cars as defaultCars } from '@/data/cars';
-import { UI_STRINGS } from '@/constants/uiStrings';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminLoading from '@/components/admin/AdminLoading';
+import AdminError from '@/components/admin/AdminError';
 
 const AdminPage = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [carToDelete, setCarToDelete] = useState<Car | null>(null);
-  const queryClient = useQueryClient();
-
-  const { 
-    data: cars = [], 
-    isLoading, 
+  const {
+    cars,
+    isLoading,
     isError,
-    error
-  } = useQuery({
-    queryKey: ['cars'],
-    queryFn: getAllCars
-  });
-
-  const saveCarMutation = useMutation({
-    mutationFn: saveCar,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cars'] });
-      setIsDialogOpen(false);
-    },
-    onError: (error) => {
-      console.error('Error saving car:', error);
-      toast.error('Failed to save car');
-    }
-  });
-
-  const deleteCarMutation = useMutation({
-    mutationFn: (id: string) => deleteCarService(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cars'] });
-      setDeleteConfirmOpen(false);
-      setCarToDelete(null);
-    },
-    onError: (error) => {
-      console.error('Error deleting car:', error);
-      toast.error('Failed to delete car');
-    }
-  });
-
-  const resetCarsMutation = useMutation({
-    mutationFn: () => resetCarsData(defaultCars),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cars'] });
-      toast.success(UI_STRINGS.ADMIN.REFRESH_CARS.SUCCESS);
-    },
-    onError: (error) => {
-      console.error('Error resetting cars:', error);
-      toast.error(UI_STRINGS.ADMIN.REFRESH_CARS.ERROR);
-    }
-  });
+    refetch,
+    isDialogOpen,
+    setIsDialogOpen,
+    editingCar,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
+    carToDelete,
+    saveCarMutation,
+    deleteCarMutation,
+    resetCarsMutation,
+    handleAddCar,
+    handleEditCar,
+    handleDeleteConfirm,
+    handleDeleteCar,
+    handleResetCars,
+    onSubmit
+  } = useCarManagement();
 
   useEffect(() => {
     const tl = gsap.timeline();
@@ -90,97 +55,21 @@ const AdminPage = () => {
     };
   }, []);
 
-  const handleAddCar = () => {
-    setEditingCar(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleEditCar = (car: Car) => {
-    setEditingCar(car);
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = (car: Car) => {
-    setCarToDelete(car);
-    setDeleteConfirmOpen(true);
-  };
-
-  const handleDeleteCar = () => {
-    if (carToDelete) {
-      deleteCarMutation.mutate(carToDelete.id);
-      toast.success(`${carToDelete.title} deleted successfully`);
-    }
-  };
-
-  const handleResetCars = () => {
-    resetCarsMutation.mutate();
-  };
-
-  const onSubmit = (data: CarFormValues, features: { icon: string; title: string; description: string }[]) => {
-    if (editingCar) {
-      const updatedCar: Car = {
-        ...editingCar,
-        ...data,
-        features: features
-      };
-      
-      if (!data.video) {
-        delete updatedCar.video;
-      }
-      
-      saveCarMutation.mutate(updatedCar);
-      toast.success(`${data.title} updated successfully`);
-    } else {
-      const newCar: Car = {
-        id: data.id,
-        model: data.model,
-        title: data.title,
-        description: data.description,
-        pricePerDay: data.pricePerDay,
-        pricePerKm: data.pricePerKm,
-        image: data.image,
-        color: data.color,
-        features: features
-      };
-      
-      if (data.video) {
-        newCar.video = data.video;
-      }
-      
-      saveCarMutation.mutate(newCar);
-      toast.success(`${data.title} created successfully`);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <Loader className="h-12 w-12 animate-spin text-primary" />
-            <p>Loading car data...</p>
-          </div>
-        </div>
+        <AdminLoading />
         <Footer />
       </div>
     );
   }
 
   if (isError) {
-    console.error("Error fetching cars:", error);
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Data</h2>
-            <p className="mb-6">There was an error loading the car data. Please try again later.</p>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['cars'] })}>
-              Retry
-            </Button>
-          </div>
-        </div>
+        <AdminError onRetry={() => refetch()} />
         <Footer />
       </div>
     );
@@ -192,30 +81,12 @@ const AdminPage = () => {
       
       <main className="flex-grow pt-24">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold admin-title">Car Management</h1>
-            <div className="flex gap-2 admin-card">
-              <Button 
-                onClick={handleResetCars} 
-                className="flex items-center gap-2"
-                variant="outline"
-                disabled={resetCarsMutation.isPending}
-              >
-                <RefreshCw className={`h-4 w-4 ${resetCarsMutation.isPending ? 'animate-spin' : ''}`} />
-                {resetCarsMutation.isPending 
-                  ? UI_STRINGS.ADMIN.REFRESH_CARS.LOADING 
-                  : UI_STRINGS.ADMIN.REFRESH_CARS.BUTTON}
-              </Button>
-              <Button 
-                onClick={handleAddCar} 
-                className="flex items-center gap-2"
-                disabled={saveCarMutation.isPending}
-              >
-                <PlusCircle className="h-4 w-4" />
-                Add New Car
-              </Button>
-            </div>
-          </div>
+          <AdminHeader 
+            onAddCar={handleAddCar}
+            onResetCars={handleResetCars}
+            isResetPending={resetCarsMutation.isPending}
+            isSavePending={saveCarMutation.isPending}
+          />
 
           <CarList 
             cars={cars}
