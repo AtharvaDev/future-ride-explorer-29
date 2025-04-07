@@ -34,6 +34,11 @@ const AdminPage = () => {
     onSubmit
   } = useCarManagement();
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const tl = gsap.timeline();
     tl.from('.admin-title', {

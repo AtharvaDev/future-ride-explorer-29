@@ -30,6 +30,23 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
     );
   }
 
+  // If there's only one image, just show it without carousel controls
+  if (validImages.length === 1) {
+    return (
+      <div className="w-full">
+        <Card>
+          <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
+            <img 
+              src={validImages[0]} 
+              alt={`${title}`}
+              className="w-full h-full object-contain"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <Carousel className="w-full">
       <CarouselContent>
