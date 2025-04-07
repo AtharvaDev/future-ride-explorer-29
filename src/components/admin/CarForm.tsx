@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Car } from '@/data/cars';
-import { Loader, Plus, Trash, PencilLine, ImageIcon, ImagesIcon } from 'lucide-react';
+import { Loader, Plus, Trash, PencilLine, ImageIcon, ImagesIcon, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,7 +34,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Form validation schema - Fix video URL to be properly optional
 const carFormSchema = z.object({
   id: z.string().min(3, {
     message: "ID must be at least 3 characters.",
@@ -61,13 +59,11 @@ const carFormSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
     message: "Please enter a valid hex color code.",
   }),
-  // Properly make video optional by allowing empty string
   video: z.string().optional().transform(val => val === "" ? undefined : val),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;
 
-// Feature type definition
 interface Feature {
   icon: string;
   title: string;
@@ -95,22 +91,18 @@ const CarForm: React.FC<CarFormProps> = ({
   editingCar,
   isSubmitting
 }) => {
-  // State for features
   const [features, setFeatures] = useState<Feature[]>([]);
   const [newFeatureIcon, setNewFeatureIcon] = useState("zap");
   const [newFeatureTitle, setNewFeatureTitle] = useState("");
   const [newFeatureDesc, setNewFeatureDesc] = useState("");
   const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
   
-  // State for additional images
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
   
-  // State for rental insights
   const [insights, setInsights] = useState<string[]>([]);
   const [newInsight, setNewInsight] = useState("");
 
-  // Initialize form
   const form = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
     defaultValues: {
@@ -126,7 +118,6 @@ const CarForm: React.FC<CarFormProps> = ({
     },
   });
 
-  // Reset form when editingCar changes
   React.useEffect(() => {
     if (editingCar) {
       form.reset({
@@ -141,7 +132,7 @@ const CarForm: React.FC<CarFormProps> = ({
         video: editingCar.video || "",
       });
       setFeatures(editingCar.features || []);
-      setAdditionalImages(editingCar.images?.slice(1) || []); // First image is the main image
+      setAdditionalImages(editingCar.images?.slice(1) || []);
       setInsights(editingCar.insights || []);
     } else {
       form.reset({
@@ -167,20 +158,16 @@ const CarForm: React.FC<CarFormProps> = ({
     setNewInsight("");
   }, [editingCar, form, open]);
 
-  // Submit handler
   const handleSubmit = (data: CarFormValues) => {
-    // If video is empty string, set it to undefined
     if (data.video === "") {
       data.video = undefined;
     }
     
-    // Combine main image with additional images
     const allImages = [data.image, ...additionalImages];
     
     onSubmit(data, features, allImages, insights);
   };
 
-  // Feature handlers
   const addFeature = () => {
     if (newFeatureTitle.trim() === "") return;
     
@@ -224,7 +211,6 @@ const CarForm: React.FC<CarFormProps> = ({
     }
   };
   
-  // Additional images handlers
   const addImage = () => {
     if (newImageUrl.trim() === "") return;
     setAdditionalImages([...additionalImages, newImageUrl.trim()]);
@@ -236,7 +222,6 @@ const CarForm: React.FC<CarFormProps> = ({
     setAdditionalImages(newImages);
   };
   
-  // Insights handlers
   const addInsight = () => {
     if (newInsight.trim() === "") return;
     setInsights([...insights, newInsight.trim()]);
@@ -419,7 +404,6 @@ const CarForm: React.FC<CarFormProps> = ({
               </div>
 
               <Accordion type="multiple" className="w-full mt-6 border rounded-md">
-                {/* Additional Images Section */}
                 <AccordionItem value="additional-images">
                   <AccordionTrigger className="px-4">
                     <div className="flex items-center gap-2">
@@ -484,7 +468,6 @@ const CarForm: React.FC<CarFormProps> = ({
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Rental Insights Section */}
                 <AccordionItem value="rental-insights">
                   <AccordionTrigger className="px-4">
                     <div className="flex items-center gap-2">
@@ -547,11 +530,10 @@ const CarForm: React.FC<CarFormProps> = ({
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Car Features */}
                 <AccordionItem value="features">
                   <AccordionTrigger className="px-4">
                     <div className="flex items-center gap-2">
-                      <settings className="h-5 w-5" />
+                      <Settings className="h-5 w-5" />
                       <span>Car Features</span>
                     </div>
                   </AccordionTrigger>
@@ -674,7 +656,7 @@ const CarForm: React.FC<CarFormProps> = ({
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              <div className="h-4"></div> {/* Add some space at the bottom */}
+              <div className="h-4"></div>
             </form>
           </Form>
         </ScrollArea>
