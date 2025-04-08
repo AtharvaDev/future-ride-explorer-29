@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { 
   Carousel, 
   CarouselContent, 
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from '@/components/ui/card';
 import { Image } from 'lucide-react';
+import { gsap } from '@/lib/gsap';
 
 interface CarImageCarouselProps {
   images: string[];
@@ -16,8 +17,22 @@ interface CarImageCarouselProps {
 }
 
 const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) => {
+  const carouselRef = useRef<HTMLDivElement>(null);
+  
   // Filter out any undefined or empty strings
   const validImages = images?.filter(img => img && img.trim() !== '') || [];
+  
+  useEffect(() => {
+    if (carouselRef.current) {
+      gsap.from(carouselRef.current, {
+        opacity: 0,
+        y: 15,
+        duration: 0.6,
+        delay: 0.2,
+        ease: 'power2.out'
+      });
+    }
+  }, []);
   
   if (!validImages || validImages.length === 0) {
     return (
@@ -33,13 +48,13 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
   // If there's only one image, just show it without carousel controls
   if (validImages.length === 1) {
     return (
-      <div className="w-full">
+      <div className="w-full" ref={carouselRef}>
         <Card className="overflow-hidden border-0 shadow-md">
           <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
             <img 
               src={validImages[0]} 
               alt={`${title}`}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
             />
           </CardContent>
         </Card>
@@ -48,30 +63,32 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
   }
 
   return (
-    <Carousel className="w-full">
-      <CarouselContent>
-        {validImages.map((image, index) => (
-          <CarouselItem key={index}>
-            <div className="p-1">
-              <Card className="overflow-hidden border-0 shadow-md">
-                <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
-                  <img 
-                    src={image} 
-                    alt={`${title} - Image ${index + 1}`}
-                    className="w-full h-full object-contain"
-                  />
-                  <div className="absolute bottom-3 right-3 bg-primary/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                    {index + 1}/{validImages.length}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious className="left-2" />
-      <CarouselNext className="right-2" />
-    </Carousel>
+    <div ref={carouselRef}>
+      <Carousel className="w-full">
+        <CarouselContent>
+          {validImages.map((image, index) => (
+            <CarouselItem key={index}>
+              <div className="p-1">
+                <Card className="overflow-hidden border-0 shadow-md">
+                  <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
+                    <img 
+                      src={image} 
+                      alt={`${title} - Image ${index + 1}`}
+                      className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
+                    />
+                    <div className="absolute bottom-3 right-3 bg-primary/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                      {index + 1}/{validImages.length}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-2" />
+        <CarouselNext className="right-2" />
+      </Carousel>
+    </div>
   );
 };
 
