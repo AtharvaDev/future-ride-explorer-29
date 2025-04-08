@@ -3,8 +3,10 @@ import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { fadeInUp, scaleIn } from '@/utils/animations';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
   const backgroundRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -96,6 +98,22 @@ const Hero = () => {
     };
   }, []);
 
+  const handleExploreFleet = () => {
+    // Scroll to the fleet section
+    const fleetSection = document.getElementById('fleet');
+    if (fleetSection) {
+      fleetSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleLearnMore = () => {
+    // Navigate to another section or page with more information
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* Premium background with overlay */}
@@ -164,10 +182,16 @@ const Hero = () => {
             ref={buttonsRef}
             className="flex flex-col sm:flex-row justify-center items-center gap-6 opacity-0"
           >
-            <button className="rounded-lg px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium transition-all hover:shadow-lg hover:shadow-purple-500/20 hover:-translate-y-1 hover:scale-105 duration-300">
+            <button 
+              onClick={handleExploreFleet}
+              className="rounded-lg px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium transition-all hover:shadow-lg hover:shadow-purple-500/20 hover:-translate-y-1 hover:scale-105 duration-300"
+            >
               Explore Fleet
             </button>
-            <button className="rounded-lg px-8 py-3.5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-medium transition-all hover:bg-white/20 hover:-translate-y-1 hover:scale-105 duration-300">
+            <button 
+              onClick={handleLearnMore}
+              className="rounded-lg px-8 py-3.5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-medium transition-all hover:bg-white/20 hover:-translate-y-1 hover:scale-105 duration-300"
+            >
               Learn More
             </button>
           </div>

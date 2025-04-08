@@ -17,7 +17,7 @@ interface CarImageCarouselProps {
 
 const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) => {
   // Filter out any undefined or empty strings
-  const validImages = images.filter(img => img && img.trim() !== '');
+  const validImages = images?.filter(img => img && img.trim() !== '') || [];
   
   if (!validImages || validImages.length === 0) {
     return (
@@ -34,7 +34,7 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
   if (validImages.length === 1) {
     return (
       <div className="w-full">
-        <Card>
+        <Card className="overflow-hidden border-0 shadow-md">
           <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
             <img 
               src={validImages[0]} 
@@ -53,14 +53,14 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
         {validImages.map((image, index) => (
           <CarouselItem key={index}>
             <div className="p-1">
-              <Card>
+              <Card className="overflow-hidden border-0 shadow-md">
                 <CardContent className="flex aspect-[16/9] items-center justify-center p-2 relative overflow-hidden">
                   <img 
                     src={image} 
                     alt={`${title} - Image ${index + 1}`}
                     className="w-full h-full object-contain"
                   />
-                  <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                  <div className="absolute bottom-3 right-3 bg-primary/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
                     {index + 1}/{validImages.length}
                   </div>
                 </CardContent>

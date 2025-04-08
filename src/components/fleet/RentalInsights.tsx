@@ -13,16 +13,16 @@ const RentalInsights: React.FC<RentalInsightsProps> = ({ insights }) => {
   }
 
   return (
-    <Card className="mt-6">
-      <CardContent className="pt-6">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <InfoIcon className="h-5 w-5 text-primary" />
+    <Card className="mt-6 overflow-hidden border-0 shadow-lg">
+      <CardContent className="pt-6 p-6">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary">
+          <InfoIcon className="h-5 w-5" />
           <span>Rental Insights</span>
         </h3>
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {insights.map((insight, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+            <li key={index} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+              <div className="h-6 w-6 rounded-full bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-xs font-bold">{index + 1}</span>
               </div>
               <p className="text-gray-700 dark:text-gray-300">{insight}</p>

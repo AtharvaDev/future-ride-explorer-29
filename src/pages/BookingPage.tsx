@@ -218,7 +218,7 @@ const BookingPage = () => {
               </div>
               
               {/* Rental Insights */}
-              {selectedCar.insights && (
+              {selectedCar.insights && selectedCar.insights.length > 0 && (
                 <RentalInsights insights={selectedCar.insights} />
               )}
             </div>
