@@ -251,7 +251,7 @@ export const cars: Car[] = [
     description: "The Kia Carens is a versatile recreational vehicle with premium styling, generous space, and advanced technology for modern families.",
     pricePerDay: 2800,
     pricePerKm: 20,
-    image: "https://freepngimg.com/thumb/car/4-car-png-image-car-png-pictures-download.png",
+    image: "https://www.kia.com/content/dam/kia2/in/en/images/buy/how-it-works/HIW-carens-third-image.png",
     images: [
       "https://freepngimg.com/thumb/car/4-car-png-image-car-png-pictures-download.png",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/44088/carens-exterior-right-front-three-quarter.jpeg?q=80",
