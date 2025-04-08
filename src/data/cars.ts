@@ -118,7 +118,7 @@ export const cars: Car[] = [
     pricePerKm: 18,
     image: "https://pngimg.com/d/honda_PNG102938.png",
     images: [
-      "https://freepngimg.com/thumb/honda/1-honda-png-car-image.png",
+      "https://pngimg.com/d/honda_PNG102938.png",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-interior-dashboard-26.jpeg?isig=0&q=80",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-interior-seats-28.jpeg?isig=0&q=80"
