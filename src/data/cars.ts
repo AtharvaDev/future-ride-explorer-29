@@ -114,8 +114,8 @@ export const cars: Car[] = [
     model: "Honda",
     title: "Honda City",
     description: "The Honda City is a premium sedan that offers excellent ride comfort, elegant styling, and a feature-rich interior with best-in-class space.",
-    pricePerDay: 2500,
-    pricePerKm: 18,
+    pricePerDay: 2000,
+    pricePerKm: 19,
     image: "https://pngimg.com/d/honda_PNG102938.png",
     images: [
       "https://pngimg.com/d/honda_PNG102938.png",
@@ -124,7 +124,7 @@ export const cars: Car[] = [
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-interior-seats-28.jpeg?isig=0&q=80"
     ],
     color: "#dc2626",
-    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
+    video: "",
     features: [
       {
         icon: "zap",
