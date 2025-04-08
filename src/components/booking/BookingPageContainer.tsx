@@ -7,7 +7,9 @@ import CarImageCarousel from '@/components/fleet/CarImageCarousel';
 import BookingPageHeader from './BookingPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { gsap } from '@/lib/gsap';
+import { ScrollTrigger } from '@/lib/gsap';
 import { createRepeatingScrollAnimation } from '@/utils/scroll-animations';
+import { staggerElements } from '@/utils/animations';
 
 interface BookingPageContainerProps {
   selectedCar: Car;
@@ -22,85 +24,120 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
   const carDetailsRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBookingForm = () => {
     if (bookingFormRef.current) {
-      bookingFormRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
+      gsap.to(window, {
+        duration: 1,
+        scrollTo: {
+          y: bookingFormRef.current,
+          offsetY: 80
+        },
+        ease: "power2.inOut"
       });
     }
   };
 
   useEffect(() => {
-    // Initialize animations for car details section
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }});
-    
-    tl.from('.page-title', {
-      y: -30,
-      opacity: 0,
-      duration: 0.8,
-      delay: 0.2
-    })
-    .from(carDetailsRef.current, {
-      y: 30,
-      opacity: 0,
-      duration: 0.6
-    }, '-=0.4')
-    .from(carouselRef.current, {
-      y: 20,
-      opacity: 0,
-      duration: 0.5
-    }, '-=0.3')
-    .from(insightsRef.current, {
-      y: 20,
-      opacity: 0,
-      duration: 0.5
-    }, '-=0.3')
-    .from(bookingFormRef.current, {
-      y: 40,
-      opacity: 0,
-      duration: 0.7
-    }, '-=0.2');
+    // Main container animation setup
+    if (containerRef.current) {
+      gsap.set(containerRef.current, { opacity: 0 });
+      gsap.to(containerRef.current, {
+        opacity: 1,
+        duration: 0.8,
+        ease: "power2.out"
+      });
+    }
 
-    // Set up scroll animations for when elements come into view
+    // First row animations
+    const detailsCard = carDetailsRef.current;
+    if (detailsCard) {
+      // Create a shine effect on card hover
+      const shineEffect = gsap.to(detailsCard.querySelector('.card-shine'), {
+        x: "150%",
+        duration: 1.5,
+        paused: true,
+        ease: "power2.inOut"
+      });
+
+      detailsCard.addEventListener("mouseenter", () => {
+        gsap.set(detailsCard.querySelector('.card-shine'), { x: "-150%" });
+        shineEffect.restart();
+      });
+
+      // Create subtle float animation for the card
+      gsap.to(detailsCard, {
+        y: -10,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut"
+      });
+    }
+
+    // Booking form animations
+    if (bookingFormRef.current) {
+      ScrollTrigger.create({
+        trigger: bookingFormRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.fromTo(bookingFormRef.current,
+            { y: 50, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
+          );
+        },
+        once: true
+      });
+    }
+
+    // Clean up animations on component unmount
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      if (containerRef.current) {
+        gsap.killTweensOf(containerRef.current);
+      }
+      if (carDetailsRef.current) {
+        gsap.killTweensOf(carDetailsRef.current);
+      }
+      if (bookingFormRef.current) {
+        gsap.killTweensOf(bookingFormRef.current);
+      }
+    };
+  }, [selectedCar]);
+
+  // Set up insights animation when they exist
+  useEffect(() => {
     if (insightsRef.current && selectedCar.insights && selectedCar.insights.length > 0) {
       const insightItems = insightsRef.current.querySelectorAll('li');
       if (insightItems.length > 0) {
-        gsap.set(insightItems, { opacity: 0, y: 20 });
+        staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
         
-        createRepeatingScrollAnimation(insightsRef.current, {
-          animation: 'fadeUp',
-          duration: 0.5,
-          start: 'top 80%',
-        });
-        
-        insightItems.forEach((item, index) => {
-          gsap.to(item, {
-            opacity: 1,
-            y: 0,
-            duration: 0.4,
-            delay: 1.2 + (index * 0.1),
-            ease: 'power2.out'
-          });
+        // Create scroll-triggered re-animation
+        ScrollTrigger.create({
+          trigger: insightsRef.current,
+          start: "top 75%",
+          onLeaveBack: () => {
+            gsap.set(insightItems, { opacity: 0, x: 30 });
+            staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
+          },
+          onEnter: () => {
+            gsap.set(insightItems, { opacity: 0, x: 30 });
+            staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
+          }
         });
       }
     }
-
-    return () => {
-      tl.kill();
-    };
   }, [selectedCar.insights]);
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center page-title">
-        Complete Your Booking
-      </h1>
-
+    <div className="container mx-auto px-4 py-8 md:py-12" ref={containerRef}>
       {/* First Row: Car Details, Carousel, and Insights */}
-      <div ref={carDetailsRef} className="mb-10">
-        <Card className="overflow-hidden shadow-lg transition-all hover:shadow-xl border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+      <div ref={carDetailsRef} className="mb-10 animate-on-scroll">
+        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm relative">
+          {/* Shine effect overlay */}
+          <div className="card-shine absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-20 transform pointer-events-none"></div>
+          
           <CardContent className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-6">
@@ -136,8 +173,8 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
       </div>
 
       {/* Second Row: Booking Form */}
-      <div ref={bookingFormRef} id="booking-form-section" className="booking-container">
-        <Card className="overflow-hidden shadow-lg border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+      <div ref={bookingFormRef} id="booking-form-section" className="booking-container animate-on-scroll">
+        <Card className="overflow-hidden shadow-lg transition-all duration-500 hover:shadow-xl border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
           <CardContent className="p-0">
             <BookingForm car={selectedCar} />
           </CardContent>

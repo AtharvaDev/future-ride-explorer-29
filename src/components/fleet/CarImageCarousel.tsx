@@ -18,21 +18,71 @@ interface CarImageCarouselProps {
 
 const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) => {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement[]>([]);
   
   // Filter out any undefined or empty strings
   const validImages = images?.filter(img => img && img.trim() !== '') || [];
   
+  // Reset the itemsRef array when the images change
+  itemsRef.current = [];
+  
   useEffect(() => {
     if (carouselRef.current) {
+      // Entrance animation for the carousel
       gsap.from(carouselRef.current, {
         opacity: 0,
         y: 15,
         duration: 0.6,
         delay: 0.2,
-        ease: 'power2.out'
+        ease: "power2.out"
       });
+      
+      // Staggered animation for carousel items
+      if (itemsRef.current.length > 0) {
+        gsap.from(itemsRef.current, {
+          opacity: 0,
+          scale: 0.95,
+          duration: 0.5,
+          stagger: 0.1,
+          delay: 0.4,
+          ease: "back.out(1.7)"
+        });
+      }
+      
+      // Add shine effect to carousel navigation buttons
+      const navButtons = carouselRef.current.querySelectorAll('button');
+      navButtons.forEach(button => {
+        button.addEventListener('mouseenter', () => {
+          gsap.to(button, {
+            backgroundColor: 'rgba(var(--primary), 0.2)',
+            scale: 1.1,
+            duration: 0.3,
+            ease: "power1.out"
+          });
+        });
+        
+        button.addEventListener('mouseleave', () => {
+          gsap.to(button, {
+            backgroundColor: 'rgba(var(--background), 0.8)',
+            scale: 1,
+            duration: 0.3,
+            ease: "power1.out"
+          });
+        });
+      });
+      
+      return () => {
+        // Clean up animations
+        gsap.killTweensOf(carouselRef.current);
+        if (itemsRef.current.length > 0) {
+          gsap.killTweensOf(itemsRef.current);
+        }
+        navButtons.forEach(button => {
+          gsap.killTweensOf(button);
+        });
+      };
     }
-  }, []);
+  }, [validImages]);
   
   if (!validImages || validImages.length === 0) {
     return (
@@ -55,6 +105,7 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
               src={validImages[0]} 
               alt={`${title}`}
               className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
+              ref={(el) => el && itemsRef.current.push(el)}
             />
           </CardContent>
         </Card>
@@ -75,6 +126,7 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
                       src={image} 
                       alt={`${title} - Image ${index + 1}`}
                       className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
+                      ref={(el) => el && itemsRef.current.push(el)}
                     />
                     <div className="absolute bottom-3 right-3 bg-primary/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
                       {index + 1}/{validImages.length}
@@ -85,8 +137,8 @@ const CarImageCarousel: React.FC<CarImageCarouselProps> = ({ images, title }) =>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-2" />
-        <CarouselNext className="right-2" />
+        <CarouselPrevious className="left-2 transition-transform duration-300" />
+        <CarouselNext className="right-2 transition-transform duration-300" />
       </Carousel>
     </div>
   );
