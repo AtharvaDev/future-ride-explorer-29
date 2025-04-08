@@ -9,7 +9,6 @@ import {
   deleteCar as deleteCarService,
   resetCarsData
 } from '@/services/carService';
-import { cars as defaultCars } from '@/data/cars';
 import { UI_STRINGS } from '@/constants/uiStrings';
 import { CarFormValues } from '@/components/admin/CarForm';
 
@@ -57,7 +56,7 @@ export const useCarManagement = () => {
   });
 
   const resetCarsMutation = useMutation({
-    mutationFn: () => resetCarsData(defaultCars),
+    mutationFn: resetCarsData, // Updated to use the function without parameters
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cars'] });
       toast.success(UI_STRINGS.ADMIN.REFRESH_CARS.SUCCESS);

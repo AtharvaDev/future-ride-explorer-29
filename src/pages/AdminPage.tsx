@@ -34,9 +34,12 @@ const AdminPage = () => {
     onSubmit
   } = useCarManagement();
 
-  // Scroll to top on page load
+  // Scroll to top on page load - this ensures the page always starts at the top
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant' // Use 'instant' to ensure it scrolls without animation
+    });
   }, []);
 
   useEffect(() => {

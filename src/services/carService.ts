@@ -1,6 +1,7 @@
 
 import { db } from '@/config/firebase';
 import { Car } from '@/data/cars';
+import { cars as defaultCars } from '@/data/cars';
 import { 
   collection, 
   getDocs, 
@@ -103,10 +104,10 @@ export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> =
   }
 };
 
-// Reset cars data in Firestore with default cars
-export const resetCarsData = async (defaultCars: Car[]): Promise<void> => {
+// Reset cars data in Firestore with default cars from cars.ts
+export const resetCarsData = async (): Promise<void> => {
   try {
-    console.log("Resetting cars data in Firestore...");
+    console.log("Resetting cars data in Firestore using default cars from cars.ts...");
     
     const batch = writeBatch(db);
     
@@ -119,10 +120,10 @@ export const resetCarsData = async (defaultCars: Car[]): Promise<void> => {
       batch.delete(doc(db, CARS_COLLECTION, document.id));
     });
     
-    // Add all default cars
+    // Add all default cars from cars.ts
     defaultCars.forEach(car => {
       const cleanCar = JSON.parse(JSON.stringify(car));
-      console.log('cleanCar', cleanCar);
+      console.log('Adding default car:', cleanCar.id);
       
       const carRef = doc(db, CARS_COLLECTION, car.id);
       batch.set(carRef, cleanCar);
@@ -130,7 +131,7 @@ export const resetCarsData = async (defaultCars: Car[]): Promise<void> => {
     
     // Commit the batch
     await batch.commit();
-    console.log("Cars data successfully reset in Firestore!");
+    console.log("Cars data successfully reset in Firestore with default data!");
     
     return;
   } catch (error) {
