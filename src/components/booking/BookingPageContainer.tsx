@@ -5,6 +5,7 @@ import BookingForm from '@/components/BookingForm';
 import RentalInsights from '@/components/fleet/RentalInsights';
 import CarImageCarousel from '@/components/fleet/CarImageCarousel';
 import BookingPageHeader from './BookingPageHeader';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface BookingPageContainerProps {
   selectedCar: Car;
@@ -33,31 +34,41 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 car-details">
-          <BookingPageHeader 
-            selectedCar={selectedCar}
-            onWatchVideo={onWatchVideo}
-            onScrollToBookingForm={scrollToBookingForm}
-          />
-          
-          {/* Only show carousel if images are present */}
-          {selectedCar.images && selectedCar.images.length > 0 && (
-            <div className="mb-6">
-              <CarImageCarousel 
-                images={selectedCar.images} 
-                title={selectedCar.title}
+        <div className="lg:col-span-5 car-details">
+          <Card className="h-full overflow-hidden shadow-lg transition-all hover:shadow-xl border-0">
+            <CardContent className="p-6">
+              <BookingPageHeader 
+                selectedCar={selectedCar}
+                onWatchVideo={onWatchVideo}
+                onScrollToBookingForm={scrollToBookingForm}
               />
-            </div>
-          )}
-          
-          {/* Only show insights if they are present */}
-          {selectedCar.insights && selectedCar.insights.length > 0 && (
-            <RentalInsights insights={selectedCar.insights} />
-          )}
+              
+              {/* Only show carousel if images are present */}
+              {selectedCar.images && selectedCar.images.length > 0 && (
+                <div className="mb-6 mt-6">
+                  <CarImageCarousel 
+                    images={selectedCar.images} 
+                    title={selectedCar.title}
+                  />
+                </div>
+              )}
+              
+              {/* Only show insights if they are present */}
+              {selectedCar.insights && selectedCar.insights.length > 0 && (
+                <div className="mt-6">
+                  <RentalInsights insights={selectedCar.insights} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        <div ref={bookingFormRef} id="booking-form-section" className="lg:col-span-8 booking-container">
-          <BookingForm car={selectedCar} />
+        <div ref={bookingFormRef} id="booking-form-section" className="lg:col-span-7 booking-container">
+          <Card className="h-full overflow-hidden shadow-lg border-0">
+            <CardContent className="p-0">
+              <BookingForm car={selectedCar} />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
