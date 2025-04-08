@@ -27,7 +27,7 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
     if (href === '#contact') {
       const phoneNumber = '+918850414839'; // Replace with actual number
       window.location.href = `tel:${phoneNumber}`;
-      toast.success("Calling FutureRide customer service");
+      toast.success("Calling The Chauffeur Co. customer service");
       return;
     }
     

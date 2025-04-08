@@ -17,7 +17,7 @@ import { UserRole } from '@/contexts/AuthContext';
 export const initializeAdminUser = async () => {
   try {
     // Check if admin user already exists
-    const adminEmail = 'admin@futureride.com';
+    const adminEmail = 'admin@admin.com';
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', adminEmail));
     const querySnapshot = await getDocs(q);

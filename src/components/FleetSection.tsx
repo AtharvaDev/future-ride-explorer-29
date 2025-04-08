@@ -227,12 +227,12 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
           <h2 
             className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600"
           >
-            Discover the Toyota range
+            Discover the Premium range
           </h2>
           <p 
             className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
           >
-            Explore our diverse lineup of Toyota vehicles, from practical hatchbacks to luxurious SUVs
+            Explore our diverse lineup of Best vehicles, from practical hatchbacks to luxurious SUVs
           </p>
           
           {/* Decorative elements */}

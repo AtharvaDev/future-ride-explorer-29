@@ -8,7 +8,7 @@ import { initializeUserBookings } from '@/services/initService';
 
 // List of admin emails - in a real app, this would be stored in the database
 export const ADMIN_EMAILS = [
-  'admin@futureride.com',
+  'admin@admin.com',
   'admin@example.com'
 ];
 
@@ -46,7 +46,7 @@ export const getUserFromFirebase = async (firebaseUser: User): Promise<AuthUser 
         createdAt: new Date()
       });
 
-      toast.success("Welcome to FutureRide! Your account has been created.");
+      toast.success("Welcome to The Chauffeur Co.! Your account has been created.");
     }
     
     // Initialize user's bookings collection

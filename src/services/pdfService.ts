@@ -16,7 +16,7 @@ export const generateBookingPDF = (booking: BookingNotificationDetails): Blob =>
   // Add company logo and header
   doc.setFontSize(22);
   doc.setTextColor(33, 150, 243); // Primary blue color
-  doc.text('FutureRide', 105, 20, { align: 'center' });
+  doc.text('The Chauffeur Co.', 105, 20, { align: 'center' });
   
   doc.setFontSize(16);
   doc.setTextColor(0, 0, 0);
@@ -63,9 +63,9 @@ export const generateBookingPDF = (booking: BookingNotificationDetails): Blob =>
   // Add footer
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
-  doc.text('Thank you for choosing FutureRide for your journey!', 105, 270, { align: 'center' });
+  doc.text('Thank you for choosing The Chauffeur Co. for your journey!', 105, 270, { align: 'center' });
   doc.text('For any assistance, call us at +91-8850414839', 105, 275, { align: 'center' });
-  doc.text('© FutureRide ' + new Date().getFullYear(), 105, 280, { align: 'center' });
+  doc.text('© The Chauffeur Co. ' + new Date().getFullYear(), 105, 280, { align: 'center' });
   
   // Return the PDF as a blob
   return doc.output('blob');
@@ -86,7 +86,7 @@ export const generateInvoicePDF = (booking: BookingNotificationDetails): Blob =>
   
   doc.setFontSize(22);
   doc.setTextColor(33, 150, 243);
-  doc.text('FutureRide', 105, 20, { align: 'center' });
+  doc.text('The Chauffeur Co.', 105, 20, { align: 'center' });
   
   doc.setFontSize(16);
   doc.setTextColor(0, 0, 0);

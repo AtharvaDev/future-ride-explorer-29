@@ -64,7 +64,7 @@ const twilioConfig: TwilioConfig = {
     // Email configuration (via SendGrid)
     email: {
       enabled: false,
-      fromEmail: 'noreply@futureride.com',
+      fromEmail: 'noreply@The Chauffeur Co..com',
     }
   }
 };

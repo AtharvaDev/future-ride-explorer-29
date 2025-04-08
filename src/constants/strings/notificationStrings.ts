@@ -2,7 +2,7 @@
 export const NOTIFICATION_STRINGS = {
   EMAIL: {
     BOOKING_CONFIRMATION: {
-      SUBJECT: "Your FutureRide Booking Confirmation - {{bookingId}}",
+      SUBJECT: "Your The Chauffeur Co. Booking Confirmation - {{bookingId}}",
       BODY: `
         <h1>Booking Confirmation</h1>
         <p>Dear {{name}},</p>
@@ -21,7 +21,7 @@ export const NOTIFICATION_STRINGS = {
       `
     },
     PAYMENT_CONFIRMATION: {
-      SUBJECT: "Payment Confirmation for FutureRide Booking - {{bookingId}}",
+      SUBJECT: "Payment Confirmation for The Chauffeur Co. Booking - {{bookingId}}",
       BODY: `
         <h1>Payment Confirmation</h1>
         <p>Dear {{name}},</p>
@@ -37,11 +37,11 @@ export const NOTIFICATION_STRINGS = {
       `
     },
     BOOKING_REMINDER: {
-      SUBJECT: "Reminder: Your FutureRide Booking is Coming Up - {{bookingId}}",
+      SUBJECT: "Reminder: Your The Chauffeur Co. Booking is Coming Up - {{bookingId}}",
       BODY: `
         <h1>Booking Reminder</h1>
         <p>Dear {{name}},</p>
-        <p>This is a friendly reminder that your FutureRide booking is coming up!</p>
+        <p>This is a friendly reminder that your The Chauffeur Co. booking is coming up!</p>
         <ul>
           <li>Car: {{carModel}}</li>
           <li>Start Date: {{startDate}}</li>
@@ -53,7 +53,7 @@ export const NOTIFICATION_STRINGS = {
       `
     },
     BOOKING_CANCELLATION: {
-      SUBJECT: "Your FutureRide Booking Has Been Cancelled - {{bookingId}}",
+      SUBJECT: "Your The Chauffeur Co. Booking Has Been Cancelled - {{bookingId}}",
       BODY: `
         <h1>Booking Cancellation</h1>
         <p>Dear {{name}},</p>
@@ -99,7 +99,7 @@ For any assistance, please contact our support team at: +91-8850414839`,
     
 Hello {{name}},
 
-Your FutureRide booking is coming up soon!
+Your The Chauffeur Co. booking is coming up soon!
 
 • Car: {{carModel}}
 • Date: {{startDate}}
