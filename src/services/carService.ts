@@ -122,6 +122,8 @@ export const resetCarsData = async (defaultCars: Car[]): Promise<void> => {
     // Add all default cars
     defaultCars.forEach(car => {
       const cleanCar = JSON.parse(JSON.stringify(car));
+      console.log('cleanCar', cleanCar);
+      
       const carRef = doc(db, CARS_COLLECTION, car.id);
       batch.set(carRef, cleanCar);
     });
