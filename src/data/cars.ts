@@ -169,7 +169,7 @@ export const cars: Car[] = [
       "https://imgd.aeplcdn.com/664x374/n/cw/ec/115777/ertiga-interior-third-row-seats-2.jpeg?isig=0&q=80"
     ],
     color: "#0ea5e9",
-    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
+    video: "",
     features: [
       {
         icon: "users",
@@ -206,15 +206,12 @@ export const cars: Car[] = [
     description: "The Dzire is a compact sedan offering exceptional fuel efficiency, modern features, and a comfortable cabin in an affordable package.",
     pricePerDay: 1800,
     pricePerKm: 14,
-    image: "https://freepngimg.com/thumb/car/5-car-png-image-car-png-picture-download-picture.png",
+    image: "https://5.imimg.com/data5/MA/SC/GLADMIN-21909237/maruti-suzuki-swift-dzire.png",
     images: [
-      "https://freepngimg.com/thumb/car/5-car-png-image-car-png-picture-download-picture.png",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/45691/dzire-exterior-right-front-three-quarter-3.jpeg?q=80",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/45691/dzire-interior-dashboard-5.jpeg?q=80",
       "https://imgd.aeplcdn.com/664x374/n/cw/ec/45691/dzire-interior-seats-3.jpeg?q=80"
     ],
     color: "#f59e0b",
-    video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
+    video: "",
     features: [
       {
         icon: "fuel",
@@ -253,10 +250,7 @@ export const cars: Car[] = [
     pricePerKm: 20,
     image: "https://www.kia.com/content/dam/kia2/in/en/images/buy/how-it-works/HIW-carens-third-image.png",
     images: [
-      "https://freepngimg.com/thumb/car/4-car-png-image-car-png-pictures-download.png",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/44088/carens-exterior-right-front-three-quarter.jpeg?q=80",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/44088/carens-interior-dashboard-33.jpeg?q=80",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/44088/carens-interior-seats-4.jpeg?q=80"
+      "https://freepngimg.com/thumb/car/4-car-png-image-car-png-pictures-download.png"
     ],
     color: "#2563eb",
     video: "https://www.youtube.com/watch?v=eA3G3gVG8Tk",
