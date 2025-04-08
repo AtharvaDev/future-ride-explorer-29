@@ -12,6 +12,7 @@ import { Loader } from 'lucide-react';
 import { getAllCars } from '@/services/carService';
 import { useQuery } from '@tanstack/react-query';
 import BookingPageContainer from '@/components/booking/BookingPageContainer';
+import { fadeInUp, fadeInLeft, fadeInRight, scaleIn } from '@/utils/animations';
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -20,8 +21,10 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [pageReady, setPageReady] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLHeadingElement>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: cars = [], isLoading: carsLoading } = useQuery({
+  const { data: cars = [], isLoading: carsLoading, error: carsError } = useQuery({
     queryKey: ['cars'],
     queryFn: getAllCars
   });
@@ -52,36 +55,64 @@ const BookingPage = () => {
     }
   }, [carId, cars, navigate]);
 
-  // Initialize animations after page and data are ready
+  // Error display when car data validation fails
   useEffect(() => {
-    if (pageReady && selectedCar && !carsLoading) {
-      const tl = gsap.timeline();
+    if (carsError) {
+      const errorMessage = carsError instanceof Error ? carsError.message : 'Unknown error loading cars';
+      toast.error(errorMessage);
+    }
+  }, [carsError]);
+
+  // Initialize page animations when all content is ready
+  useEffect(() => {
+    if (pageReady && selectedCar && !carsLoading && pageRef.current) {
+      // Create a master timeline for coordinated animations
+      const masterTl = gsap.timeline();
       
-      // Clear any existing animations first
-      gsap.set(['.page-title', '.car-details', '.booking-container'], { clearProps: "all" });
+      // Animate the page entry
+      masterTl.add(() => {
+        if (headerRef.current) {
+          fadeInUp(headerRef.current, 0.2, 0.8);
+        }
+      });
       
-      // Start new animations
-      tl.from('.page-title', {
-        y: -50,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out'
-      })
-      .from('.car-details', {
-        x: -100,
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power3.out'
-      }, '-=0.4')
-      .from('.booking-container', {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out'
-      }, '-=0.4');
+      // Animate the main container with a subtle reveal
+      masterTl.add(() => {
+        if (mainContainerRef.current) {
+          // Create a parallax scroll effect
+          gsap.set(mainContainerRef.current, { y: 40, opacity: 0 });
+          gsap.to(mainContainerRef.current, {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            clearProps: "all"
+          });
+        }
+      }, "-=0.6");
+      
+      // Add scroll-triggered animations
+      const sections = pageRef.current.querySelectorAll('.animate-on-scroll');
+      sections.forEach((section, index) => {
+        gsap.from(section, {
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none none"
+          },
+          y: 40,
+          opacity: 0,
+          duration: 0.7,
+          delay: index * 0.1,
+          ease: "power2.out"
+        });
+      });
 
       return () => {
-        tl.kill();
+        // Clean up all animations and scroll triggers
+        masterTl.kill();
+        gsap.killTweensOf(pageRef.current.querySelectorAll('.animate-on-scroll'));
       };
     }
   }, [pageReady, selectedCar, carsLoading]);
@@ -91,8 +122,17 @@ const BookingPage = () => {
       setLoading(true);
       setVideoOpen(true);
       
+      // Add animation to video loading
+      const loadingAnimation = gsap.timeline({ repeat: -1 });
+      loadingAnimation.to(".video-loading-animation", { 
+        rotate: 360, 
+        duration: 1.5, 
+        ease: "power1.inOut" 
+      });
+      
       setTimeout(() => {
         setLoading(false);
+        loadingAnimation.kill();
       }, 1500);
     }
   };
@@ -100,10 +140,14 @@ const BookingPage = () => {
   // Handle video dialog closing
   const handleVideoComplete = () => {
     setVideoOpen(false);
-    // Ensure page animations run again after video closes
-    setTimeout(() => {
-      setPageReady(true);
-    }, 300);
+    
+    // Create a re-entry animation
+    gsap.from(mainContainerRef.current, {
+      opacity: 0.7,
+      scale: 0.98,
+      duration: 0.6,
+      ease: "power2.out"
+    });
   };
 
   if (carsLoading || !selectedCar) {
@@ -112,8 +156,8 @@ const BookingPage = () => {
         <Navbar />
         <div className="flex-grow flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <Loader className="h-12 w-12 animate-spin text-primary" />
-            <p>Loading car data...</p>
+            <Loader className="h-12 w-12 animate-spin text-primary video-loading-animation" />
+            <p className="animate-pulse">Loading car data...</p>
           </div>
         </div>
         <Footer />
@@ -124,23 +168,33 @@ const BookingPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background" ref={pageRef}>
       <Navbar />
-      <Card>
-        <CarSection
-          key={selectedCar.id}
-          id={selectedCar.id}
-          model={selectedCar.model}
-          title={selectedCar.title}
-          description={selectedCar.description}
-          pricePerDay={selectedCar.pricePerDay}
-          pricePerKm={selectedCar.pricePerKm}
-          image={selectedCar.image}
-          color={selectedCar.color}
-          features={selectedCar.features}
-          index={carId || "0"}
-        />
-      </Card>
       
-      <main className="flex-grow">
+      <div className="animate-on-scroll">
+        <Card>
+          <CarSection
+            key={selectedCar.id}
+            id={selectedCar.id}
+            model={selectedCar.model}
+            title={selectedCar.title}
+            description={selectedCar.description}
+            pricePerDay={selectedCar.pricePerDay}
+            pricePerKm={selectedCar.pricePerKm}
+            image={selectedCar.image}
+            color={selectedCar.color}
+            features={selectedCar.features}
+            index={carId || "0"}
+          />
+        </Card>
+      </div>
+      
+      <main className="flex-grow" ref={mainContainerRef}>
+        <h1 
+          ref={headerRef} 
+          className="text-3xl md:text-4xl font-bold my-8 text-center page-title"
+        >
+          Complete Your Booking
+        </h1>
+        
         <BookingPageContainer 
           selectedCar={selectedCar}
           onWatchVideo={handleWatchVideo}

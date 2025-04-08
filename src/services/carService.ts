@@ -13,6 +13,8 @@ import {
   getDoc,
   writeBatch
 } from 'firebase/firestore';
+import { validateCars } from '@/utils/carDataValidator';
+import { toast } from 'sonner';
 
 const CARS_COLLECTION = 'cars';
 
@@ -78,6 +80,23 @@ export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> =
   try {
     console.log("Checking if default cars need to be initialized...");
     
+    // Validate car data before initializing
+    const validation = validateCars(defaultCars);
+    if (!validation.allValid) {
+      console.error("Invalid car data found:", validation.results.filter(r => !r.result.valid));
+      validation.results.forEach(item => {
+        if (!item.result.valid) {
+          const carName = item.car.title || 'Unknown car';
+          const errorMessages = Object.entries(item.result.errors)
+            .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+            .join('; ');
+          
+          toast.error(`Invalid data for ${carName}: ${errorMessages}`);
+        }
+      });
+      throw new Error("Car data validation failed. See console for details.");
+    }
+    
     // Check if collection exists and has data
     const carsQuery = query(collection(db, CARS_COLLECTION));
     const querySnapshot = await getDocs(carsQuery);
@@ -108,6 +127,23 @@ export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> =
 export const resetCarsData = async (): Promise<void> => {
   try {
     console.log("Resetting cars data in Firestore using default cars from cars.ts...");
+    
+    // Validate car data before resetting
+    const validation = validateCars(defaultCars);
+    if (!validation.allValid) {
+      console.error("Invalid car data found:", validation.results.filter(r => !r.result.valid));
+      validation.results.forEach(item => {
+        if (!item.result.valid) {
+          const carName = item.car.title || 'Unknown car';
+          const errorMessages = Object.entries(item.result.errors)
+            .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+            .join('; ');
+          
+          toast.error(`Invalid data for ${carName}: ${errorMessages}`);
+        }
+      });
+      throw new Error("Car data validation failed. See console for details.");
+    }
     
     const batch = writeBatch(db);
     

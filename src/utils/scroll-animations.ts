@@ -1,9 +1,9 @@
-
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 // Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 /**
  * Creates a scroll-triggered animation that activates every time an element enters the viewport
@@ -200,4 +200,34 @@ export const createStaggerScrollAnimation = (
       });
     }
   }
+};
+
+/**
+ * Smoothly scrolls to an element with animation
+ */
+export const scrollToElement = (
+  elementOrSelector: Element | string,
+  options: {
+    offset?: number;
+    duration?: number;
+    ease?: string;
+  } = {}
+) => {
+  const element = typeof elementOrSelector === 'string' 
+    ? document.querySelector(elementOrSelector) 
+    : elementOrSelector;
+    
+  if (!element) {
+    console.error('Element not found for scrollToElement');
+    return;
+  }
+  
+  gsap.to(window, {
+    duration: options.duration || 1,
+    scrollTo: {
+      y: element,
+      offsetY: options.offset || 0
+    },
+    ease: options.ease || "power2.inOut"
+  });
 };
