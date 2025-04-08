@@ -26,11 +26,8 @@ export const cars: Car[] = [
     description: "The Toyota Innova Hycross blends classic Innova DNA with modern SUV design. As a spacious and comfortable people mover, it offers best ride quality.",
     pricePerDay: 3500,
     pricePerKm: 25,
-    image: "https://freepngimg.com/thumb/toyota/10-toyota-png-car-image.png",
+    image: "https://ackodrive-assets.ackodrive.com/media/test_Qppr44b.png",
     images: [
-      "https://freepngimg.com/thumb/toyota/10-toyota-png-car-image.png",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/115025/innova-hycross-exterior-right-front-three-quarter-7.jpeg?isig=0&q=80",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/115025/innova-hycross-interior-dashboard-21.jpeg?isig=0&q=80",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/115025/innova-hycross-interior-seats-5.jpeg?isig=0&q=80"
     ],
     color: "#3b82f6",
@@ -71,11 +68,8 @@ export const cars: Car[] = [
     description: "The Crysta offers a large cabin, seating for up to eight people, and plenty of storage options across all three rows.",
     pricePerDay: 3000,
     pricePerKm: 22,
-    image: "https://freepngimg.com/thumb/toyota/8-toyota-png-car-image.png",
+    image: "https://static.toyotabharat.com/images/showroom/innova-mmc/silver-color-1600x600.png",
     images: [
-      "https://freepngimg.com/thumb/toyota/8-toyota-png-car-image.png",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/51435/innova-crysta-exterior-right-front-three-quarter-3.jpeg?q=80",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/51435/innova-crysta-interior-dashboard-5.jpeg?q=80",
       "https://imgd.aeplcdn.com/664x374/n/cw/ec/51435/innova-crysta-third-row-seats-11.jpeg?q=80"
     ],
     color: "#475569",
@@ -118,9 +112,6 @@ export const cars: Car[] = [
     pricePerKm: 19,
     image: "https://pngimg.com/d/honda_PNG102938.png",
     images: [
-      "https://pngimg.com/d/honda_PNG102938.png",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80",
-      "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-interior-dashboard-26.jpeg?isig=0&q=80",
       "https://imgd.aeplcdn.com/1280x720/n/cw/ec/134287/city-interior-seats-28.jpeg?isig=0&q=80"
     ],
     color: "#dc2626",
@@ -161,11 +152,8 @@ export const cars: Car[] = [
     description: "The Ertiga is a versatile 7-seater MPV that combines comfort, style, and efficiency, making it perfect for families and long journeys.",
     pricePerDay: 2200,
     pricePerKm: 16,
-    image: "https://freepngimg.com/thumb/car/7-car-png-image-car-png-picture-download.png",
+    image: "https://www.marutiseva.com/assets/images/ertiga/silky-silver.png",
     images: [
-      "https://freepngimg.com/thumb/car/7-car-png-image-car-png-picture-download.png",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/115777/ertiga-exterior-right-front-three-quarter-3.jpeg?isig=0&q=80",
-      "https://imgd.aeplcdn.com/664x374/n/cw/ec/115777/ertiga-interior-dashboard-5.jpeg?isig=0&q=80",
       "https://imgd.aeplcdn.com/664x374/n/cw/ec/115777/ertiga-interior-third-row-seats-2.jpeg?isig=0&q=80"
     ],
     color: "#0ea5e9",
