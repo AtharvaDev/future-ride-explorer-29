@@ -68,19 +68,19 @@ const footerConfig: FooterConfig = {
   socialMedia: [
     {
       platform: 'Twitter',
-      icon: 'twitter', // This would be mapped to the SVG in the component
+      icon: 'twitter',
       href: 'https://twitter.com',
       ariaLabel: 'Twitter'
     },
     {
       platform: 'Instagram',
-      icon: 'instagram', // This would be mapped to the SVG in the component
+      icon: 'instagram',
       href: 'https://instagram.com',
       ariaLabel: 'Instagram'
     },
     {
       platform: 'Facebook',
-      icon: 'facebook', // This would be mapped to the SVG in the component
+      icon: 'facebook',
       href: 'https://facebook.com',
       ariaLabel: 'Facebook'
     }
