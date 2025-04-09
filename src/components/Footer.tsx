@@ -38,7 +38,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand Column */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{footerConfig.brandName}</h3>
+            <div className="mb-4">
+              <img 
+                src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
+                alt="The Chauffeur Co. Logo" 
+                className="h-16 w-auto mb-3"
+              />
+            </div>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               {footerConfig.description}
             </p>

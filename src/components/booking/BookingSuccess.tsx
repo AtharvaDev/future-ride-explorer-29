@@ -38,6 +38,14 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
   return (
     <ScrollArea className="h-[70vh] w-full">
       <div className="flex flex-col items-center p-4">
+        <div className="mb-6">
+          <img 
+            src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
+            alt="The Chauffeur Co. Logo" 
+            className="h-20 w-auto mb-4" 
+          />
+        </div>
+        
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full mb-6">
             <CheckCircle className="w-14 h-14 text-green-600 dark:text-green-400" />
