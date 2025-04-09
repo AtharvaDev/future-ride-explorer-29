@@ -9,4 +9,11 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Ensure we have an element to render to
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Failed to find the root element");
+}
+
+// Create the root and render the app
+createRoot(rootElement).render(<App />);
