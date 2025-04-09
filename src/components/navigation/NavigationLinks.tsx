@@ -10,6 +10,7 @@ export type NavLink = {
 };
 
 export const useNavigationLinks = () => {
+  // Initialize defaults
   let user = null;
   let isAdmin = false;
   
@@ -19,20 +20,23 @@ export const useNavigationLinks = () => {
     user = auth?.user || null;
     isAdmin = auth?.isAdmin || false;
   } catch (error) {
-    console.warn("Auth context not available yet in NavigationLinks");
-    // Provide default links when auth is not available
+    console.warn("Auth context not available yet in NavigationLinks, using default links");
+    // Continue with default links
   }
   
+  // Default links that don't require authentication
   const links: NavLink[] = [
     { name: UI_STRINGS.NAVIGATION.HOME, href: "/", icon: Home },
     { name: UI_STRINGS.NAVIGATION.FLEET, href: "/#fleet", icon: Car },
     { name: UI_STRINGS.NAVIGATION.CONTACT, href: "#contact", icon: Phone },
   ];
   
+  // Add authenticated links if user is logged in
   if (user) {
     links.push({ name: UI_STRINGS.NAVIGATION.MY_BOOKINGS, href: "/my-bookings", icon: Book });
   }
   
+  // Add admin link if user is an admin
   if (isAdmin) {
     links.push({ name: UI_STRINGS.NAVIGATION.ADMIN, href: "/admin", icon: Shield });
   }

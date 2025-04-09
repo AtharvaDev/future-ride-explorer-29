@@ -9,6 +9,9 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
+// Log application startup for debugging
+console.log("Application starting up...");
+
 // Ensure we have an element to render to
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -18,3 +21,5 @@ if (!rootElement) {
 // Create the root and render the app
 const root = createRoot(rootElement);
 root.render(<App />);
+
+console.log("App rendered successfully");

@@ -60,6 +60,7 @@ const BookingPage = () => {
     if (carsError) {
       const errorMessage = carsError instanceof Error ? carsError.message : 'Unknown error loading cars';
       toast.error(errorMessage);
+      console.error('Cars loading error:', carsError);
     }
   }, [carsError]);
 
@@ -92,27 +93,31 @@ const BookingPage = () => {
       }, "-=0.6");
       
       // Add scroll-triggered animations
-      const sections = pageRef.current.querySelectorAll('.animate-on-scroll');
-      sections.forEach((section, index) => {
-        gsap.from(section, {
-          scrollTrigger: {
-            trigger: section,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none none"
-          },
-          y: 40,
-          opacity: 0,
-          duration: 0.7,
-          delay: index * 0.1,
-          ease: "power2.out"
+      if (pageRef.current) {
+        const sections = pageRef.current.querySelectorAll('.animate-on-scroll');
+        sections.forEach((section, index) => {
+          gsap.from(section, {
+            scrollTrigger: {
+              trigger: section,
+              start: "top 80%",
+              end: "bottom 20%",
+              toggleActions: "play none none none"
+            },
+            y: 40,
+            opacity: 0,
+            duration: 0.7,
+            delay: index * 0.1,
+            ease: "power2.out"
+          });
         });
-      });
+      }
 
       return () => {
         // Clean up all animations and scroll triggers
         masterTl.kill();
-        gsap.killTweensOf(pageRef.current.querySelectorAll('.animate-on-scroll'));
+        if (pageRef.current) {
+          gsap.killTweensOf(pageRef.current.querySelectorAll('.animate-on-scroll'));
+        }
       };
     }
   }, [pageReady, selectedCar, carsLoading]);
@@ -142,12 +147,14 @@ const BookingPage = () => {
     setVideoOpen(false);
     
     // Create a re-entry animation
-    gsap.from(mainContainerRef.current, {
-      opacity: 0.7,
-      scale: 0.98,
-      duration: 0.6,
-      ease: "power2.out"
-    });
+    if (mainContainerRef.current) {
+      gsap.from(mainContainerRef.current, {
+        opacity: 0.7,
+        scale: 0.98,
+        duration: 0.6,
+        ease: "power2.out"
+      });
+    }
   };
 
   if (carsLoading || !selectedCar) {
@@ -176,12 +183,12 @@ const BookingPage = () => {
             id={selectedCar.id}
             model={selectedCar.model}
             title={selectedCar.title}
-            description={selectedCar.description}
+            description={selectedCar.description || ''}
             pricePerDay={selectedCar.pricePerDay}
-            pricePerKm={selectedCar.pricePerKm}
+            pricePerKm={selectedCar.pricePerKm || 0}
             image={selectedCar.image}
-            color={selectedCar.color}
-            features={selectedCar.features}
+            color={selectedCar.color || '#000000'}
+            features={selectedCar.features || []}
             index={carId || "0"}
           />
         </Card>

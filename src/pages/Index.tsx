@@ -18,6 +18,8 @@ const Index = () => {
   });
 
   useEffect(() => {
+    console.log("Index page mounted, initializing animations");
+    
     // Initialize all animations
     initPageAnimations();
     
@@ -26,6 +28,11 @@ const Index = () => {
     
     // Scroll to top on page load
     window.scrollTo(0, 0);
+    
+    return () => {
+      console.log("Index page unmounting");
+      // Cleanup animations if needed
+    };
   }, []);
 
   if (isLoading) {

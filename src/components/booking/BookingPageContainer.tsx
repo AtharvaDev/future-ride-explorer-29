@@ -40,6 +40,8 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
   };
 
   useEffect(() => {
+    console.log("BookingPageContainer mounted with car:", selectedCar?.id);
+    
     // Main container animation setup
     if (containerRef.current) {
       gsap.set(containerRef.current, { opacity: 0 });
@@ -129,6 +131,8 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
       }
     }
   }, [selectedCar.insights]);
+
+  console.log("Rendering BookingPageContainer with car:", selectedCar?.title);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12" ref={containerRef}>
