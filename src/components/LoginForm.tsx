@@ -29,15 +29,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{UI_STRINGS.LOGIN.TITLE}</h2>
-        <p className="text-gray-600 dark:text-gray-400">{UI_STRINGS.LOGIN.SUBTITLE}</p>
+    <div className="bg-white/10 backdrop-blur-md p-8 rounded-lg shadow-lg max-w-md w-full border border-white/20 text-white">
+      <div className="mb-6 text-center animate-item">
+        <h2 className="text-2xl font-bold mb-2 text-white">{UI_STRINGS.LOGIN.TITLE}</h2>
+        <p className="text-gray-300">{UI_STRINGS.LOGIN.SUBTITLE}</p>
       </div>
       
       <Button 
         onClick={handleGoogleSignIn} 
-        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-6"
+        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-6 animate-item hover:scale-105 transition-all duration-300"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -71,8 +71,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ returnUrl = '/' }) => {
         )}
       </Button>
       
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="mt-6 text-center animate-item">
+        <p className="text-sm text-gray-400">
           {UI_STRINGS.LOGIN.TERMS}
         </p>
       </div>

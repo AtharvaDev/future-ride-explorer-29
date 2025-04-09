@@ -31,7 +31,29 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
       return;
     }
     
-    if (href.startsWith('#') && (window.location.pathname === '/' || !location)) {
+    // Special handling for section navigation when not on home page
+    if (href.startsWith('#') && location && location.pathname !== '/') {
+      navigate('/');
+      
+      // Set a timeout to scroll to the element after navigation
+      setTimeout(() => {
+        const element = document.getElementById(href.substring(1));
+        if (element) {
+          gsap.to(window, {
+            duration: 1,
+            scrollTo: {
+              y: element,
+              offsetY: 80
+            },
+            ease: "power2.inOut"
+          });
+        }
+      }, 500);
+      return;
+    }
+    
+    // Normal section navigation on home page
+    if (href.startsWith('#') && (location?.pathname === '/' || !location)) {
       const element = document.getElementById(href.substring(1));
       if (element) {
         gsap.to(window, {
@@ -42,26 +64,6 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
           },
           ease: "power2.inOut"
         });
-      } else if (location && location.pathname !== '/') {
-        // If on a different page and trying to navigate to a home page section,
-        // navigate to home page first
-        if (navigate) {
-          navigate('/');
-          // Set a timeout to scroll to the element after navigation
-          setTimeout(() => {
-            const homeElement = document.getElementById(href.substring(1));
-            if (homeElement) {
-              gsap.to(window, {
-                duration: 1,
-                scrollTo: {
-                  y: homeElement,
-                  offsetY: 80
-                },
-                ease: "power2.inOut"
-              });
-            }
-          }, 500);
-        }
       }
     } else if (navigate) {
       navigate(href);
