@@ -155,7 +155,7 @@ const Hero = () => {
             ref={badgeRef} 
             className="inline-block mb-8 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium opacity-0"
           >
-            Luxury Transportation Redefined
+            The Chauffeur Co
           </div>
           
           <h1 
