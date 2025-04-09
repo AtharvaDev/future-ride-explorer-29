@@ -13,9 +13,12 @@ export const generateBookingPDF = (booking: BookingNotificationDetails): Blob =>
     format: 'a4'
   });
 
-  // Add company logo and header
+  // Add company logo
+  // Note: In a real implementation, you would need to add the logo as a base64 string
+  // since the PDF might be viewed offline where the URL won't be accessible
+  // For this example, we'll use text as a placeholder
   doc.setFontSize(22);
-  doc.setTextColor(33, 150, 243); // Primary blue color
+  doc.setTextColor(212, 175, 55); // Gold color
   doc.text('The Chauffeur Co.', 105, 20, { align: 'center' });
   
   doc.setFontSize(16);
@@ -85,7 +88,7 @@ export const generateInvoicePDF = (booking: BookingNotificationDetails): Blob =>
   // For brevity, this is a placeholder
   
   doc.setFontSize(22);
-  doc.setTextColor(33, 150, 243);
+  doc.setTextColor(212, 175, 55); // Gold color
   doc.text('The Chauffeur Co.', 105, 20, { align: 'center' });
   
   doc.setFontSize(16);

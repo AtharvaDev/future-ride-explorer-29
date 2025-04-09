@@ -32,6 +32,14 @@ const LoginStep: React.FC<LoginStepProps> = ({
 
   return (
     <div className="step-container space-y-6">
+      <div className="flex justify-center mb-4">
+        <img 
+          src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
+          alt="The Chauffeur Co. Logo" 
+          className="h-16 w-auto" 
+        />
+      </div>
+      
       <div className="space-y-2">
         <h3 className="text-xl font-semibold">Login to Continue</h3>
         <p className="text-gray-500 dark:text-gray-400">

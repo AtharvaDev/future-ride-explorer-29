@@ -1,7 +1,6 @@
 
-import { Car } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface NavbarBrandProps {
   onClick: (e: React.MouseEvent) => void;
@@ -15,11 +14,15 @@ export const NavbarBrand: React.FC<NavbarBrandProps> = ({ onClick, logoRef }) =>
     <Link 
       ref={logoRef}
       to="/" 
-      className="text-2xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 hover:opacity-80 transition-all duration-300 hover:scale-105"
+      className="flex items-center gap-2 hover:opacity-90 transition-all duration-300 hover:scale-105"
       onClick={onClick}
     >
-      <Car className="h-6 w-6 text-purple-500" />
-      <span>{brandName}</span>
+      <img 
+        src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
+        alt="The Chauffeur Co. Logo" 
+        className="h-12 w-auto" 
+      />
+      <span className="sr-only">{brandName}</span>
     </Link>
   );
 };
