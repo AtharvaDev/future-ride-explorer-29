@@ -18,7 +18,7 @@ export const NavbarBrand: React.FC<NavbarBrandProps> = ({ onClick, logoRef }) =>
       onClick={onClick}
     >
       <img 
-        src="/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png" 
+        src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
         alt="The Chauffeur Co. Logo" 
         className="h-12 w-auto" 
       />

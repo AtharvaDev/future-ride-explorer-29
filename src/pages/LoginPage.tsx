@@ -78,7 +78,7 @@ const LoginPage = () => {
         <div className="max-w-md w-full relative z-10 flex flex-col items-center">
           <img 
             ref={logoRef}
-            src="/lovable-uploads/c2f979be-0f33-4679-b957-f06b239b7aab.png" 
+            src="/lovable-uploads/1fb1ee26-e11e-43d3-897d-2054f89c95d8.png" 
             alt="The Chauffeur Co. Logo" 
             className="h-24 w-auto mb-8 drop-shadow-lg" 
           />
