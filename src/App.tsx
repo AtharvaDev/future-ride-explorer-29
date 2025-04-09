@@ -103,7 +103,6 @@ const AppContent = () => {
             </ProtectedAdminRoute>
           } 
         />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <WhatsAppButton />
@@ -117,9 +116,9 @@ const App = () => {
       <TooltipProvider>
         <BrowserRouter>
           <AuthProvider>
+            <AppContent />
             <Toaster />
             <Sonner />
-            <AppContent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

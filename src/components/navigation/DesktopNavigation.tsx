@@ -25,6 +25,22 @@ export const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
   scrolled,
   menuItemsRef
 }) => {
+  // Check if a link is active
+  const isLinkActive = (linkHref: string) => {
+    if (!activeRoute) return false;
+    
+    // Direct route match
+    if (activeRoute === linkHref) return true;
+    
+    // Handle hash link on home page
+    if (activeRoute === '/' && linkHref.startsWith('#')) return false;
+    
+    // Handle fleet link specially
+    if (linkHref === '/#fleet' && activeRoute === '/') return false;
+    
+    return false;
+  };
+  
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
@@ -39,10 +55,7 @@ export const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
               className={cn(
                 navigationMenuTriggerStyle(),
                 "transition-all duration-300 hover:scale-105 flex items-center gap-2",
-                (activeRoute === link.href || 
-                 (activeRoute === '/' && link.href.startsWith('#')))
-                  ? "bg-primary/10 text-primary font-medium" 
-                  : "",
+                isLinkActive(link.href) ? "bg-primary/10 text-primary font-medium" : "",
                 link.name === "Contact" ? "text-green-600 hover:text-green-700" : "",
                 scrolled || activeRoute !== "/" ? "text-gray-800" : "text-white",
                 "bg-transparent border-none"

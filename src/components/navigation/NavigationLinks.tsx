@@ -16,8 +16,8 @@ export const useNavigationLinks = () => {
   try {
     // Try to use auth context, but handle the case where it might not be available yet
     const auth = useAuth();
-    user = auth.user;
-    isAdmin = auth.isAdmin;
+    user = auth?.user || null;
+    isAdmin = auth?.isAdmin || false;
   } catch (error) {
     console.warn("Auth context not available yet in NavigationLinks");
     // Provide default links when auth is not available
@@ -25,7 +25,7 @@ export const useNavigationLinks = () => {
   
   const links: NavLink[] = [
     { name: UI_STRINGS.NAVIGATION.HOME, href: "/", icon: Home },
-    { name: UI_STRINGS.NAVIGATION.FLEET, href: "#fleet", icon: Car },
+    { name: UI_STRINGS.NAVIGATION.FLEET, href: "/#fleet", icon: Car },
     { name: UI_STRINGS.NAVIGATION.CONTACT, href: "#contact", icon: Phone },
   ];
   

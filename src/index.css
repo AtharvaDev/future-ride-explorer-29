@@ -74,8 +74,12 @@
     @apply border-border;
   }
 
+  html, body {
+    @apply w-full overflow-x-hidden max-w-[100vw];
+  }
+
   body {
-    @apply bg-background text-foreground font-sans overflow-x-hidden;
+    @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -131,4 +135,15 @@
 html {
   scroll-behavior: smooth;
   @apply scrolling-touch;
+}
+
+/* Fix horizontal overflow issues */
+.overflow-fix {
+  @apply overflow-x-hidden;
+  max-width: 100vw;
+}
+
+/* Ensure proper sizing for main content containers */
+.main-container {
+  @apply w-full max-w-full overflow-x-hidden;
 }

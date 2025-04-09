@@ -31,6 +31,27 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
       return;
     }
     
+    // Handle navigation to home page when clicking fleet on another page
+    if (href === '/#fleet' && location && location.pathname !== '/') {
+      navigate('/');
+      
+      // Set a timeout to scroll to the element after navigation
+      setTimeout(() => {
+        const element = document.getElementById('fleet');
+        if (element) {
+          gsap.to(window, {
+            duration: 1,
+            scrollTo: {
+              y: element,
+              offsetY: 80
+            },
+            ease: "power2.inOut"
+          });
+        }
+      }, 500);
+      return;
+    }
+    
     // Special handling for section navigation when not on home page
     if (href.startsWith('#') && location && location.pathname !== '/') {
       navigate('/');

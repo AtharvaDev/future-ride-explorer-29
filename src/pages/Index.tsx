@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import FleetSection from '@/components/FleetSection';
@@ -23,6 +23,9 @@ const Index = () => {
     
     // Initialize scroll-triggered animations
     initScrollAnimations();
+    
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
   }, []);
 
   if (isLoading) {
@@ -48,17 +51,13 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full bg-background overflow-x-hidden">
       <Navbar />
       
       <Hero />
       
       {/* Show FleetSection with cars from Firestore */}
       <FleetSection cars={cars} />
-      
-      <div id="contact" className="py-20">
-        {/* Contact section content */}
-      </div>
       
       <Footer />
     </div>

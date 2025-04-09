@@ -16,4 +16,5 @@ if (!rootElement) {
 }
 
 // Create the root and render the app
-createRoot(rootElement).render(<App />);
+const root = createRoot(rootElement);
+root.render(<App />);
