@@ -15,6 +15,7 @@ import BookingPageContainer from '@/components/booking/BookingPageContainer';
 import { fadeInUp, fadeInLeft, fadeInRight, scaleIn } from '@/utils/animations';
 
 const BookingPage = () => {
+  console.log("BookingPage component rendering");
   const { carId } = useParams();
   const navigate = useNavigate();
   const [videoOpen, setVideoOpen] = useState(false);
@@ -24,18 +25,26 @@ const BookingPage = () => {
   const headerRef = useRef<HTMLHeadingElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
+  // Log parameters for debugging
+  console.log("BookingPage params - carId:", carId);
+
   const { data: cars = [], isLoading: carsLoading, error: carsError } = useQuery({
     queryKey: ['cars'],
     queryFn: getAllCars
   });
 
+  console.log("BookingPage cars loaded:", cars.length, "Loading:", carsLoading, "Error:", !!carsError);
+
   const selectedCar = carId 
     ? cars.find(car => car.id === carId) || (cars.length > 0 ? cars[0] : null)
     : cars.length > 0 ? cars[0] : null;
+    
+  console.log("BookingPage selectedCar:", selectedCar?.id);
 
   // Handle initial page load and animations
   useEffect(() => {
     window.scrollTo(0, 0);
+    console.log("BookingPage initial load effect");
     
     // Short timeout to ensure DOM elements are ready
     const timer = setTimeout(() => {
@@ -67,6 +76,7 @@ const BookingPage = () => {
   // Initialize page animations when all content is ready
   useEffect(() => {
     if (pageReady && selectedCar && !carsLoading && pageRef.current) {
+      console.log("BookingPage animations initializing");
       // Create a master timeline for coordinated animations
       const masterTl = gsap.timeline();
       
@@ -92,32 +102,9 @@ const BookingPage = () => {
         }
       }, "-=0.6");
       
-      // Add scroll-triggered animations
-      if (pageRef.current) {
-        const sections = pageRef.current.querySelectorAll('.animate-on-scroll');
-        sections.forEach((section, index) => {
-          gsap.from(section, {
-            scrollTrigger: {
-              trigger: section,
-              start: "top 80%",
-              end: "bottom 20%",
-              toggleActions: "play none none none"
-            },
-            y: 40,
-            opacity: 0,
-            duration: 0.7,
-            delay: index * 0.1,
-            ease: "power2.out"
-          });
-        });
-      }
-
       return () => {
         // Clean up all animations and scroll triggers
         masterTl.kill();
-        if (pageRef.current) {
-          gsap.killTweensOf(pageRef.current.querySelectorAll('.animate-on-scroll'));
-        }
       };
     }
   }, [pageReady, selectedCar, carsLoading]);
@@ -158,6 +145,7 @@ const BookingPage = () => {
   };
 
   if (carsLoading || !selectedCar) {
+    console.log("BookingPage showing loading state");
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
@@ -172,6 +160,7 @@ const BookingPage = () => {
     );
   }
 
+  console.log("BookingPage rendering main content");
   return (
     <div className="min-h-screen flex flex-col bg-background" ref={pageRef}>
       <Navbar />

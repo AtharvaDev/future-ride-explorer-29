@@ -8,7 +8,6 @@ import BookingPageHeader from './BookingPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { gsap } from '@/lib/gsap';
 import { ScrollTrigger } from '@/lib/gsap';
-import { createRepeatingScrollAnimation } from '@/utils/scroll-animations';
 import { staggerElements } from '@/utils/animations';
 
 interface BookingPageContainerProps {
@@ -20,6 +19,8 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
   selectedCar,
   onWatchVideo
 }) => {
+  console.log("BookingPageContainer rendering with car:", selectedCar?.id);
+  
   const bookingFormRef = useRef<HTMLDivElement>(null);
   const carDetailsRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -67,15 +68,6 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
         gsap.set(detailsCard.querySelector('.card-shine'), { x: "-150%" });
         shineEffect.restart();
       });
-
-      // Create subtle float animation for the card
-      gsap.to(detailsCard, {
-        y: -10,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "power1.inOut"
-      });
     }
 
     // Booking form animations
@@ -114,25 +106,9 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
       const insightItems = insightsRef.current.querySelectorAll('li');
       if (insightItems.length > 0) {
         staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
-        
-        // Create scroll-triggered re-animation
-        ScrollTrigger.create({
-          trigger: insightsRef.current,
-          start: "top 75%",
-          onLeaveBack: () => {
-            gsap.set(insightItems, { opacity: 0, x: 30 });
-            staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
-          },
-          onEnter: () => {
-            gsap.set(insightItems, { opacity: 0, x: 30 });
-            staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
-          }
-        });
       }
     }
   }, [selectedCar.insights]);
-
-  console.log("Rendering BookingPageContainer with car:", selectedCar?.title);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12" ref={containerRef}>

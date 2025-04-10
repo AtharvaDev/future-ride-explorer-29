@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Car } from '@/data/cars';
 import { differenceInDays } from 'date-fns';
@@ -102,6 +103,7 @@ export function useBookingFormState(car: Car) {
   }, [formState.startDate, formState.endDate, car.pricePerDay, car.pricePerKm, configuredTokenAmount]);
 
   const setDates = (startDate: Date | null, endDate: Date | null) => {
+    console.log("Setting dates in useBookingFormState:", startDate, endDate);
     setFormState(prev => ({
       ...prev,
       startDate,
@@ -138,6 +140,7 @@ export function useBookingFormState(car: Car) {
   };
 
   const nextStep = () => {
+    console.log("Moving to next step:", formState.step + 1);
     setFormState(prev => ({
       ...prev,
       step: prev.step + 1,
@@ -145,6 +148,7 @@ export function useBookingFormState(car: Car) {
   };
 
   const prevStep = () => {
+    console.log("Moving to previous step:", Math.max(1, formState.step - 1));
     setFormState(prev => ({
       ...prev,
       step: Math.max(1, prev.step - 1),
@@ -152,6 +156,7 @@ export function useBookingFormState(car: Car) {
   };
 
   const goToStep = (step: number) => {
+    console.log("Going to step:", step);
     setFormState(prev => ({
       ...prev,
       step,
@@ -159,6 +164,7 @@ export function useBookingFormState(car: Car) {
   };
 
   const resetStep = useCallback(() => {
+    console.log("Resetting step to 1");
     setFormState(prev => ({
       ...prev,
       step: 1,
