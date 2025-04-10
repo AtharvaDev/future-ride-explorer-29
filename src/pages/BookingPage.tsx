@@ -30,7 +30,13 @@ const BookingPage = () => {
 
   const { data: cars = [], isLoading: carsLoading, error: carsError } = useQuery({
     queryKey: ['cars'],
-    queryFn: getAllCars
+    queryFn: getAllCars,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    onError: (error) => {
+      console.error("Error fetching cars:", error);
+      toast.error("Failed to load cars. Please refresh the page.");
+    }
   });
 
   console.log("BookingPage cars loaded:", cars.length, "Loading:", carsLoading, "Error:", !!carsError);
@@ -56,13 +62,16 @@ const BookingPage = () => {
 
   // Handle car selection and navigation
   useEffect(() => {
-    if (carId && cars.length > 0 && !cars.find(car => car.id === carId)) {
-      toast.error("Car not found, redirecting to default options");
-      if (cars.length > 0) {
+    if (!carsLoading && cars.length > 0) {
+      if (carId && !cars.find(car => car.id === carId)) {
+        toast.error("Car not found, redirecting to default options");
+        navigate(`/booking/${cars[0].id}`);
+      } else if (!carId) {
+        // If no car ID specified, redirect to the first car
         navigate(`/booking/${cars[0].id}`);
       }
     }
-  }, [carId, cars, navigate]);
+  }, [carId, cars, navigate, carsLoading]);
 
   // Error display when car data validation fails
   useEffect(() => {

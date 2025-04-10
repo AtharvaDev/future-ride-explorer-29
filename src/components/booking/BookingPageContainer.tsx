@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { gsap } from '@/lib/gsap';
 import { ScrollTrigger } from '@/lib/gsap';
 import { staggerElements } from '@/utils/animations';
+import { toast } from 'sonner';
 
 interface BookingPageContainerProps {
   selectedCar: Car;
@@ -27,6 +28,14 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
   const insightsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Check if selectedCar is valid
+  useEffect(() => {
+    if (!selectedCar) {
+      console.error("BookingPageContainer: selectedCar is null or undefined");
+      toast.error("Error loading car details");
+    }
+  }, [selectedCar]);
+
   const scrollToBookingForm = () => {
     if (bookingFormRef.current) {
       gsap.to(window, {
@@ -42,6 +51,10 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
 
   useEffect(() => {
     console.log("BookingPageContainer mounted with car:", selectedCar?.id);
+    
+    if (!selectedCar) {
+      return; // Exit early if car data is missing
+    }
     
     // Main container animation setup
     if (containerRef.current) {
@@ -102,13 +115,29 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
 
   // Set up insights animation when they exist
   useEffect(() => {
+    if (!selectedCar || !selectedCar.insights) {
+      return; // Exit early if insights don't exist
+    }
+    
     if (insightsRef.current && selectedCar.insights && selectedCar.insights.length > 0) {
       const insightItems = insightsRef.current.querySelectorAll('li');
       if (insightItems.length > 0) {
         staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
       }
     }
-  }, [selectedCar.insights]);
+  }, [selectedCar]);
+
+  if (!selectedCar) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-6 text-center">
+          <CardContent>
+            <p className="text-red-500">Error: Car data could not be loaded</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12" ref={containerRef}>

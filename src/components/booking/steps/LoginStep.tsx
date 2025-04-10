@@ -16,6 +16,8 @@ const LoginStep: React.FC<LoginStepProps> = ({
   isLoggedIn,
   onContinue
 }) => {
+  console.log("Rendering LoginStep, isLoggedIn:", isLoggedIn);
+  
   return (
     <div className="flex flex-col items-center justify-center py-6">
       <h2 className="text-2xl font-bold mb-6">Login to Continue</h2>
