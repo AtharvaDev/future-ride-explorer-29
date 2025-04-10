@@ -12,7 +12,6 @@ import { Loader } from 'lucide-react';
 import { getAllCars } from '@/services/carService';
 import { useQuery } from '@tanstack/react-query';
 import BookingPageContainer from '@/components/booking/BookingPageContainer';
-import { fadeInUp, fadeInLeft, fadeInRight, scaleIn } from '@/utils/animations';
 
 const BookingPage = () => {
   console.log("BookingPage component rendering");
@@ -20,7 +19,6 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const [videoOpen, setVideoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [pageReady, setPageReady] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
@@ -43,17 +41,10 @@ const BookingPage = () => {
     
   console.log("BookingPage selectedCar:", selectedCar?.id);
 
-  // Handle initial page load and animations
+  // Handle initial page load
   useEffect(() => {
     window.scrollTo(0, 0);
     console.log("BookingPage initial load effect");
-    
-    // Short timeout to ensure DOM elements are ready
-    const timer = setTimeout(() => {
-      setPageReady(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
   }, []);
 
   // Handle car selection and navigation
@@ -78,58 +69,13 @@ const BookingPage = () => {
     }
   }, [carsError]);
 
-  // Initialize page animations when all content is ready
-  useEffect(() => {
-    if (pageReady && selectedCar && !carsLoading && pageRef.current) {
-      console.log("BookingPage animations initializing");
-      // Create a master timeline for coordinated animations
-      const masterTl = gsap.timeline();
-      
-      // Animate the page entry
-      masterTl.add(() => {
-        if (headerRef.current) {
-          fadeInUp(headerRef.current, 0.2, 0.8);
-        }
-      });
-      
-      // Animate the main container with a subtle reveal
-      masterTl.add(() => {
-        if (mainContainerRef.current) {
-          // Create a parallax scroll effect
-          gsap.set(mainContainerRef.current, { y: 40, opacity: 0 });
-          gsap.to(mainContainerRef.current, {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            clearProps: "all"
-          });
-        }
-      }, "-=0.6");
-      
-      return () => {
-        // Clean up all animations and scroll triggers
-        masterTl.kill();
-      };
-    }
-  }, [pageReady, selectedCar, carsLoading]);
-
   const handleWatchVideo = () => {
     if (selectedCar?.video) {
       setLoading(true);
       setVideoOpen(true);
       
-      // Add animation to video loading
-      const loadingAnimation = gsap.timeline({ repeat: -1 });
-      loadingAnimation.to(".video-loading-animation", { 
-        rotate: 360, 
-        duration: 1.5, 
-        ease: "power1.inOut" 
-      });
-      
       setTimeout(() => {
         setLoading(false);
-        loadingAnimation.kill();
       }, 1500);
     }
   };
@@ -137,16 +83,6 @@ const BookingPage = () => {
   // Handle video dialog closing
   const handleVideoComplete = () => {
     setVideoOpen(false);
-    
-    // Create a re-entry animation
-    if (mainContainerRef.current) {
-      gsap.from(mainContainerRef.current, {
-        opacity: 0.7,
-        scale: 0.98,
-        duration: 0.6,
-        ease: "power2.out"
-      });
-    }
   };
 
   if (carsLoading || !selectedCar) {
@@ -156,7 +92,7 @@ const BookingPage = () => {
         <Navbar />
         <div className="flex-grow flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <Loader className="h-12 w-12 animate-spin text-primary video-loading-animation" />
+            <Loader className="h-12 w-12 animate-spin text-primary" />
             <p className="animate-pulse">Loading car data...</p>
           </div>
         </div>
@@ -170,7 +106,7 @@ const BookingPage = () => {
     <div className="min-h-screen flex flex-col bg-background" ref={pageRef}>
       <Navbar />
       
-      <div className="animate-on-scroll">
+      <div>
         <Card>
           <CarSection
             key={selectedCar.id}

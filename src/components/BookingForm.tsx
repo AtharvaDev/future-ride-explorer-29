@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Car } from '@/data/cars';
 import BookingFormContainer from './booking/BookingFormContainer';
 import { toast } from 'sonner';
@@ -9,9 +9,7 @@ interface BookingFormProps {
 }
 
 const BookingForm: React.FC<BookingFormProps> = ({ car }) => {
-  useEffect(() => {
-    console.log("BookingForm rendering with car:", car?.id);
-  }, [car]);
+  console.log("BookingForm rendering with car:", car?.id);
   
   if (!car) {
     console.error("BookingForm received null or undefined car");

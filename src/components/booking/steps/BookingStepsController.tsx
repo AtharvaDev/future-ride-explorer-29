@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { gsap } from '@/lib/gsap';
 import { Car } from '@/data/cars';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingStatus } from '@/types/booking';
@@ -35,7 +34,6 @@ interface BookingStepsControllerProps {
 const BookingStepsController: React.FC<BookingStepsControllerProps> = ({ car }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [formReady, setFormReady] = useState(false);
   const [bookingCreated, setBookingCreated] = useState<BookingNotificationDetails | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -57,48 +55,12 @@ const BookingStepsController: React.FC<BookingStepsControllerProps> = ({ car }) 
     resetStep
   } = useBookingFormState(car);
 
-  const formContainerRef = useRef<HTMLDivElement>(null);
-
   // Reset step if user is not logged in
   useEffect(() => {
     if (!user) {
       resetStep();
     }
   }, [user, resetStep]);
-
-  // Initialize form with animation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setFormReady(true);
-      
-      gsap.fromTo(
-        ".booking-form-content",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
-      );
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Animate step transitions
-  useEffect(() => {
-    if (formContainerRef.current) {
-      gsap.to(formContainerRef.current.querySelector('.booking-form-content'), {
-        opacity: 0,
-        y: -10,
-        duration: 0.2,
-        onComplete: () => {
-          gsap.to(formContainerRef.current?.querySelector('.booking-form-content'), {
-            opacity: 1,
-            y: 0,
-            duration: 0.3,
-            delay: 0.1
-          });
-        }
-      });
-    }
-  }, [formState.step]);
 
   // Set contact info from user data when available
   useEffect(() => {
@@ -347,7 +309,7 @@ const BookingStepsController: React.FC<BookingStepsControllerProps> = ({ car }) 
   console.log("Rendering BookingStepsController with step:", formState.step);
 
   return (
-    <div ref={formContainerRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 overflow-hidden z-10 relative">
       <ProgressSteps 
         activeStep={formState.step - 1} 
         steps={steps.slice(0, formState.step > steps.length ? steps.length : 5)}

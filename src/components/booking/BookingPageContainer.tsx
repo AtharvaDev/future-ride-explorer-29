@@ -1,14 +1,11 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Car } from '@/data/cars';
 import BookingForm from '@/components/BookingForm';
 import RentalInsights from '@/components/fleet/RentalInsights';
 import CarImageCarousel from '@/components/fleet/CarImageCarousel';
 import BookingPageHeader from './BookingPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { gsap } from '@/lib/gsap';
-import { ScrollTrigger } from '@/lib/gsap';
-import { staggerElements } from '@/utils/animations';
 import { toast } from 'sonner';
 
 interface BookingPageContainerProps {
@@ -29,124 +26,27 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Check if selectedCar is valid
-  useEffect(() => {
-    if (!selectedCar) {
-      console.error("BookingPageContainer: selectedCar is null or undefined");
-      toast.error("Error loading car details");
-    }
-  }, [selectedCar]);
+  if (!selectedCar) {
+    console.error("BookingPageContainer: selectedCar is null or undefined");
+    toast.error("Error loading car details");
+    return null;
+  }
 
   const scrollToBookingForm = () => {
     if (bookingFormRef.current) {
-      gsap.to(window, {
-        duration: 1,
-        scrollTo: {
-          y: bookingFormRef.current,
-          offsetY: 80
-        },
-        ease: "power2.inOut"
+      bookingFormRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
       });
     }
   };
 
-  useEffect(() => {
-    console.log("BookingPageContainer mounted with car:", selectedCar?.id);
-    
-    if (!selectedCar) {
-      return; // Exit early if car data is missing
-    }
-    
-    // Main container animation setup
-    if (containerRef.current) {
-      gsap.set(containerRef.current, { opacity: 0 });
-      gsap.to(containerRef.current, {
-        opacity: 1,
-        duration: 0.8,
-        ease: "power2.out"
-      });
-    }
-
-    // First row animations
-    const detailsCard = carDetailsRef.current;
-    if (detailsCard) {
-      // Create a shine effect on card hover
-      const shineEffect = gsap.to(detailsCard.querySelector('.card-shine'), {
-        x: "150%",
-        duration: 1.5,
-        paused: true,
-        ease: "power2.inOut"
-      });
-
-      detailsCard.addEventListener("mouseenter", () => {
-        gsap.set(detailsCard.querySelector('.card-shine'), { x: "-150%" });
-        shineEffect.restart();
-      });
-    }
-
-    // Booking form animations
-    if (bookingFormRef.current) {
-      ScrollTrigger.create({
-        trigger: bookingFormRef.current,
-        start: "top 80%",
-        onEnter: () => {
-          gsap.fromTo(bookingFormRef.current,
-            { y: 50, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
-          );
-        },
-        once: true
-      });
-    }
-
-    // Clean up animations on component unmount
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      if (containerRef.current) {
-        gsap.killTweensOf(containerRef.current);
-      }
-      if (carDetailsRef.current) {
-        gsap.killTweensOf(carDetailsRef.current);
-      }
-      if (bookingFormRef.current) {
-        gsap.killTweensOf(bookingFormRef.current);
-      }
-    };
-  }, [selectedCar]);
-
-  // Set up insights animation when they exist
-  useEffect(() => {
-    if (!selectedCar || !selectedCar.insights) {
-      return; // Exit early if insights don't exist
-    }
-    
-    if (insightsRef.current && selectedCar.insights && selectedCar.insights.length > 0) {
-      const insightItems = insightsRef.current.querySelectorAll('li');
-      if (insightItems.length > 0) {
-        staggerElements(Array.from(insightItems), 0.1, 'fadeInRight');
-      }
-    }
-  }, [selectedCar]);
-
-  if (!selectedCar) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="p-6 text-center">
-          <CardContent>
-            <p className="text-red-500">Error: Car data could not be loaded</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-8 md:py-12" ref={containerRef}>
       {/* First Row: Car Details, Carousel, and Insights */}
-      <div ref={carDetailsRef} className="mb-10 animate-on-scroll">
+      <div ref={carDetailsRef} className="mb-10">
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm relative">
-          {/* Shine effect overlay */}
-          <div className="card-shine absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-20 transform pointer-events-none"></div>
-          
           <CardContent className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-6">
@@ -182,7 +82,7 @@ const BookingPageContainer: React.FC<BookingPageContainerProps> = ({
       </div>
 
       {/* Second Row: Booking Form */}
-      <div ref={bookingFormRef} id="booking-form-section" className="booking-container animate-on-scroll">
+      <div ref={bookingFormRef} id="booking-form-section" className="booking-container">
         <Card className="overflow-hidden shadow-lg transition-all duration-500 hover:shadow-xl border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
           <CardContent className="p-0">
             <BookingForm car={selectedCar} />
