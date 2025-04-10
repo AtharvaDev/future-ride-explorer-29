@@ -33,9 +33,11 @@ const BookingPage = () => {
     queryFn: getAllCars,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 3,
-    onError: (error) => {
-      console.error("Error fetching cars:", error);
-      toast.error("Failed to load cars. Please refresh the page.");
+    onSettled: (data, error) => {
+      if (error) {
+        console.error("Error fetching cars:", error);
+        toast.error("Failed to load cars. Please refresh the page.");
+      }
     }
   });
 
