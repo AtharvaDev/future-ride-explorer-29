@@ -88,8 +88,8 @@ const emailConfig: EmailConfig = {
     port: 465,
     secure: true, // use SSL
     auth: {
-      user: 'your.email@gmail.com', // Your Gmail address
-      pass: 'your-app-password'     // Your Gmail app password
+      user: 'thechauffeurco.india@gmail.com', // Your Gmail address
+      pass: 'nfaf qywe scmm pdab'     // Your Gmail app password
     }
   },
   
