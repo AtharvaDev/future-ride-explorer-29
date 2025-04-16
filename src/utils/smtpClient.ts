@@ -3,16 +3,7 @@
  * SMTP Client for sending emails using nodemailer (Browser Compatible)
  */
 import * as nodemailer from 'nodemailer';
-
-export interface SmtpConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
+import emailConfig, { SmtpConfig } from '@/config/emailConfig';
 
 export interface MailOptions {
   from: string;
@@ -31,20 +22,22 @@ export class SmtpClient {
   private config: SmtpConfig;
   private transporter: nodemailer.Transporter | null = null;
 
-  constructor(config: SmtpConfig) {
-    this.config = config;
-    console.log('[SMTP CLIENT] Initialized with host:', config.host);
+  constructor(config?: SmtpConfig) {
+    // Use provided config or default to emailConfig
+    this.config = config || emailConfig.smtpConfig;
+    
+    console.log('[SMTP CLIENT] Initialized with host:', this.config.host);
     
     // Create a transporter in Node.js environment
     // In browser, we'll use the mock functionality
     if (typeof window === 'undefined') {
       this.transporter = nodemailer.createTransport({
-        host: config.host,
-        port: config.port,
-        secure: config.secure,
+        host: this.config.host,
+        port: this.config.port,
+        secure: this.config.secure,
         auth: {
-          user: config.auth.user,
-          pass: config.auth.pass
+          user: this.config.auth.user,
+          pass: this.config.auth.pass
         }
       });
     }

@@ -13,7 +13,7 @@
  *      c. At the bottom, select App passwords
  *      d. Select "Mail" as the app and your device
  *      e. Copy the generated password
- *    - Use your Gmail address and the generated App Password in nodemailerConfig
+ *    - Use your Gmail address and the generated App Password in smtpConfig
  *
  * 2. For production with SendGrid:
  *    - Set provider to 'sendgrid'
@@ -26,25 +26,30 @@
  */
 
 import { UI_STRINGS } from '@/constants/uiStrings';
+import { COMPANY_STRINGS } from '@/constants/strings/companyStrings';
 
 export type EmailProvider = 'nodemailer' | 'sendgrid';
 export type NotificationType = 'bookingConfirmation' | 'paymentConfirmation' | 'bookingReminder' | 'bookingCancellation' | 'userSignup' | 'profileUpdate' | 'bookingAttempt';
 
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+}
+
+export interface SendGridConfig {
+  apiKey: string;
+}
+
 export interface EmailConfig {
   enabled: boolean;
   provider: EmailProvider;
-  nodemailerConfig: {
-    host: string;
-    port: number;
-    secure: boolean;
-    auth: {
-      user: string;
-      pass: string;
-    }
-  };
-  sendgridConfig: {
-    apiKey: string;
-  };
+  smtpConfig: SmtpConfig;
+  sendgridConfig: SendGridConfig;
   templates: {
     bookingConfirmation: {
       subject: string;
@@ -83,7 +88,7 @@ const emailConfig: EmailConfig = {
   provider: 'nodemailer',
   
   // Configuration for Nodemailer with Gmail (development/testing)
-  nodemailerConfig: {
+  smtpConfig: {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // use SSL
@@ -118,8 +123,8 @@ const emailConfig: EmailConfig = {
   },
   
   sender: {
-    name: UI_STRINGS.COMPANY.NAME + " " + UI_STRINGS.COMPANY.CUSTOMER_SERVICE,
-    email: UI_STRINGS.COMPANY.EMAIL
+    name: COMPANY_STRINGS.NAME + " " + COMPANY_STRINGS.CUSTOMER_SERVICE,
+    email: COMPANY_STRINGS.EMAIL
   },
   
   // Control which notifications are sent to users
@@ -140,7 +145,7 @@ const emailConfig: EmailConfig = {
   },
   
   // List of admin email addresses that will receive admin notifications
-  adminEmails: [UI_STRINGS.COMPANY.ADMIN_EMAIL]
+  adminEmails: [COMPANY_STRINGS.ADMIN_EMAIL]
 };
 
 export default emailConfig;
