@@ -75,6 +75,23 @@ export const deleteCar = async (id: string): Promise<void> => {
   }
 };
 
+// Update the order of cars
+export const updateCarsOrder = async (cars: Car[]): Promise<void> => {
+  try {
+    const batch = writeBatch(db);
+    
+    cars.forEach((car) => {
+      const carRef = doc(db, CARS_COLLECTION, car.id);
+      batch.update(carRef, { order: car.order });
+    });
+    
+    await batch.commit();
+  } catch (error) {
+    console.error("Error updating car order:", error);
+    throw error;
+  }
+};
+
 // Initialize default cars in Firestore if they don't exist
 export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> => {
   try {
@@ -105,9 +122,12 @@ export const initializeDefaultCars = async (defaultCars: Car[]): Promise<void> =
       console.log("No cars found in Firestore, initializing default cars...");
       
       // If no cars exist in Firestore, add the default ones
-      const promises = defaultCars.map(car => {
+      const promises = defaultCars.map((car, index) => {
         // Clean up the car object by removing any undefined or non-serializable values
-        const cleanCar = JSON.parse(JSON.stringify(car));
+        const cleanCar = JSON.parse(JSON.stringify({
+          ...car,
+          order: index // Add order based on the array index
+        }));
         const carRef = doc(db, CARS_COLLECTION, car.id);
         return setDoc(carRef, cleanCar);
       });
@@ -157,8 +177,11 @@ export const resetCarsData = async (): Promise<void> => {
     });
     
     // Add all default cars from cars.ts
-    defaultCars.forEach(car => {
-      const cleanCar = JSON.parse(JSON.stringify(car));
+    defaultCars.forEach((car, index) => {
+      const cleanCar = JSON.parse(JSON.stringify({
+        ...car,
+        order: index // Add order based on the array index
+      }));
       console.log('Adding default car:', cleanCar.id);
       
       const carRef = doc(db, CARS_COLLECTION, car.id);

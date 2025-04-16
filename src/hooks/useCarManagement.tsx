@@ -7,7 +7,8 @@ import {
   getAllCars, 
   saveCar, 
   deleteCar as deleteCarService,
-  resetCarsData
+  resetCarsData,
+  updateCarsOrder
 } from '@/services/carService';
 import { UI_STRINGS } from '@/constants/uiStrings';
 import { CarFormValues } from '@/components/admin/CarForm';
@@ -17,6 +18,7 @@ export const useCarManagement = () => {
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [carToDelete, setCarToDelete] = useState<Car | null>(null);
+  const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { 
@@ -67,6 +69,19 @@ export const useCarManagement = () => {
     }
   });
 
+  const reorderCarsMutation = useMutation({
+    mutationFn: updateCarsOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cars'] });
+      setReorderDialogOpen(false);
+      toast.success('Vehicle order updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error reordering cars:', error);
+      toast.error('Failed to update vehicle order');
+    }
+  });
+
   const handleAddCar = () => {
     setEditingCar(null);
     setIsDialogOpen(true);
@@ -91,6 +106,14 @@ export const useCarManagement = () => {
 
   const handleResetCars = () => {
     resetCarsMutation.mutate();
+  };
+
+  const handleOpenReorderDialog = () => {
+    setReorderDialogOpen(true);
+  };
+
+  const handleSaveOrder = (reorderedCars: Car[]) => {
+    reorderCarsMutation.mutate(reorderedCars);
   };
 
   const onSubmit = (
@@ -124,7 +147,8 @@ export const useCarManagement = () => {
         pricePerKm: data.pricePerKm,
         image: data.image,
         color: data.color,
-        features: features
+        features: features,
+        order: cars.length // Set order to the end by default
       };
       
       // Add optional fields only if they have values
@@ -157,14 +181,19 @@ export const useCarManagement = () => {
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     carToDelete,
+    reorderDialogOpen,
+    setReorderDialogOpen,
     saveCarMutation,
     deleteCarMutation,
     resetCarsMutation,
+    reorderCarsMutation,
     handleAddCar,
     handleEditCar,
     handleDeleteConfirm,
     handleDeleteCar,
     handleResetCars,
+    handleOpenReorderDialog,
+    handleSaveOrder,
     onSubmit
   };
 };

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from '@/data/cars';
@@ -20,6 +21,18 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Sort cars by order field if it exists
+  const sortedCars = [...cars].sort((a, b) => {
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    } else if (a.order !== undefined) {
+      return -1;
+    } else if (b.order !== undefined) {
+      return 1;
+    }
+    return 0;
+  });
 
   useEffect(() => {
     // Set initial opacity to 0 for all cards and the section title
@@ -249,7 +262,7 @@ const FleetSection: React.FC<FleetSectionProps> = ({ cars }) => {
           ref={fleetGridRef}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
         >
-          {cars.map((car, index) => (
+          {sortedCars.map((car, index) => (
             <div 
               key={car.id}
               onMouseEnter={() => setHoveredIndex(index)}
