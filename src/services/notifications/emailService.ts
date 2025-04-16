@@ -1,9 +1,8 @@
 
-import { SmtpClient } from '@/utils/smtpClient';
+import { SmtpClient, MailOptions } from '@/utils/smtpClient';
 import { EmailConfig } from '@/config/notifications';
-import { EmailOptions, NotificationTemplateData } from './types';
+import { NotificationTemplateData } from './types';
 import { templateEngine } from './templateEngine';
-import { UI_STRINGS } from '@/constants/uiStrings';
 
 export class EmailService {
   private config: EmailConfig;
@@ -11,19 +10,27 @@ export class EmailService {
 
   constructor(config: EmailConfig) {
     this.config = config;
+    
+    // Initialize SMTP client with the proper configuration
     this.smtpClient = new SmtpClient({
-      host: 'smtp.example.com', // This would normally come from env variables
-      port: 587,
-      secure: false,
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: 'username', // This would normally come from env variables
-        pass: 'password'  // This would normally come from env variables
+        user: process.env.SMTP_USER || 'your.email@gmail.com',
+        pass: process.env.SMTP_PASS || 'your-app-password'
       }
     });
+    
+    // Log initialization
+    console.log('[EMAIL SERVICE] Initialized');
   }
 
   async sendBookingConfirmation(to: string, data: NotificationTemplateData): Promise<void> {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {
+      console.log('[EMAIL SERVICE] Email notifications disabled');
+      return;
+    }
     
     const subject = templateEngine.render(this.config.templates.bookingConfirmation.subject, data);
     const html = templateEngine.render(this.config.templates.bookingConfirmation.body, data);
@@ -41,7 +48,10 @@ export class EmailService {
   }
 
   async sendPaymentConfirmation(to: string, data: NotificationTemplateData): Promise<void> {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {
+      console.log('[EMAIL SERVICE] Email notifications disabled');
+      return;
+    }
     
     const subject = templateEngine.render(this.config.templates.paymentConfirmation.subject, data);
     const html = templateEngine.render(this.config.templates.paymentConfirmation.body, data);
@@ -59,7 +69,10 @@ export class EmailService {
   }
 
   async sendBookingReminder(to: string, data: NotificationTemplateData): Promise<void> {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {
+      console.log('[EMAIL SERVICE] Email notifications disabled');
+      return;
+    }
     
     const subject = templateEngine.render(this.config.templates.bookingReminder.subject, data);
     const html = templateEngine.render(this.config.templates.bookingReminder.body, data);
@@ -72,7 +85,10 @@ export class EmailService {
   }
 
   async sendBookingCancellation(to: string, data: NotificationTemplateData): Promise<void> {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {
+      console.log('[EMAIL SERVICE] Email notifications disabled');
+      return;
+    }
     
     const subject = templateEngine.render(this.config.templates.bookingCancellation.subject, data);
     const html = templateEngine.render(this.config.templates.bookingCancellation.body, data);
@@ -84,41 +100,51 @@ export class EmailService {
     });
   }
 
-  private async sendEmail(options: EmailOptions): Promise<void> {
+  private async sendEmail(options: { to: string, subject: string, html?: string, text?: string }): Promise<void> {
     try {
-      await this.smtpClient.sendMail({
+      const mailOptions: MailOptions = {
         from: `"${this.config.sender.name}" <${this.config.sender.email}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text
-      });
+      };
+      
+      console.log(`[EMAIL SERVICE] Sending email to ${options.to} with subject: ${options.subject}`);
+      await this.smtpClient.sendMail(mailOptions);
+      console.log(`[EMAIL SERVICE] Email sent successfully to ${options.to}`);
     } catch (error) {
-      console.error('Failed to send email:', error);
+      console.error('[EMAIL SERVICE] Failed to send email:', error);
       throw new Error('Failed to send email notification');
     }
   }
 
   private async sendAdminNotification(type: string, data: NotificationTemplateData): Promise<void> {
     try {
-      const adminEmail = UI_STRINGS.COMPANY.ADMIN_EMAIL;
-      
-      if (!adminEmail) {
-        console.warn('Admin email not configured for notifications');
+      if (!this.config.adminNotifications) {
+        console.warn('[EMAIL SERVICE] Admin notifications not configured');
         return;
       }
       
+      // Format data for better readability
+      const formattedData = Object.entries(data).map(([key, value]) => {
+        return `<li><strong>${key}:</strong> ${value}</li>`;
+      }).join('');
+      
       await this.sendEmail({
-        to: adminEmail,
+        to: Array.isArray(this.config.adminEmails) ? 
+             this.config.adminEmails.join(',') : 
+             (this.config.adminEmails || 'admin@example.com'),
         subject: `Admin Notification: ${type}`,
         html: `
           <h1>Admin Notification: ${type}</h1>
           <p>The following ${type.toLowerCase()} has been processed:</p>
-          <pre>${JSON.stringify(data, null, 2)}</pre>
+          <ul>${formattedData}</ul>
         `
       });
     } catch (error) {
-      console.error('Failed to send admin notification:', error);
+      console.error('[EMAIL SERVICE] Failed to send admin notification:', error);
+      // Don't throw here to prevent client-facing errors
     }
   }
 }

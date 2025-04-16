@@ -1,4 +1,3 @@
-
 // Notification configuration file
 
 export interface EmailConfig {
@@ -32,6 +31,7 @@ export interface EmailConfig {
     profileUpdate: boolean;
     bookingAttempt: boolean;
   };
+  adminEmails: string | string[];
 }
 
 export interface WhatsAppConfig {
@@ -124,7 +124,7 @@ export const emailConfig: EmailConfig = {
   },
   sender: {
     name: "The Chauffeur Co. Customer Service",
-    email: "notifications@The Chauffeur Co..com"
+    email: "notifications@thechaufeurco.com"
   },
   adminNotifications: {
     bookingConfirmation: true,
@@ -132,7 +132,8 @@ export const emailConfig: EmailConfig = {
     userSignup: true,
     profileUpdate: true,
     bookingAttempt: true
-  }
+  },
+  adminEmails: ["admin@thechaufeurco.com"]
 };
 
 export const whatsAppConfig: WhatsAppConfig = {
