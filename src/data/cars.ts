@@ -10,6 +10,7 @@ export interface Car {
   images?: string[]; // Additional images for carousel
   color: string;
   video?: string;
+  order?: number; // Optional field for display order
   features: {
     icon: string;
     title: string;

@@ -9,12 +9,22 @@ export const ADMIN_STRINGS = {
   },
   CAR_LIST: {
     TITLE: "Available Cars",
-    DESCRIPTION: "Manage your fleet of vehicles here. You can add, edit, or remove cars.",
+    DESCRIPTION: "Manage your fleet of vehicles here. You can add, edit, reorder, or remove cars.",
   },
   REFRESH_CARS: {
     BUTTON: "Reset Car Data",
     LOADING: "Resetting...",
     SUCCESS: "Car data has been reset successfully",
     ERROR: "Failed to reset car data"
+  },
+  REORDER_CARS: {
+    BUTTON: "Reorder Vehicles",
+    TITLE: "Reorder Vehicles",
+    DESCRIPTION: "Drag and drop vehicles to change their display order on the homepage.",
+    SAVE: "Save Order",
+    SAVING: "Saving...",
+    CANCEL: "Cancel",
+    SUCCESS: "Vehicle order updated successfully",
+    ERROR: "Failed to update vehicle order"
   }
 };

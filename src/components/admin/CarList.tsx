@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Car } from '@/data/cars';
-import { Pencil, Trash2, ImagesIcon } from 'lucide-react';
+import { Pencil, Trash2, ImagesIcon, MoveVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -17,6 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { UI_STRINGS } from '@/constants/uiStrings';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,15 +26,29 @@ interface CarListProps {
   cars: Car[];
   onEdit: (car: Car) => void;
   onDelete: (car: Car) => void;
+  onReorder: () => void;
   isLoading: boolean;
 }
 
 const CarList: React.FC<CarListProps> = ({ 
   cars, 
   onEdit, 
-  onDelete, 
+  onDelete,
+  onReorder,
   isLoading 
 }) => {
+  // Sort cars by order field if it exists
+  const sortedCars = [...cars].sort((a, b) => {
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    } else if (a.order !== undefined) {
+      return -1;
+    } else if (b.order !== undefined) {
+      return 1;
+    }
+    return 0;
+  });
+
   return (
     <Card className="admin-card">
       <CardHeader>
@@ -44,6 +59,7 @@ const CarList: React.FC<CarListProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Order</TableHead>
               <TableHead>Image</TableHead>
               <TableHead>ID</TableHead>
               <TableHead>Model</TableHead>
@@ -55,8 +71,11 @@ const CarList: React.FC<CarListProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {cars.map((car) => (
+            {sortedCars.map((car, index) => (
               <TableRow key={car.id}>
+                <TableCell className="text-center font-medium">
+                  {car.order !== undefined ? car.order + 1 : '-'}
+                </TableCell>
                 <TableCell>
                   <div className="relative">
                     <img 
@@ -123,6 +142,17 @@ const CarList: React.FC<CarListProps> = ({
           </TableBody>
         </Table>
       </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button 
+          variant="outline" 
+          onClick={onReorder} 
+          disabled={isLoading}
+          className="flex items-center gap-2"
+        >
+          <MoveVertical className="h-4 w-4" />
+          <span>Reorder Vehicles</span>
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

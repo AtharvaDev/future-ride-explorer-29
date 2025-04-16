@@ -7,6 +7,7 @@ import { useCarManagement } from '@/hooks/useCarManagement';
 import CarList from '@/components/admin/CarList';
 import CarForm from '@/components/admin/CarForm';
 import DeleteConfirmationDialog from '@/components/admin/DeleteConfirmationDialog';
+import CarReorderManager from '@/components/admin/CarReorderManager';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminLoading from '@/components/admin/AdminLoading';
 import AdminError from '@/components/admin/AdminError';
@@ -23,14 +24,19 @@ const AdminPage = () => {
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     carToDelete,
+    reorderDialogOpen,
+    setReorderDialogOpen,
     saveCarMutation,
     deleteCarMutation,
     resetCarsMutation,
+    reorderCarsMutation,
     handleAddCar,
     handleEditCar,
     handleDeleteConfirm,
     handleDeleteCar,
     handleResetCars,
+    handleOpenReorderDialog,
+    handleSaveOrder,
     onSubmit
   } = useCarManagement();
 
@@ -100,7 +106,8 @@ const AdminPage = () => {
             cars={cars}
             onEdit={handleEditCar}
             onDelete={handleDeleteConfirm}
-            isLoading={saveCarMutation.isPending || deleteCarMutation.isPending}
+            onReorder={handleOpenReorderDialog}
+            isLoading={saveCarMutation.isPending || deleteCarMutation.isPending || reorderCarsMutation.isPending}
           />
         </div>
       </main>
@@ -119,6 +126,14 @@ const AdminPage = () => {
         car={carToDelete}
         onConfirm={handleDeleteCar}
         isDeleting={deleteCarMutation.isPending}
+      />
+
+      <CarReorderManager
+        cars={cars}
+        open={reorderDialogOpen}
+        onOpenChange={setReorderDialogOpen}
+        onSaveOrder={handleSaveOrder}
+        isSaving={reorderCarsMutation.isPending}
       />
 
       <Footer />
