@@ -2,10 +2,7 @@
 /**
  * SendGrid Client for sending emails using the SendGrid API
  */
-
-export interface SendGridConfig {
-  apiKey: string;
-}
+import emailConfig, { SendGridConfig } from '@/config/emailConfig';
 
 export interface SendGridMailOptions {
   from: {
@@ -33,8 +30,9 @@ export interface SendGridMailOptions {
 export class SendGridClient {
   private apiKey: string;
 
-  constructor(config: SendGridConfig) {
-    this.apiKey = config.apiKey;
+  constructor(config?: SendGridConfig) {
+    // Use provided config or default to emailConfig
+    this.apiKey = config?.apiKey || emailConfig.sendgridConfig.apiKey;
     console.log('[SENDGRID CLIENT] Initialized');
   }
 

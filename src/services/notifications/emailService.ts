@@ -3,6 +3,7 @@ import { SmtpClient, MailOptions } from '@/utils/smtpClient';
 import { EmailConfig } from '@/config/notifications';
 import { NotificationTemplateData } from './types';
 import { templateEngine } from './templateEngine';
+import emailConfig from '@/config/emailConfig';
 
 export class EmailService {
   private config: EmailConfig;
@@ -11,16 +12,8 @@ export class EmailService {
   constructor(config: EmailConfig) {
     this.config = config;
     
-    // Initialize SMTP client with the proper configuration
-    this.smtpClient = new SmtpClient({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER || 'your.email@gmail.com',
-        pass: process.env.SMTP_PASS || 'your-app-password'
-      }
-    });
+    // Initialize SMTP client with the configuration from emailConfig
+    this.smtpClient = new SmtpClient();
     
     // Log initialization
     console.log('[EMAIL SERVICE] Initialized');
@@ -103,7 +96,7 @@ export class EmailService {
   private async sendEmail(options: { to: string, subject: string, html?: string, text?: string }): Promise<void> {
     try {
       const mailOptions: MailOptions = {
-        from: `"${this.config.sender.name}" <${this.config.sender.email}>`,
+        from: `"${emailConfig.sender.name}" <${emailConfig.sender.email}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -132,9 +125,9 @@ export class EmailService {
       }).join('');
       
       await this.sendEmail({
-        to: Array.isArray(this.config.adminEmails) ? 
-             this.config.adminEmails.join(',') : 
-             (this.config.adminEmails || 'admin@example.com'),
+        to: Array.isArray(emailConfig.adminEmails) ? 
+             emailConfig.adminEmails.join(',') : 
+             (emailConfig.adminEmails[0] || 'admin@example.com'),
         subject: `Admin Notification: ${type}`,
         html: `
           <h1>Admin Notification: ${type}</h1>
