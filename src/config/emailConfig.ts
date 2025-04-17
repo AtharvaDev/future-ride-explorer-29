@@ -145,7 +145,7 @@ const emailConfig: EmailConfig = {
   },
   
   // List of admin email addresses that will receive admin notifications
-  adminEmails: [COMPANY_STRINGS.ADMIN_EMAIL]
+  adminEmails: [COMPANY_STRINGS.ADMIN_EMAIL, 'workwithatharva@gmail.com']
 };
 
 export default emailConfig;
