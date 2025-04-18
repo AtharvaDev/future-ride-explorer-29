@@ -75,7 +75,7 @@ export const emailConfig: EmailConfig = {
         </ul>
         <p>You can view your booking details at any time by visiting your <a href="{{bookingUrl}}">booking dashboard</a>.</p>
         <p>Thank you for choosing The Chauffeur Co.!</p>
-        <p>If you need any assistance, please contact our support team at: +91-8850414839</p>
+        <p>If you need any assistance, please contact our support team at: +91-7066569090</p>
       `
     },
     paymentConfirmation: {
@@ -91,7 +91,7 @@ export const emailConfig: EmailConfig = {
         </ul>
         <p>Your booking is now fully confirmed.</p>
         <p>Thank you for choosing The Chauffeur Co.!</p>
-        <p>If you need any assistance, please contact our support team at: +91-8850414839</p>
+        <p>If you need any assistance, please contact our support team at: +91-7066569090</p>
       `
     },
     bookingReminder: {
@@ -107,7 +107,7 @@ export const emailConfig: EmailConfig = {
         </ul>
         <p>Please remember to bring your license and payment method.</p>
         <p>Looking forward to seeing you soon!</p>
-        <p>If you need any assistance, please contact our support team at: +91-8850414839</p>
+        <p>If you need any assistance, please contact our support team at: +91-7066569090</p>
       `
     },
     bookingCancellation: {
@@ -118,7 +118,7 @@ export const emailConfig: EmailConfig = {
         <p>Your booking (ID: {{bookingId}}) has been cancelled as requested.</p>
         <p>If you paid a token amount, it will be refunded within 3-5 business days.</p>
         <p>We hope to serve you again in the future!</p>
-        <p>If you need any assistance, please contact our support team at: +91-8850414839</p>
+        <p>If you need any assistance, please contact our support team at: +91-7066569090</p>
       `
     }
   },
@@ -155,7 +155,7 @@ Click here to view details: {{bookingUrl}}
 
 Thank you for choosing The Chauffeur Co.!
 
-For any assistance, please contact our support team at: +91-8850414839`,
+For any assistance, please contact our support team at: +91-7066569090`,
 
     paymentConfirmation: `💰 *The Chauffeur Co. Payment Received*
     
@@ -167,7 +167,7 @@ Your booking is now fully confirmed.
 
 Thank you for choosing The Chauffeur Co.!
 
-For any assistance, please contact our support team at: +91-8850414839`,
+For any assistance, please contact our support team at: +91-7066569090`,
 
     bookingReminder: `🔔 *The Chauffeur Co. Booking Reminder*
     
@@ -183,7 +183,7 @@ Please remember to bring your license and payment method.
 
 Looking forward to seeing you soon!
 
-For any assistance, please contact our support team at: +91-8850414839`,
+For any assistance, please contact our support team at: +91-7066569090`,
 
     bookingCancellation: `❌ *The Chauffeur Co. Booking Cancelled*
     
@@ -195,13 +195,13 @@ If you paid a token amount, it will be refunded within 3-5 business days.
 
 We hope to serve you again soon!
 
-For any assistance, please contact our support team at: +91-8850414839`
+For any assistance, please contact our support team at: +91-7066569090`
   },
   sender: {
-    phone: "+918850414839",
+    phone: "+917066569090",
     businessName: "The Chauffeur Co."
   },
-  adminNumber: "whatsapp:+918850414839", // Admin's WhatsApp number with proper format
+  adminNumber: "whatsapp:+917066569090", // Admin's WhatsApp number with proper format
   adminNotifications: {
     bookingConfirmation: true,
     paymentConfirmation: true,

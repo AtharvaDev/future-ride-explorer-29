@@ -11,7 +11,7 @@ export const BOOKING_STRINGS = {
     DATES: "Dates",
     PICKUP_LOCATION: "Pickup Location",
     NEED_ASSISTANCE: "Need assistance? Contact our support team at:",
-    SUPPORT_PHONE: "+91-8850414839",
+    SUPPORT_PHONE: "+91-7066569090",
   },
   SUMMARY: {
     REVIEW_TITLE: "Review Your Booking",

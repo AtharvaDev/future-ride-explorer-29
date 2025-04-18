@@ -45,10 +45,10 @@ const whatsAppConfig: WhatsAppConfig = {
     bookingCancellation: UI_STRINGS.NOTIFICATIONS.WHATSAPP.BOOKING_CANCELLATION
   },
   sender: {
-    phone: "+918850414839",
+    phone: "+917066569090",
     businessName: UI_STRINGS.COMPANY.NAME
   },
-  adminNumber: "whatsapp:+918850414839", // Admin's WhatsApp number with proper format
+  adminNumber: "whatsapp:+917066569090", // Admin's WhatsApp number with proper format
   
   // Control which notifications are sent to users
   userNotifications: {

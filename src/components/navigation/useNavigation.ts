@@ -25,7 +25,7 @@ export const useNavigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationC
     }
     
     if (href === '#contact') {
-      const phoneNumber = '+918850414839'; // Replace with actual number
+      const phoneNumber = '+917066569090'; // Replace with actual number
       window.location.href = `tel:${phoneNumber}`;
       toast.success("Calling The Chauffeur Co. customer service");
       return;
