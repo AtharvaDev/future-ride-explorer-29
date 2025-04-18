@@ -127,12 +127,7 @@ const CarSection: React.FC<CarSectionProps> = ({
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">₹{pricePerKm}/km mileage fee</p>
             </div>
-            <button 
-              className="rounded-lg px-6 py-3 bg-primary text-white font-medium transition-all duration-300 hover:bg-primary/90 text-center"
-              onClick={handleBookNow}
-            >
-              Book Now
-            </button>
+            
           </div>
         </div>
       </div>
