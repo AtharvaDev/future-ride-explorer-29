@@ -1,19 +1,20 @@
 
 /**
  * WhatsApp Notification Configuration
- * 
- * This file contains all settings related to WhatsApp messaging.
- * 
- * SETUP INSTRUCTIONS:
- * 1. Make sure Twilio is properly configured in twilioConfig.ts
- * 2. Set enabled to true to activate WhatsApp notifications
- * 3. Configure which notifications should be sent to users and admins
- * 4. Make sure your WhatsApp Business account is verified if using in production
  */
 
 import { UI_STRINGS } from '@/constants/uiStrings';
 
-export type NotificationType = 'bookingConfirmation' | 'paymentConfirmation' | 'bookingReminder' | 'bookingCancellation' | 'userSignup' | 'profileUpdate' | 'bookingAttempt';
+export type NotificationType =
+  | 'bookingConfirmation'
+  | 'paymentConfirmation'
+  | 'bookingReminder'
+  | 'bookingCancellation'
+  | 'refundConfirmation'
+  | 'userLoginOrSignUp'
+  | 'profileUpdate'
+  | 'bookingAttempt'
+  | 'refund';
 
 export interface WhatsAppConfig {
   enabled: boolean;
@@ -22,6 +23,7 @@ export interface WhatsAppConfig {
     paymentConfirmation: string;
     bookingReminder: string;
     bookingCancellation: string;
+    refundConfirmation: string;
   };
   sender: {
     phone: string;
@@ -42,30 +44,29 @@ const whatsAppConfig: WhatsAppConfig = {
     bookingConfirmation: UI_STRINGS.NOTIFICATIONS.WHATSAPP.BOOKING_CONFIRMATION,
     paymentConfirmation: UI_STRINGS.NOTIFICATIONS.WHATSAPP.PAYMENT_CONFIRMATION,
     bookingReminder: UI_STRINGS.NOTIFICATIONS.WHATSAPP.BOOKING_REMINDER,
-    bookingCancellation: UI_STRINGS.NOTIFICATIONS.WHATSAPP.BOOKING_CANCELLATION
+    bookingCancellation: UI_STRINGS.NOTIFICATIONS.WHATSAPP.BOOKING_CANCELLATION,
+    refundConfirmation: "Your refund for booking ID {{bookingId}} has been processed and will be credited soon. Thank you for your patience."
   },
   sender: {
     phone: "+917066569090",
     businessName: UI_STRINGS.COMPANY.NAME
   },
-  adminNumber: "whatsapp:+917066569090", // Admin's WhatsApp number with proper format
-  
-  // Control which notifications are sent to users
+  adminNumber: "whatsapp:+917066569090",
   userNotifications: {
     bookingConfirmation: true,
-    paymentConfirmation: true,
     bookingReminder: true,
-    bookingCancellation: true
+    bookingCancellation: true,
+    refundConfirmation: true,
+    paymentConfirmation: true
   },
-  
-  // Control which notifications are sent to admins
   adminNotifications: {
     bookingConfirmation: true,
-    paymentConfirmation: true,
-    userSignup: true,
-    profileUpdate: false,
-    bookingAttempt: true
+    userLoginOrSignUp: true,
+    profileUpdate: true,
+    bookingAttempt: true,
+    refund: true
   }
 };
 
 export default whatsAppConfig;
+

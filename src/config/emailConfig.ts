@@ -1,4 +1,3 @@
-
 /**
  * Email Notification Configuration
  * 
@@ -29,7 +28,16 @@ import { UI_STRINGS } from '@/constants/uiStrings';
 import { COMPANY_STRINGS } from '@/constants/strings/companyStrings';
 
 export type EmailProvider = 'nodemailer' | 'sendgrid';
-export type NotificationType = 'bookingConfirmation' | 'paymentConfirmation' | 'bookingReminder' | 'bookingCancellation' | 'userSignup' | 'profileUpdate' | 'bookingAttempt';
+export type NotificationType =
+  | 'bookingConfirmation'
+  | 'paymentConfirmation'
+  | 'bookingReminder'
+  | 'bookingCancellation'
+  | 'refundConfirmation'
+  | 'userLoginOrSignUp'
+  | 'profileUpdate'
+  | 'bookingAttempt'
+  | 'refund';
 
 export interface SmtpConfig {
   host: string;
@@ -64,6 +72,10 @@ export interface EmailConfig {
       body: string;
     };
     bookingCancellation: {
+      subject: string;
+      body: string;
+    };
+    refundConfirmation: {
       subject: string;
       body: string;
     };
@@ -104,6 +116,17 @@ const emailConfig: EmailConfig = {
   },
   
   templates: {
+    // Add new templates
+    refundConfirmation: {
+      subject: "Your The Chauffeur Co. Refund Confirmation - {{bookingId}}",
+      body: `
+        <h1>Refund Confirmation</h1>
+        <p>Dear {{name}},</p>
+        <p>Your refund for booking ID {{bookingId}} has been processed successfully.</p>
+        <p>Refund Amount: ₹{{refundAmount}}</p>
+        <p>If you have any questions, please contact our support team.</p>
+      `
+    },
     bookingConfirmation: {
       subject: UI_STRINGS.NOTIFICATIONS.EMAIL.BOOKING_CONFIRMATION.SUBJECT,
       body: UI_STRINGS.NOTIFICATIONS.EMAIL.BOOKING_CONFIRMATION.BODY
@@ -130,18 +153,19 @@ const emailConfig: EmailConfig = {
   // Control which notifications are sent to users
   userNotifications: {
     bookingConfirmation: true,
-    paymentConfirmation: true,
     bookingReminder: true,
-    bookingCancellation: true
+    bookingCancellation: true,
+    refundConfirmation: true,
+    paymentConfirmation: true
   },
   
   // Control which notifications are sent to admins
   adminNotifications: {
     bookingConfirmation: true,
-    paymentConfirmation: true,
-    userSignup: true,
-    profileUpdate: false,
-    bookingAttempt: true
+    userLoginOrSignUp: true,
+    profileUpdate: true,
+    bookingAttempt: true,
+    refund: true
   },
   
   // List of admin email addresses that will receive admin notifications

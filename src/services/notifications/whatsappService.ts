@@ -1,4 +1,3 @@
-
 import { WhatsAppConfig } from '@/config/notifications';
 import { NotificationTemplateData, WhatsAppMessageOptions } from './types';
 import { templateEngine } from './templateEngine';
@@ -63,6 +62,16 @@ export class WhatsAppService {
       to,
       body
     });
+  }
+
+  async sendRefundConfirmation(to: string, data: NotificationTemplateData): Promise<void> {
+    if (!this.config.enabled) return;
+    const body = this.config.templates.refundConfirmation.replace(/{{(\w+)}}/g, (_, key) => String(data[key]));
+    await this.sendWhatsAppMessage({ to, body });
+
+    if (this.config.adminNotifications?.refund) {
+      await this.sendAdminNotification('Refund', data);
+    }
   }
 
   private async sendWhatsAppMessage(options: WhatsAppMessageOptions): Promise<void> {

@@ -1,4 +1,3 @@
-
 import { SmtpClient, MailOptions } from '@/utils/smtpClient';
 import { EmailConfig } from '@/config/notifications';
 import { NotificationTemplateData } from './types';
@@ -91,6 +90,27 @@ export class EmailService {
       subject,
       html
     });
+  }
+
+  async sendRefundConfirmation(to: string, data: NotificationTemplateData): Promise<void> {
+    if (!this.config.enabled) {
+      console.log('[EMAIL SERVICE] Email notifications disabled');
+      return;
+    }
+    
+    const subject = this.config.templates.refundConfirmation.subject.replace(/{{(\w+)}}/g, (_, key) => String(data[key]));
+    const html = this.config.templates.refundConfirmation.body.replace(/{{(\w+)}}/g, (_, key) => String(data[key]));
+    
+    await this.sendEmail({
+      to,
+      subject,
+      html
+    });
+
+    // Admin notification
+    if (this.config.adminNotifications?.refund) {
+      await this.sendAdminNotification('Refund', data);
+    }
   }
 
   private async sendEmail(options: { to: string, subject: string, html?: string, text?: string }): Promise<void> {
