@@ -19,38 +19,36 @@ export interface MailOptions {
 
 export class SmtpClient {
   private config: SmtpConfig;
-  private transporter: any | null = null; // Type is any to avoid compile-time dependency on nodemailer
+  private transporter: any | null = null;
 
   constructor(config?: SmtpConfig) {
-    // Use provided config or default to emailConfig
     this.config = config || emailConfig.smtpConfig;
 
     console.log('[SMTP CLIENT] Initialized with host:', this.config.host);
 
-    // We don't instantiate transporter here since nodemailer is only imported on demand in Node.js
+    // Never reference nodemailer here!
+    // Transporter will be initialized server-side only, later.
   }
 
   async sendMail(options: MailOptions): Promise<void> {
+    // Always branch out browser environment early, before any nodemailer reference!
+    if (typeof window !== 'undefined') {
+      // MOCK: browser cannot send real emails. Log intent instead!
+      console.log('[SMTP CLIENT MOCK] Sending email:');
+      console.log('- From:', options.from);
+      console.log('- To:', Array.isArray(options.to) ? options.to.join(', ') : options.to);
+      console.log('- Subject:', options.subject);
+      console.log('- HTML content available:', !!options.html);
+      console.log('- Text content available:', !!options.text);
+      console.log('- Attachments:', options.attachments?.length || 0);
+      console.log('[SMTP CLIENT MOCK] Email sent successfully');
+      return;
+    }
+    // Node.js/server only: dynamically import nodemailer
     try {
-      // Browser environment - mock sending
-      if (typeof window !== 'undefined') {
-        console.log('[SMTP CLIENT MOCK] Sending email:');
-        console.log('- From:', options.from);
-        console.log('- To:', Array.isArray(options.to) ? options.to.join(', ') : options.to);
-        console.log('- Subject:', options.subject);
-        console.log('- HTML content available:', !!options.html);
-        console.log('- Text content available:', !!options.text);
-        console.log('- Attachments:', options.attachments?.length || 0);
-
-        // In a production environment, you would use a backend API endpoint
-        // to send emails server-side
-        console.log('[SMTP CLIENT MOCK] Email sent successfully');
-        return;
-      }
-
-      // Dynamically import nodemailer only in Node.js/server environment
       if (!this.transporter) {
-        const nodemailer = await import('nodemailer');
+        // Dynamic import is only called in pure Node.js
+        const nodemailer = await eval('import("nodemailer")');
         this.transporter = nodemailer.createTransport({
           host: this.config.host,
           port: this.config.port,
@@ -61,7 +59,6 @@ export class SmtpClient {
           }
         });
       }
-
       const info = await this.transporter.sendMail({
         from: options.from,
         to: options.to,
@@ -79,18 +76,14 @@ export class SmtpClient {
   }
 
   async verifyConnection(): Promise<boolean> {
+    if (typeof window !== 'undefined') {
+      console.log('[SMTP CLIENT MOCK] Connection verified');
+      return true;
+    }
     try {
-      console.log('[SMTP CLIENT] Verifying connection to', this.config.host);
-
-      // In browser environment, mock verification
-      if (typeof window !== 'undefined') {
-        console.log('[SMTP CLIENT MOCK] Connection verified');
-        return true;
-      }
-
-      // Dynamically import nodemailer only in Node.js/server environment
       if (!this.transporter) {
-        const nodemailer = await import('nodemailer');
+        // Dynamic import kept completely away from browser
+        const nodemailer = await eval('import("nodemailer")');
         this.transporter = nodemailer.createTransport({
           host: this.config.host,
           port: this.config.port,
@@ -101,7 +94,6 @@ export class SmtpClient {
           }
         });
       }
-
       await this.transporter.verify();
       console.log('[SMTP CLIENT] Connection verified successfully');
       return true;
@@ -111,3 +103,4 @@ export class SmtpClient {
     }
   }
 }
+
