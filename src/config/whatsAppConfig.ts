@@ -69,4 +69,3 @@ const whatsAppConfig: WhatsAppConfig = {
 };
 
 export default whatsAppConfig;
-

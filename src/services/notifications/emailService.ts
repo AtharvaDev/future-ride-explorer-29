@@ -1,3 +1,4 @@
+
 import { SmtpClient, MailOptions } from '@/utils/smtpClient';
 import { EmailConfig } from '@/config/notifications';
 import { NotificationTemplateData } from './types';
@@ -98,8 +99,14 @@ export class EmailService {
       return;
     }
     
-    const subject = this.config.templates.refundConfirmation.subject.replace(/{{(\w+)}}/g, (_, key) => String(data[key]));
-    const html = this.config.templates.refundConfirmation.body.replace(/{{(\w+)}}/g, (_, key) => String(data[key]));
+    // Check if the template exists to avoid TypeScript errors
+    if (!this.config.templates.refundConfirmation) {
+      console.error('[EMAIL SERVICE] Refund confirmation template not found');
+      return;
+    }
+    
+    const subject = templateEngine.render(this.config.templates.refundConfirmation.subject, data);
+    const html = templateEngine.render(this.config.templates.refundConfirmation.body, data);
     
     await this.sendEmail({
       to,

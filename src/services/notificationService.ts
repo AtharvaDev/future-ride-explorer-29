@@ -1,4 +1,3 @@
-
 import { AuthUser } from '@/types/auth';
 import { format } from 'date-fns';
 import emailConfig from '@/config/emailConfig';
@@ -182,7 +181,7 @@ export const sendNewUserSignupNotification = async (user: AuthUser) => {
   const promises = [];
   
   // Check if WhatsApp admin notifications are enabled for user signup
-  if (whatsAppConfig.enabled && whatsAppConfig.adminNotifications.userSignup && 
+  if (whatsAppConfig.enabled && whatsAppConfig.adminNotifications.userLoginOrSignUp && 
       twilioConfig.services.whatsapp.enabled && twilioConfig.enabled) {
     const message = `
 🔔 *ADMIN NOTIFICATION: New User Signup*
@@ -202,7 +201,7 @@ A new user has registered:
   }
   
   // Check if email admin notifications are enabled for user signup
-  if (emailConfig.enabled && emailConfig.adminNotifications.userSignup) {
+  if (emailConfig.enabled && emailConfig.adminNotifications.userLoginOrSignUp) {
     const subject = 'New User Registration';
     const body = `
       <h2>New User Registration</h2>
@@ -367,7 +366,7 @@ Car Details:
   return true;
 };
 
-// Export other notification functions
+// Send notification about payment confirmation
 export const sendPaymentConfirmation = async (booking: BookingNotificationDetails, user: AuthUser | null) => {
   const promises = [];
   

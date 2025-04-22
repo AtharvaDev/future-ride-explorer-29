@@ -19,6 +19,10 @@ export interface EmailConfig {
       subject: string;
       body: string;
     };
+    refundConfirmation: {
+      subject: string;
+      body: string;
+    };
   };
   sender: {
     name: string;
@@ -27,9 +31,10 @@ export interface EmailConfig {
   adminNotifications?: {
     bookingConfirmation: boolean;
     paymentConfirmation: boolean;
-    userSignup: boolean;
+    userLoginOrSignUp: boolean;
     profileUpdate: boolean;
     bookingAttempt: boolean;
+    refund: boolean;
   };
   adminEmails: string | string[];
 }
@@ -41,6 +46,7 @@ export interface WhatsAppConfig {
     paymentConfirmation: string;
     bookingReminder: string;
     bookingCancellation: string;
+    refundConfirmation: string;
   };
   sender: {
     phone: string;
@@ -50,9 +56,10 @@ export interface WhatsAppConfig {
   adminNotifications?: {
     bookingConfirmation: boolean;
     paymentConfirmation: boolean;
-    userSignup: boolean;
+    userLoginOrSignUp: boolean;
     profileUpdate: boolean;
     bookingAttempt: boolean;
+    refund: boolean;
   };
 }
 
@@ -120,6 +127,16 @@ export const emailConfig: EmailConfig = {
         <p>We hope to serve you again in the future!</p>
         <p>If you need any assistance, please contact our support team at: +91-7066569090</p>
       `
+    },
+    refundConfirmation: {
+      subject: "Your The Chauffeur Co. Refund Confirmation - {{bookingId}}",
+      body: `
+        <h1>Refund Confirmation</h1>
+        <p>Dear {{name}},</p>
+        <p>Your refund for booking ID {{bookingId}} has been processed successfully.</p>
+        <p>Refund Amount: ₹{{refundAmount}}</p>
+        <p>If you have any questions, please contact our support team.</p>
+      `
     }
   },
   sender: {
@@ -129,9 +146,10 @@ export const emailConfig: EmailConfig = {
   adminNotifications: {
     bookingConfirmation: true,
     paymentConfirmation: true,
-    userSignup: true,
+    userLoginOrSignUp: true,
     profileUpdate: true,
-    bookingAttempt: true
+    bookingAttempt: true,
+    refund: true
   },
   adminEmails: ["admin@thechaufeurco.com"]
 };
@@ -195,6 +213,18 @@ If you paid a token amount, it will be refunded within 3-5 business days.
 
 We hope to serve you again soon!
 
+For any assistance, please contact our support team at: +91-7066569090`,
+
+    refundConfirmation: `💰 *The Chauffeur Co. Refund Received*
+    
+Hello {{name}},
+
+Your refund for booking {{bookingId}} has been processed successfully.
+
+Refund Amount: ₹{{refundAmount}}
+
+Thank you for choosing The Chauffeur Co.!
+
 For any assistance, please contact our support team at: +91-7066569090`
   },
   sender: {
@@ -205,8 +235,9 @@ For any assistance, please contact our support team at: +91-7066569090`
   adminNotifications: {
     bookingConfirmation: true,
     paymentConfirmation: true,
-    userSignup: true,
+    userLoginOrSignUp: true,
     profileUpdate: true,
-    bookingAttempt: true
+    bookingAttempt: true,
+    refund: true
   }
 };
