@@ -1,6 +1,11 @@
 
 /**
  * SMTP Client for sending emails using nodemailer (Browser Compatible)
+ * 
+ * IMPORTANT: Emails only actually send in a Node.js server environment (local/prod).
+ * In the browser (client), emails are just logged and NOT sent.
+ * 
+ * Never reference/import nodemailer except inside dynamic import in server code!
  */
 import emailConfig, { SmtpConfig } from '@/config/emailConfig';
 
@@ -23,39 +28,45 @@ export class SmtpClient {
 
   constructor(config?: SmtpConfig) {
     this.config = config || emailConfig.smtpConfig;
-
     console.log('[SMTP CLIENT] Initialized with host:', this.config.host);
-
-    // Never reference nodemailer here!
-    // Transporter will be initialized server-side only, later.
+    // Never import or reference nodemailer here (browser-safe).
   }
 
+  /**
+   * Send an email using Nodemailer.
+   * Only works in Node.js—browser is mock-only.
+   */
   async sendMail(options: MailOptions): Promise<void> {
-    // Always branch out browser environment early, before any nodemailer reference!
-    if (typeof window !== 'undefined') {
-      // MOCK: browser cannot send real emails. Log intent instead!
+    // --- EARLY RETURN IF IN BROWSER: ---
+    if (typeof window !== "undefined") {
+      // MOCK: browser cannot send actual emails!
       console.log('[SMTP CLIENT MOCK] Sending email:');
       console.log('- From:', options.from);
       console.log('- To:', Array.isArray(options.to) ? options.to.join(', ') : options.to);
       console.log('- Subject:', options.subject);
-      console.log('- HTML content available:', !!options.html);
-      console.log('- Text content available:', !!options.text);
+      console.log('- HTML content:', !!options.html);
+      console.log('- Text content:', !!options.text);
       console.log('- Attachments:', options.attachments?.length || 0);
-      console.log('[SMTP CLIENT MOCK] Email sent successfully');
+      console.log('[SMTP CLIENT MOCK] Email send simulated');
       return;
     }
-    // Node.js/server only: dynamically import nodemailer
+
+    // --- SERVER-SIDE ONLY: Nodemailer dynamic import ---
     try {
       if (!this.transporter) {
-        // Dynamic import is only called in pure Node.js
-        const nodemailer = await eval('import("nodemailer")');
+        /**
+         * Critical: This dynamic import and createTransport CANNOT run on browser.
+         * Avoids "Class extends value undefined" and all bundling problems.
+         */
+        // Use eval to fully avoid static analysis by bundlers like Vite/Webpack that pollute the browser bundle
+        const nodemailer = await (eval('import("nodemailer")'));
         this.transporter = nodemailer.createTransport({
           host: this.config.host,
           port: this.config.port,
           secure: this.config.secure,
           auth: {
             user: this.config.auth.user,
-            pass: this.config.auth.pass
+            pass: this.config.auth.pass,
           }
         });
       }
@@ -67,30 +78,31 @@ export class SmtpClient {
         html: options.html,
         attachments: options.attachments
       });
-
       console.log('[SMTP CLIENT] Email sent successfully:', info.messageId);
-    } catch (error) {
-      console.error('Error sending email via SMTP:', error);
-      throw error;
+    } catch (err) {
+      console.error('[SMTP CLIENT] Error sending email via SMTP:', err);
+      throw err;
     }
   }
 
+  /**
+   * Verify SMTP connection (Node.js only).
+   */
   async verifyConnection(): Promise<boolean> {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       console.log('[SMTP CLIENT MOCK] Connection verified');
       return true;
     }
     try {
       if (!this.transporter) {
-        // Dynamic import kept completely away from browser
-        const nodemailer = await eval('import("nodemailer")');
+        const nodemailer = await (eval('import("nodemailer")'));
         this.transporter = nodemailer.createTransport({
           host: this.config.host,
           port: this.config.port,
           secure: this.config.secure,
           auth: {
             user: this.config.auth.user,
-            pass: this.config.auth.pass
+            pass: this.config.auth.pass,
           }
         });
       }
@@ -103,4 +115,3 @@ export class SmtpClient {
     }
   }
 }
-
