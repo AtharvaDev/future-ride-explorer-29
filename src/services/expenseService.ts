@@ -20,16 +20,24 @@ export interface ExpenseEntry {
   type: string; // 'Fuel', 'Salary', 'EMI', 'Car Damage', 'Insurance', 'Other'
   amount: number;
   description?: string;
+  vehicleId?: string; // Added vehicleId field
   createdAt?: Date | Timestamp;
 }
 
 /**
  * Get all expense entries
  */
-export const getAllExpenses = async (): Promise<ExpenseEntry[]> => {
+export const getAllExpenses = async (vehicleId?: string): Promise<ExpenseEntry[]> => {
   try {
     const expensesRef = collection(db, 'Expenses');
-    const q = query(expensesRef, orderBy('date', 'desc'));
+    let q;
+    
+    if (vehicleId && vehicleId !== 'all') {
+      q = query(expensesRef, where('vehicleId', '==', vehicleId), orderBy('date', 'desc'));
+    } else {
+      q = query(expensesRef, orderBy('date', 'desc'));
+    }
+    
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map(doc => {
@@ -40,6 +48,7 @@ export const getAllExpenses = async (): Promise<ExpenseEntry[]> => {
         type: data.type,
         amount: data.amount,
         description: data.description,
+        vehicleId: data.vehicleId,
         createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt
       };
     });
@@ -104,18 +113,34 @@ export const deleteExpense = async (id: string): Promise<void> => {
 /**
  * Get expenses in a date range
  */
-export const getExpensesByDateRange = async (startDate: Date, endDate: Date): Promise<ExpenseEntry[]> => {
+export const getExpensesByDateRange = async (
+  startDate: Date, 
+  endDate: Date,
+  vehicleId?: string
+): Promise<ExpenseEntry[]> => {
   try {
     const expensesRef = collection(db, 'Expenses');
     const startTimestamp = Timestamp.fromDate(startDate);
     const endTimestamp = Timestamp.fromDate(endDate);
     
-    const q = query(
-      expensesRef, 
-      where('date', '>=', startTimestamp), 
-      where('date', '<=', endTimestamp),
-      orderBy('date', 'desc')
-    );
+    let q;
+    
+    if (vehicleId && vehicleId !== 'all') {
+      q = query(
+        expensesRef,
+        where('vehicleId', '==', vehicleId),
+        where('date', '>=', startTimestamp), 
+        where('date', '<=', endTimestamp),
+        orderBy('date', 'desc')
+      );
+    } else {
+      q = query(
+        expensesRef, 
+        where('date', '>=', startTimestamp), 
+        where('date', '<=', endTimestamp),
+        orderBy('date', 'desc')
+      );
+    }
     
     const snapshot = await getDocs(q);
     
@@ -126,7 +151,8 @@ export const getExpensesByDateRange = async (startDate: Date, endDate: Date): Pr
         date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date),
         type: data.type,
         amount: data.amount,
-        description: data.description
+        description: data.description,
+        vehicleId: data.vehicleId
       };
     });
   } catch (error) {

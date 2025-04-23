@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EarningEntry, getAllEarnings, addEarning, updateEarning, deleteEarning } from '@/services/earningsService';
@@ -16,9 +17,18 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { toast } from 'sonner';
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import DateRangeFilter from '@/components/filters/DateRangeFilter';
+import VehicleSelector from '@/components/filters/VehicleSelector';
 import { ArrowUpZA, ArrowDownAZ } from 'lucide-react';
 
-const EarningsTab: React.FC = () => {
+interface EarningsTabProps {
+  selectedVehicleId: string;
+  onVehicleChange: (vehicleId: string) => void;
+}
+
+const EarningsTab: React.FC<EarningsTabProps> = ({ 
+  selectedVehicleId, 
+  onVehicleChange 
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date>();
@@ -33,20 +43,22 @@ const EarningsTab: React.FC = () => {
     destination: string;
     cost: number;
     offline: boolean;
+    vehicleId: string;
   }>({
     date: format(new Date(), 'yyyy-MM-dd'),
     user: '',
     source: '',
     destination: '',
     cost: 0,
-    offline: true
+    offline: true,
+    vehicleId: 'all'
   });
 
   const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading } = useQuery({
-    queryKey: ['earnings'],
-    queryFn: getAllEarnings
+    queryKey: ['earnings', selectedVehicleId],
+    queryFn: () => getAllEarnings(selectedVehicleId)
   });
 
   const addMutation = useMutation({
@@ -92,7 +104,8 @@ const EarningsTab: React.FC = () => {
       source: '',
       destination: '',
       cost: 0,
-      offline: true
+      offline: true,
+      vehicleId: selectedVehicleId === 'all' ? 'all' : selectedVehicleId
     });
     setCurrentId(null);
     setShowForm(false);
@@ -106,7 +119,8 @@ const EarningsTab: React.FC = () => {
       source: '',
       destination: '',
       cost: 0,
-      offline: true
+      offline: true,
+      vehicleId: selectedVehicleId === 'all' ? '' : selectedVehicleId
     });
     setShowForm(true);
   };
@@ -123,7 +137,8 @@ const EarningsTab: React.FC = () => {
       source: entry.source,
       destination: entry.destination,
       cost: entry.cost,
-      offline: entry.offline
+      offline: entry.offline,
+      vehicleId: entry.vehicleId || 'all'
     });
     setShowForm(true);
   };
@@ -137,8 +152,8 @@ const EarningsTab: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!form.user || !form.source || !form.destination || form.cost <= 0) {
-      toast.error('Please fill out all required fields');
+    if (!form.user || !form.source || !form.destination || form.cost <= 0 || !form.vehicleId || form.vehicleId === 'all') {
+      toast.error('Please fill out all required fields and select a specific vehicle');
       return;
     }
     
@@ -260,6 +275,14 @@ const EarningsTab: React.FC = () => {
                   required
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="vehicleId">Vehicle</Label>
+                <VehicleSelector 
+                  value={form.vehicleId} 
+                  onChange={(value) => setForm({ ...form, vehicleId: value })}
+                  includeAll={false}
+                />
+              </div>
             </div>
             
             <div className="flex gap-2 justify-end mt-4">
@@ -275,14 +298,24 @@ const EarningsTab: React.FC = () => {
       )}
 
       <div className="mb-4 flex justify-between items-center">
-        <DateRangeFilter 
-          startDate={startDate}
-          endDate={endDate}
-          onRangeChange={(start, end) => {
-            setStartDate(start);
-            setEndDate(end);
-          }}
-        />
+        <div className="flex items-center space-x-4">
+          <DateRangeFilter 
+            startDate={startDate}
+            endDate={endDate}
+            onRangeChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+          />
+          
+          <div className="ml-4">
+            <Label htmlFor="vehicle-select" className="mr-2">Vehicle:</Label>
+            <VehicleSelector 
+              value={selectedVehicleId} 
+              onChange={onVehicleChange}
+            />
+          </div>
+        </div>
         
         <div className="flex items-center space-x-2">
           <Select

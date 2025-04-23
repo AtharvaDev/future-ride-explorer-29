@@ -13,8 +13,12 @@ export interface InsightData {
 /**
  * Get monthly financial insights
  * @param numMonths Number of past months to include
+ * @param vehicleId Optional vehicle ID to filter by
  */
-export const getMonthlyInsights = async (numMonths: number = 12): Promise<InsightData[]> => {
+export const getMonthlyInsights = async (
+  numMonths: number = 12,
+  vehicleId?: string
+): Promise<InsightData[]> => {
   try {
     const insights: InsightData[] = [];
     const today = new Date();
@@ -27,8 +31,8 @@ export const getMonthlyInsights = async (numMonths: number = 12): Promise<Insigh
       
       // Get earnings and expenses for the month
       const [earningData, expenseData] = await Promise.all([
-        getEarningsByDateRange(startDate, endDate),
-        getExpensesByDateRange(startDate, endDate)
+        getEarningsByDateRange(startDate, endDate, vehicleId),
+        getExpensesByDateRange(startDate, endDate, vehicleId)
       ]);
       
       // Calculate totals
@@ -55,7 +59,11 @@ export const getMonthlyInsights = async (numMonths: number = 12): Promise<Insigh
 /**
  * Get insights for a custom date range
  */
-export const getCustomRangeInsights = async (startDate: Date, endDate: Date): Promise<{
+export const getCustomRangeInsights = async (
+  startDate: Date, 
+  endDate: Date,
+  vehicleId?: string
+): Promise<{
   earnings: number,
   expenses: number,
   revenue: number
@@ -63,8 +71,8 @@ export const getCustomRangeInsights = async (startDate: Date, endDate: Date): Pr
   try {
     // Get earnings and expenses for the custom range
     const [earningData, expenseData] = await Promise.all([
-      getEarningsByDateRange(startDate, endDate),
-      getExpensesByDateRange(startDate, endDate)
+      getEarningsByDateRange(startDate, endDate, vehicleId),
+      getExpensesByDateRange(startDate, endDate, vehicleId)
     ]);
     
     // Calculate totals

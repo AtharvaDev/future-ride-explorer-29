@@ -39,7 +39,7 @@ export const useNavigationLinks = () => {
   // Add admin links if user is an admin
   if (isAdmin) {
     links.push({ name: UI_STRINGS.NAVIGATION.ADMIN, href: "/admin", icon: Shield });
-    links.push({ name: "Manage Bookings", href: "/admin/manage-booking", icon: BarChart2 });
+    links.push({ name: "Manage System", href: "/admin/manage-booking", icon: BarChart2 });
   }
   
   return links;

@@ -8,8 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { format, addMonths, isBefore } from 'date-fns';
+import VehicleSelector from '@/components/filters/VehicleSelector';
 
-const InsightsTab: React.FC = () => {
+interface InsightsTabProps {
+  selectedVehicleId: string;
+  onVehicleChange: (vehicleId: string) => void;
+}
+
+const InsightsTab: React.FC<InsightsTabProps> = ({
+  selectedVehicleId,
+  onVehicleChange
+}) => {
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: format(addMonths(new Date(), -2), 'yyyy-MM-dd'),
     end: format(new Date(), 'yyyy-MM-dd')
@@ -18,16 +27,17 @@ const InsightsTab: React.FC = () => {
   
   // Get monthly insights data (default range)
   const { data: monthlyData = [], isLoading: isMonthlyLoading } = useQuery({
-    queryKey: ['monthlyInsights'],
-    queryFn: () => getMonthlyInsights(6)
+    queryKey: ['monthlyInsights', selectedVehicleId],
+    queryFn: () => getMonthlyInsights(6, selectedVehicleId)
   });
 
   // Get custom range insights when requested
   const { data: customData, isLoading: isCustomLoading, refetch: refetchCustom } = useQuery({
-    queryKey: ['customInsights', dateRange],
+    queryKey: ['customInsights', dateRange, selectedVehicleId],
     queryFn: () => getCustomRangeInsights(
       new Date(dateRange.start),
-      new Date(dateRange.end)
+      new Date(dateRange.end),
+      selectedVehicleId
     ),
     enabled: customRange
   });
@@ -56,14 +66,26 @@ const InsightsTab: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Financial Insights</h2>
+      <h2 className="text-xl font-semibold mb-4">
+        Financial Insights {selectedVehicleId !== 'all' && '(By Vehicle)'}
+      </h2>
       
       {/* Custom date range selector */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg">Filter by Date Range</CardTitle>
+          <CardTitle className="text-lg">Filter by Date Range & Vehicle</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-4 mb-4">
+            <div className="w-full md:w-auto">
+              <Label htmlFor="vehicle-select" className="block mb-2">Vehicle:</Label>
+              <VehicleSelector 
+                value={selectedVehicleId} 
+                onChange={onVehicleChange}
+              />
+            </div>
+          </div>
+
           <form onSubmit={handleCustomRangeSubmit} className="flex flex-col sm:flex-row gap-4">
             <div className="grid gap-1 flex-1">
               <Label htmlFor="startDate">Start Date</Label>
@@ -136,7 +158,7 @@ const InsightsTab: React.FC = () => {
           {/* Monthly trend chart */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-lg">Monthly Financial Trends</CardTitle>
+              <CardTitle className="text-lg">Monthly Financial Trends {selectedVehicleId !== 'all' && '(By Vehicle)'}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">

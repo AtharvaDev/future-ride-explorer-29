@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExpenseEntry, getAllExpenses, addExpense, updateExpense, deleteExpense } from '@/services/expenseService';
@@ -16,6 +17,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { toast } from 'sonner';
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import DateRangeFilter from '@/components/filters/DateRangeFilter';
+import VehicleSelector from '@/components/filters/VehicleSelector';
 import { ArrowUpZA, ArrowDownAZ } from 'lucide-react';
 
 const expenseTypes = [
@@ -27,7 +29,15 @@ const expenseTypes = [
   "Other"
 ];
 
-const ExpensesTab: React.FC = () => {
+interface ExpensesTabProps {
+  selectedVehicleId: string;
+  onVehicleChange: (vehicleId: string) => void;
+}
+
+const ExpensesTab: React.FC<ExpensesTabProps> = ({
+  selectedVehicleId,
+  onVehicleChange
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date>();
@@ -40,18 +50,20 @@ const ExpensesTab: React.FC = () => {
     type: string;
     amount: number;
     description: string;
+    vehicleId: string;
   }>({
     date: format(new Date(), 'yyyy-MM-dd'),
     type: expenseTypes[0],
     amount: 0,
-    description: ''
+    description: '',
+    vehicleId: 'all'
   });
 
   const queryClient = useQueryClient();
 
   const { data: expenses = [], isLoading } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: getAllExpenses
+    queryKey: ['expenses', selectedVehicleId],
+    queryFn: () => getAllExpenses(selectedVehicleId)
   });
 
   const addMutation = useMutation({
@@ -95,7 +107,8 @@ const ExpensesTab: React.FC = () => {
       date: format(new Date(), 'yyyy-MM-dd'),
       type: expenseTypes[0],
       amount: 0,
-      description: ''
+      description: '',
+      vehicleId: selectedVehicleId === 'all' ? 'all' : selectedVehicleId
     });
     setCurrentId(null);
     setShowForm(false);
@@ -107,7 +120,8 @@ const ExpensesTab: React.FC = () => {
       date: format(new Date(), 'yyyy-MM-dd'),
       type: expenseTypes[0],
       amount: 0,
-      description: ''
+      description: '',
+      vehicleId: selectedVehicleId === 'all' ? '' : selectedVehicleId
     });
     setShowForm(true);
   };
@@ -122,7 +136,8 @@ const ExpensesTab: React.FC = () => {
         : format(new Date(expense.date), 'yyyy-MM-dd'),
       type: expense.type,
       amount: expense.amount,
-      description: expense.description || ''
+      description: expense.description || '',
+      vehicleId: expense.vehicleId || 'all'
     });
     setShowForm(true);
   };
@@ -136,8 +151,8 @@ const ExpensesTab: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!form.type || form.amount <= 0) {
-      toast.error('Please fill out all required fields');
+    if (!form.type || form.amount <= 0 || !form.vehicleId || form.vehicleId === 'all') {
+      toast.error('Please fill out all required fields and select a specific vehicle');
       return;
     }
     
@@ -267,6 +282,14 @@ const ExpensesTab: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="vehicleId">Vehicle</Label>
+                <VehicleSelector 
+                  value={form.vehicleId} 
+                  onChange={(value) => setForm({ ...form, vehicleId: value })}
+                  includeAll={false}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2 lg:col-span-4">
                 <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
@@ -290,14 +313,24 @@ const ExpensesTab: React.FC = () => {
       )}
 
       <div className="mb-4 flex justify-between items-center">
-        <DateRangeFilter 
-          startDate={startDate}
-          endDate={endDate}
-          onRangeChange={(start, end) => {
-            setStartDate(start);
-            setEndDate(end);
-          }}
-        />
+        <div className="flex items-center space-x-4">
+          <DateRangeFilter 
+            startDate={startDate}
+            endDate={endDate}
+            onRangeChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+          />
+          
+          <div className="ml-4">
+            <Label htmlFor="vehicle-select" className="mr-2">Vehicle:</Label>
+            <VehicleSelector 
+              value={selectedVehicleId} 
+              onChange={onVehicleChange}
+            />
+          </div>
+        </div>
         
         <div className="flex items-center space-x-2">
           <Select

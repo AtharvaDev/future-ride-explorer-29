@@ -6,11 +6,13 @@ import BookingManagementTab from '@/pages/manage-booking/BookingManagementTab';
 import EarningsTab from '@/pages/manage-booking/EarningsTab';
 import ExpensesTab from '@/pages/manage-booking/ExpensesTab';
 import InsightsTab from '@/pages/manage-booking/InsightsTab';
+import VehiclesTab from '@/pages/manage-booking/VehiclesTab';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const tabOptions = [
   { value: 'manage', label: 'Manage Bookings' },
+  { value: 'vehicles', label: 'My Vehicles' },
   { value: 'earnings', label: 'Earnings' },
   { value: 'expenses', label: 'Expenses' },
   { value: 'insights', label: 'Insights' }
@@ -18,6 +20,7 @@ const tabOptions = [
 
 const ManageBookingPage: React.FC = () => {
   const { activeTab, setTab } = useTabsState(tabOptions[0].value);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>("all");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -39,14 +42,17 @@ const ManageBookingPage: React.FC = () => {
           <TabsContent value="manage">
             <BookingManagementTab />
           </TabsContent>
+          <TabsContent value="vehicles">
+            <VehiclesTab />
+          </TabsContent>
           <TabsContent value="earnings">
-            <EarningsTab />
+            <EarningsTab selectedVehicleId={selectedVehicleId} onVehicleChange={setSelectedVehicleId} />
           </TabsContent>
           <TabsContent value="expenses">
-            <ExpensesTab />
+            <ExpensesTab selectedVehicleId={selectedVehicleId} onVehicleChange={setSelectedVehicleId} />
           </TabsContent>
           <TabsContent value="insights">
-            <InsightsTab />
+            <InsightsTab selectedVehicleId={selectedVehicleId} onVehicleChange={setSelectedVehicleId} />
           </TabsContent>
         </Tabs>
       </main>

@@ -24,16 +24,24 @@ export interface EarningEntry {
   offline: boolean;
   bookingId?: string;
   userId?: string;
+  vehicleId?: string; // Added vehicleId field
   createdAt?: Date | Timestamp;
 }
 
 /**
  * Get all earnings entries
  */
-export const getAllEarnings = async (): Promise<EarningEntry[]> => {
+export const getAllEarnings = async (vehicleId?: string): Promise<EarningEntry[]> => {
   try {
     const earningsRef = collection(db, 'Booking_Earnings');
-    const q = query(earningsRef, orderBy('date', 'desc'));
+    let q;
+    
+    if (vehicleId && vehicleId !== 'all') {
+      q = query(earningsRef, where('vehicleId', '==', vehicleId), orderBy('date', 'desc'));
+    } else {
+      q = query(earningsRef, orderBy('date', 'desc'));
+    }
+    
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map(doc => {
@@ -48,6 +56,7 @@ export const getAllEarnings = async (): Promise<EarningEntry[]> => {
         offline: data.offline || false,
         bookingId: data.bookingId,
         userId: data.userId,
+        vehicleId: data.vehicleId,
         createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt
       };
     });
@@ -114,18 +123,34 @@ export const deleteEarning = async (id: string): Promise<void> => {
 /**
  * Get earnings in a date range
  */
-export const getEarningsByDateRange = async (startDate: Date, endDate: Date): Promise<EarningEntry[]> => {
+export const getEarningsByDateRange = async (
+  startDate: Date, 
+  endDate: Date, 
+  vehicleId?: string
+): Promise<EarningEntry[]> => {
   try {
     const earningsRef = collection(db, 'Booking_Earnings');
     const startTimestamp = Timestamp.fromDate(startDate);
     const endTimestamp = Timestamp.fromDate(endDate);
     
-    const q = query(
-      earningsRef, 
-      where('date', '>=', startTimestamp), 
-      where('date', '<=', endTimestamp),
-      orderBy('date', 'desc')
-    );
+    let q;
+    
+    if (vehicleId && vehicleId !== 'all') {
+      q = query(
+        earningsRef, 
+        where('vehicleId', '==', vehicleId),
+        where('date', '>=', startTimestamp), 
+        where('date', '<=', endTimestamp),
+        orderBy('date', 'desc')
+      );
+    } else {
+      q = query(
+        earningsRef, 
+        where('date', '>=', startTimestamp), 
+        where('date', '<=', endTimestamp),
+        orderBy('date', 'desc')
+      );
+    }
     
     const snapshot = await getDocs(q);
     
@@ -140,7 +165,8 @@ export const getEarningsByDateRange = async (startDate: Date, endDate: Date): Pr
         cost: data.cost,
         offline: data.offline || false,
         bookingId: data.bookingId,
-        userId: data.userId
+        userId: data.userId,
+        vehicleId: data.vehicleId
       };
     });
   } catch (error) {
