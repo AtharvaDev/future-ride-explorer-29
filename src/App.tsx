@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import BookingPage from "./pages/BookingPage";
 import AdminPage from "./pages/AdminPage";
+import ManageBookingPage from "./pages/ManageBookingPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyBookingsPage from "./pages/MyBookingsPage";
@@ -104,6 +105,16 @@ const AppContent = () => {
             </ProtectedAdminRoute>
           } 
         />
+        
+        <Route 
+          path="/admin/manage-booking" 
+          element={
+            <ProtectedAdminRoute>
+              <ManageBookingPage />
+            </ProtectedAdminRoute>
+          } 
+        />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <WhatsAppButton />

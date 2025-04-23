@@ -1,5 +1,5 @@
 
-import { Home, Car, Phone, Book, Shield } from 'lucide-react';
+import { Home, Car, Phone, Book, Shield, BarChart2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UI_STRINGS } from '@/constants/uiStrings';
 
@@ -36,9 +36,10 @@ export const useNavigationLinks = () => {
     links.push({ name: UI_STRINGS.NAVIGATION.MY_BOOKINGS, href: "/my-bookings", icon: Book });
   }
   
-  // Add admin link if user is an admin
+  // Add admin links if user is an admin
   if (isAdmin) {
     links.push({ name: UI_STRINGS.NAVIGATION.ADMIN, href: "/admin", icon: Shield });
+    links.push({ name: "Manage Bookings", href: "/admin/manage-booking", icon: BarChart2 });
   }
   
   return links;

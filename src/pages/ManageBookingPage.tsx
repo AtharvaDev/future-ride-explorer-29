@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTabsState } from '@/hooks/use-tabs-state';
 import BookingManagementTab from '@/pages/manage-booking/BookingManagementTab';
 import EarningsTab from '@/pages/manage-booking/EarningsTab';
