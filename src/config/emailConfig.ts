@@ -27,7 +27,7 @@
 import { UI_STRINGS } from '@/constants/uiStrings';
 import { COMPANY_STRINGS } from '@/constants/strings/companyStrings';
 
-export type EmailProvider = 'nodemailer' | 'sendgrid';
+export type EmailProvider = 'sendgrid';
 export type NotificationType =
   | 'bookingConfirmation'
   | 'paymentConfirmation'
@@ -39,16 +39,6 @@ export type NotificationType =
   | 'bookingAttempt'
   | 'refund';
 
-export interface SmtpConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
-
 export interface SendGridConfig {
   apiKey: string;
 }
@@ -56,7 +46,6 @@ export interface SendGridConfig {
 export interface EmailConfig {
   enabled: boolean;
   provider: EmailProvider;
-  smtpConfig: SmtpConfig;
   sendgridConfig: SendGridConfig;
   templates: {
     bookingConfirmation: {
@@ -95,28 +84,14 @@ export interface EmailConfig {
 
 const emailConfig: EmailConfig = {
   enabled: true,
+  provider: 'sendgrid',
   
-  // Change to 'sendgrid' for production
-  provider: 'nodemailer',
-  
-  // Configuration for Nodemailer with Gmail (development/testing)
-  smtpConfig: {
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
-    auth: {
-      user: 'thechauffeurco.india@gmail.com', // Your Gmail address
-      pass: 'nfaf qywe scmm pdab'     // Your Gmail app password
-    }
-  },
-  
-  // Configuration for SendGrid (production)
+  // Configuration for SendGrid
   sendgridConfig: {
     apiKey: 'your-sendgrid-api-key'
   },
   
   templates: {
-    // Add new templates
     refundConfirmation: {
       subject: "Your The Chauffeur Co. Refund Confirmation - {{bookingId}}",
       body: `
@@ -150,7 +125,6 @@ const emailConfig: EmailConfig = {
     email: COMPANY_STRINGS.EMAIL
   },
   
-  // Control which notifications are sent to users
   userNotifications: {
     bookingConfirmation: true,
     bookingReminder: true,
@@ -159,7 +133,6 @@ const emailConfig: EmailConfig = {
     paymentConfirmation: true
   },
   
-  // Control which notifications are sent to admins
   adminNotifications: {
     bookingConfirmation: true,
     userLoginOrSignUp: true,
@@ -168,7 +141,6 @@ const emailConfig: EmailConfig = {
     refund: true
   },
   
-  // List of admin email addresses that will receive admin notifications
   adminEmails: [COMPANY_STRINGS.ADMIN_EMAIL, 'workwithatharva@gmail.com']
 };
 
