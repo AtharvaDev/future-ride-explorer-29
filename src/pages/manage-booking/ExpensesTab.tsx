@@ -23,7 +23,12 @@ const expenseTypes = [
 const ExpensesTab: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<ExpenseEntry, 'id'>>({
+  const [form, setForm] = useState<{
+    date: string;
+    type: string;
+    amount: number;
+    description: string;
+  }>({
     date: format(new Date(), 'yyyy-MM-dd'),
     type: expenseTypes[0],
     amount: 0,

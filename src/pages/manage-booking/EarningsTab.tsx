@@ -13,7 +13,14 @@ import { format } from 'date-fns';
 const EarningsTab: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<EarningEntry, 'id'>>({
+  const [form, setForm] = useState<{
+    date: string;
+    user: string;
+    source: string;
+    destination: string;
+    cost: number;
+    offline: boolean;
+  }>({
     date: format(new Date(), 'yyyy-MM-dd'),
     user: '',
     source: '',
