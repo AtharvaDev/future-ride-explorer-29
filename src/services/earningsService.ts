@@ -11,7 +11,8 @@ import {
   where, 
   orderBy, 
   Timestamp, 
-  serverTimestamp 
+  serverTimestamp,
+  DocumentData
 } from 'firebase/firestore';
 
 export interface EarningEntry {
@@ -24,7 +25,7 @@ export interface EarningEntry {
   offline: boolean;
   bookingId?: string;
   userId?: string;
-  vehicleId?: string; // Added vehicleId field
+  vehicleId?: string;
   createdAt?: Date | Timestamp;
 }
 
@@ -45,7 +46,7 @@ export const getAllEarnings = async (vehicleId?: string): Promise<EarningEntry[]
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = doc.data() as DocumentData;
       return {
         id: doc.id,
         date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date),
@@ -155,7 +156,7 @@ export const getEarningsByDateRange = async (
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = doc.data() as DocumentData;
       return {
         id: doc.id,
         date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date),
