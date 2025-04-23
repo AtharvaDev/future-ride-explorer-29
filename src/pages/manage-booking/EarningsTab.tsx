@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EarningEntry, getAllEarnings, addEarning, updateEarning, deleteEarning } from '@/services/earningsService';
@@ -6,13 +5,27 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import DateRangeFilter from '@/components/filters/DateRangeFilter';
+import { ArrowUpZA, ArrowDownAZ } from 'lucide-react';
 
 const EarningsTab: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [sortField, setSortField] = useState<'date' | 'cost'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   const [form, setForm] = useState<{
     date: string;
     user: string;
@@ -28,14 +41,14 @@ const EarningsTab: React.FC = () => {
     cost: 0,
     offline: true
   });
-  
+
   const queryClient = useQueryClient();
-  
+
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ['earnings'],
     queryFn: getAllEarnings
   });
-  
+
   const addMutation = useMutation({
     mutationFn: addEarning,
     onSuccess: () => {
@@ -47,7 +60,7 @@ const EarningsTab: React.FC = () => {
       toast.error(`Failed to add earning: ${error.message}`);
     }
   });
-  
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<EarningEntry> }) => 
       updateEarning(id, data),
@@ -60,7 +73,7 @@ const EarningsTab: React.FC = () => {
       toast.error(`Failed to update earning: ${error.message}`);
     }
   });
-  
+
   const deleteMutation = useMutation({
     mutationFn: deleteEarning,
     onSuccess: () => {
@@ -71,7 +84,7 @@ const EarningsTab: React.FC = () => {
       toast.error(`Failed to delete earning: ${error.message}`);
     }
   });
-  
+
   const resetForm = () => {
     setForm({
       date: format(new Date(), 'yyyy-MM-dd'),
@@ -84,7 +97,7 @@ const EarningsTab: React.FC = () => {
     setCurrentId(null);
     setShowForm(false);
   };
-  
+
   const handleAdd = () => {
     setCurrentId(null);
     setForm({
@@ -136,20 +149,56 @@ const EarningsTab: React.FC = () => {
     }
   };
 
-  // Sort entries by date (newest first)
-  const sortedEntries = [...entries].sort((a, b) => {
-    const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-    const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
-  
-  // Calculate total earnings
-  const totalEarnings = entries.reduce((sum, entry) => sum + entry.cost, 0);
+  const filteredAndSortedEntries = React.useMemo(() => {
+    let result = [...entries];
+
+    if (startDate && endDate) {
+      result = result.filter(entry => {
+        const entryDate = entry.date instanceof Date ? entry.date : new Date(entry.date);
+        return isWithinInterval(entryDate, { 
+          start: startOfDay(startDate), 
+          end: endOfDay(endDate) 
+        });
+      });
+    }
+
+    result.sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (sortField === 'date') {
+        const dateA = aValue instanceof Date ? aValue : new Date(aValue);
+        const dateB = bValue instanceof Date ? bValue : new Date(bValue);
+        return sortDirection === 'asc' 
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      }
+      
+      return sortDirection === 'asc' 
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+
+    return result;
+  }, [entries, startDate, endDate, sortField, sortDirection]);
+
+  const filteredTotalEarnings = filteredAndSortedEntries.reduce((sum, entry) => sum + entry.cost, 0);
+
+  const toggleSort = (field: 'date' | 'cost') => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Earnings (Total: ₹{totalEarnings.toLocaleString()})</h2>
+        <h2 className="text-xl font-semibold">
+          Earnings (Filtered Total: ₹{filteredTotalEarnings.toLocaleString()})
+        </h2>
         <Button onClick={handleAdd} className="bg-primary text-white">
           + Add Offline Entry
         </Button>
@@ -225,12 +274,52 @@ const EarningsTab: React.FC = () => {
         </Card>
       )}
 
+      <div className="mb-4 flex justify-between items-center">
+        <DateRangeFilter 
+          startDate={startDate}
+          endDate={endDate}
+          onRangeChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+        
+        <div className="flex items-center space-x-2">
+          <Select
+            value={sortField}
+            onValueChange={(value: 'date' | 'cost') => {
+              setSortField(value);
+              setSortDirection('desc');
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="cost">Amount</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+          >
+            {sortDirection === 'asc' ? (
+              <ArrowUpZA className="h-4 w-4" />
+            ) : (
+              <ArrowDownAZ className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <span className="ml-3">Loading earnings...</span>
         </div>
-      ) : sortedEntries.length === 0 ? (
+      ) : filteredAndSortedEntries.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <p className="text-lg text-gray-600">No earnings data yet</p>
           <p className="text-sm text-gray-500">Add your first entry using the button above</p>
@@ -239,17 +328,31 @@ const EarningsTab: React.FC = () => {
         <Table className="w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => toggleSort('date')}
+              >
+                Date {sortField === 'date' && (
+                  sortDirection === 'asc' ? '↑' : '↓'
+                )}
+              </TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Source</TableHead>
               <TableHead>Destination</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => toggleSort('cost')}
+              >
+                Amount {sortField === 'cost' && (
+                  sortDirection === 'asc' ? '↑' : '↓'
+                )}
+              </TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedEntries.map((entry) => (
+            {filteredAndSortedEntries.map((entry) => (
               <TableRow key={entry.id}>
                 <TableCell>
                   {entry.date instanceof Date 

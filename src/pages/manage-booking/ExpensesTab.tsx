@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExpenseEntry, getAllExpenses, addExpense, updateExpense, deleteExpense } from '@/services/expenseService';
@@ -6,10 +5,18 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import DateRangeFilter from '@/components/filters/DateRangeFilter';
+import { ArrowUpZA, ArrowDownAZ } from 'lucide-react';
 
 const expenseTypes = [
   "Fuel",
@@ -23,6 +30,11 @@ const expenseTypes = [
 const ExpensesTab: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [sortField, setSortField] = useState<'date' | 'amount'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   const [form, setForm] = useState<{
     date: string;
     type: string;
@@ -34,14 +46,14 @@ const ExpensesTab: React.FC = () => {
     amount: 0,
     description: ''
   });
-  
+
   const queryClient = useQueryClient();
-  
+
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['expenses'],
     queryFn: getAllExpenses
   });
-  
+
   const addMutation = useMutation({
     mutationFn: addExpense,
     onSuccess: () => {
@@ -53,7 +65,7 @@ const ExpensesTab: React.FC = () => {
       toast.error(`Failed to add expense: ${error.message}`);
     }
   });
-  
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<ExpenseEntry> }) => 
       updateExpense(id, data),
@@ -66,7 +78,7 @@ const ExpensesTab: React.FC = () => {
       toast.error(`Failed to update expense: ${error.message}`);
     }
   });
-  
+
   const deleteMutation = useMutation({
     mutationFn: deleteExpense,
     onSuccess: () => {
@@ -77,7 +89,7 @@ const ExpensesTab: React.FC = () => {
       toast.error(`Failed to delete expense: ${error.message}`);
     }
   });
-  
+
   const resetForm = () => {
     setForm({
       date: format(new Date(), 'yyyy-MM-dd'),
@@ -88,7 +100,7 @@ const ExpensesTab: React.FC = () => {
     setCurrentId(null);
     setShowForm(false);
   };
-  
+
   const handleAdd = () => {
     setCurrentId(null);
     setForm({
@@ -136,18 +148,42 @@ const ExpensesTab: React.FC = () => {
     }
   };
 
-  // Sort expenses by date (newest first)
-  const sortedExpenses = [...expenses].sort((a, b) => {
-    const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-    const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
-  
-  // Calculate total expenses
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
-  // Group expenses by type to show breakdown
-  const expensesByType = expenses.reduce((acc, expense) => {
+  const filteredAndSortedExpenses = React.useMemo(() => {
+    let result = [...expenses];
+
+    if (startDate && endDate) {
+      result = result.filter(expense => {
+        const expenseDate = expense.date instanceof Date ? expense.date : new Date(expense.date);
+        return isWithinInterval(expenseDate, { 
+          start: startOfDay(startDate), 
+          end: endOfDay(endDate) 
+        });
+      });
+    }
+
+    result.sort((a, b) => {
+      const aValue = sortField === 'date' ? a.date : a.amount;
+      const bValue = sortField === 'date' ? b.date : b.amount;
+      
+      if (sortField === 'date') {
+        const dateA = aValue instanceof Date ? aValue : new Date(aValue);
+        const dateB = bValue instanceof Date ? bValue : new Date(bValue);
+        return sortDirection === 'asc' 
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      }
+      
+      return sortDirection === 'asc' 
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+
+    return result;
+  }, [expenses, startDate, endDate, sortField, sortDirection]);
+
+  const filteredTotalExpenses = filteredAndSortedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  const filteredExpensesByType = filteredAndSortedExpenses.reduce((acc, expense) => {
     const type = expense.type;
     if (!acc[type]) {
       acc[type] = 0;
@@ -156,18 +192,28 @@ const ExpensesTab: React.FC = () => {
     return acc;
   }, {} as Record<string, number>);
 
+  const toggleSort = (field: 'date' | 'amount') => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Expenses (Total: ₹{totalExpenses.toLocaleString()})</h2>
+        <h2 className="text-xl font-semibold">
+          Expenses (Filtered Total: ₹{filteredTotalExpenses.toLocaleString()})
+        </h2>
         <Button onClick={handleAdd} className="bg-primary text-white">
           + Add Expense
         </Button>
       </div>
 
-      {/* Expense summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {Object.entries(expensesByType).map(([type, amount]) => (
+        {Object.entries(filteredExpensesByType).map(([type, amount]) => (
           <Card key={type} className="p-4 shadow-sm">
             <h3 className="text-sm font-medium text-gray-500">{type}</h3>
             <p className="text-lg font-semibold">₹{amount.toLocaleString()}</p>
@@ -243,12 +289,52 @@ const ExpensesTab: React.FC = () => {
         </Card>
       )}
 
+      <div className="mb-4 flex justify-between items-center">
+        <DateRangeFilter 
+          startDate={startDate}
+          endDate={endDate}
+          onRangeChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+        
+        <div className="flex items-center space-x-2">
+          <Select
+            value={sortField}
+            onValueChange={(value: 'date' | 'amount') => {
+              setSortField(value);
+              setSortDirection('desc');
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="amount">Amount</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+          >
+            {sortDirection === 'asc' ? (
+              <ArrowUpZA className="h-4 w-4" />
+            ) : (
+              <ArrowDownAZ className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <span className="ml-3">Loading expenses...</span>
         </div>
-      ) : sortedExpenses.length === 0 ? (
+      ) : filteredAndSortedExpenses.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <p className="text-lg text-gray-600">No expense data yet</p>
           <p className="text-sm text-gray-500">Add your first expense using the button above</p>
@@ -257,15 +343,29 @@ const ExpensesTab: React.FC = () => {
         <Table className="w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => toggleSort('date')}
+              >
+                Date {sortField === 'date' && (
+                  sortDirection === 'asc' ? '↑' : '↓'
+                )}
+              </TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => toggleSort('amount')}
+              >
+                Amount {sortField === 'amount' && (
+                  sortDirection === 'asc' ? '↑' : '↓'
+                )}
+              </TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedExpenses.map((expense) => (
+            {filteredAndSortedExpenses.map((expense) => (
               <TableRow key={expense.id}>
                 <TableCell>
                   {expense.date instanceof Date 
