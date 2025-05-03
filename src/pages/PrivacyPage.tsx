@@ -14,7 +14,7 @@ const PrivacyPage = () => {
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8 flex items-center">
+          <div className="mb-8 mt-8 flex items-center">
             <Shield className="h-8 w-8 mr-3 text-primary" />
             <h1 className="text-3xl font-bold">Privacy Policy</h1>
           </div>
