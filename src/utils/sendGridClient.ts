@@ -1,8 +1,8 @@
-
 /**
  * SendGrid Client for sending emails using the SendGrid API
  */
 import emailConfig, { SendGridConfig } from '@/config/emailConfig';
+import sgMail from '@sendgrid/mail';
 
 export interface SendGridMailOptions {
   from: {
@@ -28,11 +28,10 @@ export interface SendGridMailOptions {
 }
 
 export class SendGridClient {
-  private apiKey: string;
-
   constructor(config?: SendGridConfig) {
     // Use provided config or default to emailConfig
-    this.apiKey = config?.apiKey || emailConfig.sendgridConfig.apiKey;
+    const apiKey = config?.apiKey || emailConfig.sendgridConfig.apiKey;
+    sgMail.setApiKey(apiKey); // This will now work correctly
     console.log('[SENDGRID CLIENT] Initialized');
   }
 
@@ -40,52 +39,20 @@ export class SendGridClient {
     try {
       // Handle to field being either an array or a single object
       const toField = Array.isArray(options.to) ? options.to : [options.to];
-      
+
       // Construct SendGrid API payload
-      const payload = {
-        personalizations: [
-          {
-            to: toField
-          }
-        ],
+      const msg = {
         from: options.from,
+        to: toField,
         subject: options.subject,
-        content: [
-          {
-            type: 'text/html',
-            value: options.html || ''
-          }
-        ],
-        attachments: options.attachments || []
+        text: options.text,
+        html: options.html,
+        attachments: options.attachments
       };
 
-      // Check if we're in a browser environment
-      if (typeof window !== 'undefined') {
-        console.log('[SENDGRID CLIENT MOCK] Would send email:');
-        console.log('- From:', `${options.from.name} <${options.from.email}>`);
-        console.log('- To:', toField.map(t => t.email).join(', '));
-        console.log('- Subject:', options.subject);
-        console.log('- Payload:', JSON.stringify(payload, null, 2));
-        console.log('[SENDGRID CLIENT MOCK] Email sent successfully');
-        return;
-      }
-
-      // Make API request to SendGrid
-      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`SendGrid API error: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-
-      console.log('[SENDGRID CLIENT] Email sent successfully');
+      // Send email using SendGrid SDK
+      const response = await sgMail.send(msg);
+      console.log('[SENDGRID CLIENT] Email sent successfully', response);
     } catch (error) {
       console.error('[SENDGRID CLIENT] Error sending email via SendGrid:', error);
       throw error;

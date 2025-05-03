@@ -88,7 +88,7 @@ const emailConfig: EmailConfig = {
   
   // Configuration for SendGrid
   sendgridConfig: {
-    apiKey: 'your-sendgrid-api-key'
+    apiKey: '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'
   },
   
   templates: {
