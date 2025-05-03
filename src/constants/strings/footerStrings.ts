@@ -8,8 +8,6 @@ export const FOOTER_STRINGS = {
   },
   SUPPORT: {
     TITLE: "Support",
-    FAQ: "FAQ",
-    CONTACT_US: "Contact Us",
     TERMS: "Terms & Conditions",
     PRIVACY: "Privacy Policy",
     REFUND: "Refund Policy"

@@ -57,8 +57,6 @@ const footerConfig: FooterConfig = {
     {
       title: UI_STRINGS.FOOTER.SUPPORT.TITLE,
       links: [
-        { label: UI_STRINGS.FOOTER.SUPPORT.FAQ, href: '/faq' },
-        { label: UI_STRINGS.FOOTER.SUPPORT.CONTACT_US, href: '/contact' },
         { label: UI_STRINGS.FOOTER.SUPPORT.TERMS, href: '/terms' },
         { label: UI_STRINGS.FOOTER.SUPPORT.PRIVACY, href: '/privacy' },
         { label: UI_STRINGS.FOOTER.SUPPORT.REFUND, href: '/refund' }
@@ -66,24 +64,14 @@ const footerConfig: FooterConfig = {
     }
   ],
   socialMedia: [
-    {
-      platform: 'Twitter',
-      icon: 'twitter',
-      href: 'https://twitter.com',
-      ariaLabel: 'Twitter'
-    },
+
     {
       platform: 'Instagram',
       icon: 'instagram',
       href: 'https://instagram.com',
       ariaLabel: 'Instagram'
     },
-    {
-      platform: 'Facebook',
-      icon: 'facebook',
-      href: 'https://facebook.com',
-      ariaLabel: 'Facebook'
-    }
+    
   ],
   contactInfo: {
     address: UI_STRINGS.COMPANY.ADDRESS,
