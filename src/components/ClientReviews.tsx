@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Star, StarHalf, StarOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -147,8 +146,7 @@ const ClientReviews = () => {
           }}
           className="w-full"
           onSelect={(api) => {
-            const currentIndex = api.selectedScrollSnap();
-            setActiveIndex(currentIndex);
+            setActiveIndex(api.selectedScrollSnap());
           }}
         >
           <CarouselContent className="py-4">
