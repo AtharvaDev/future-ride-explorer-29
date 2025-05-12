@@ -1,10 +1,18 @@
 
-import { useEffect, useRef } from 'react';
-import { Star, StarHalf, StarOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Star, StarHalf, StarOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllReviews } from '@/services/reviewService';
 import { gsap } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext
+} from '@/components/ui/carousel';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const StarRating = ({ rating }: { rating: number }) => {
   const renderStars = () => {
@@ -44,111 +52,174 @@ const ClientReviews = () => {
     queryFn: getAllReviews
   });
   
-  const reviewsRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   
+  // Setup animations
   useEffect(() => {
     if (reviews.length === 0) return;
     
-    const reviewsContainer = reviewsRef.current;
-    const reviewElements = reviewsContainer?.querySelectorAll('.review-card');
     const titleElement = titleRef.current;
+    const sectionElement = sectionRef.current;
     
-    // Title animation
-    gsap.fromTo(
-      titleElement,
-      { opacity: 0, y: -30 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.8,
-        ease: "back.out(1.7)"
-      }
-    );
-    
-    // Setup animations for each review card
-    if (reviewElements) {
-      gsap.set(reviewElements, { opacity: 0, y: 50 });
+    if (titleElement && sectionElement) {
+      // Animate the title with a split text effect
+      const titleText = titleElement.innerText;
+      titleElement.innerHTML = '';
       
-      // Create the scroll trigger
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const card = entry.target;
-              const index = Array.from(reviewElements).indexOf(card);
-              
-              gsap.to(card, {
-                opacity: 1,
-                y: 0,
-                duration: 0.7,
-                delay: index * 0.15,
-                ease: "power3.out",
-              });
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-      
-      reviewElements.forEach((card) => {
-        observer.observe(card);
+      // Create spans for each character with staggered animation
+      [...titleText].forEach((char, index) => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.style.opacity = '0';
+        span.style.display = 'inline-block';
+        titleElement.appendChild(span);
+        
+        gsap.to(span, {
+          opacity: 1,
+          y: 0,
+          delay: 0.05 * index,
+          duration: 0.4,
+          ease: "power2.out"
+        });
       });
       
-      return () => {
-        if (reviewElements) {
-          reviewElements.forEach((card) => {
-            observer.unobserve(card);
-          });
+      // Add parallax effect on section scroll
+      gsap.fromTo(
+        sectionElement.querySelector('.parallax-bg'),
+        { y: 0 },
+        { 
+          y: -30, 
+          scrollTrigger: {
+            trigger: sectionElement,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
         }
-      };
+      );
     }
-  }, [reviews]);
+  }, [reviews.length]);
 
   if (isLoading || reviews.length === 0) {
     return null;
   }
   
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 relative">
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-20 h-20 bg-blue-100 rounded-full opacity-40 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-100 rounded-full opacity-40 translate-x-1/2 translate-y-1/2"></div>
-        
-        <h2 ref={titleRef} className="text-4xl md:text-5xl font-bold text-center mb-3 text-gray-800 opacity-0">
-          Client <span className="text-primary">Testimonials</span>
-        </h2>
-        <p className="text-center text-gray-600 mb-16 max-w-xl mx-auto">
-          Don't just take our word for it — see what our clients have to say about their experience with us.
-        </p>
-        
-        <div ref={reviewsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {reviews.map((review, index) => (
-            <div 
-              key={review.id} 
-              className={cn(
-                "review-card bg-white p-8 rounded-xl shadow-lg",
-                "hover:shadow-xl transition-all duration-300",
-                "border border-gray-100 relative z-10",
-                "backdrop-blur-sm bg-white/90"
-              )}
-            >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -translate-x-5 -translate-y-5 z-0"></div>
-              
-              <div className="relative z-10">
-                <StarRating rating={review.rating} />
-                <p className="mt-6 text-gray-700 italic leading-relaxed">"{review.text}"</p>
-                <div className="mt-6 pt-6 border-t border-gray-100 flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-primary flex items-center justify-center text-white font-bold">
-                    {review.name.charAt(0)}
-                  </div>
-                  <p className="ml-3 font-medium text-gray-900">{review.name}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+    <section 
+      ref={sectionRef} 
+      className="py-24 relative overflow-hidden"
+      style={{ 
+        backgroundImage: "linear-gradient(to bottom right, #f8fafc, #e0f2fe, #f0f9ff)" 
+      }}
+    >
+      {/* Parallax background elements */}
+      <div className="absolute inset-0 parallax-bg">
+        <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-blue-200/20 blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 rounded-full bg-indigo-200/20 blur-3xl"></div>
+        <div className="absolute top-1/3 left-1/2 w-40 h-40 rounded-full bg-purple-200/10 blur-2xl"></div>
+      </div>
+      
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-2 h-2 bg-amber-400 rounded-full"></div>
+      <div className="absolute top-32 left-20 w-3 h-3 bg-blue-400 rounded-full"></div>
+      <div className="absolute top-16 right-40 w-4 h-4 bg-purple-400 rounded-full"></div>
+      <div className="absolute bottom-20 left-1/4 w-3 h-3 bg-pink-400 rounded-full"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h2 
+            ref={titleRef}
+            className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
+          >
+            What Our Clients Say
+          </h2>
+          <p className="text-gray-600 md:text-lg">
+            Don't just take our word for it — hear genuine stories from our valued customers who have experienced our exceptional service firsthand.
+          </p>
         </div>
+        
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+          onSelect={(api) => {
+            const currentIndex = api.selectedScrollSnap();
+            setActiveIndex(currentIndex);
+          }}
+        >
+          <CarouselContent className="py-4">
+            {reviews.map((review, index) => (
+              <CarouselItem key={review.id} className="md:basis-1/2 lg:basis-1/3">
+                <div 
+                  className={cn(
+                    "h-full rounded-2xl p-8 transition-all duration-300 border",
+                    "backdrop-blur-sm bg-white/90 hover:bg-white/95",
+                    "shadow-sm hover:shadow-md",
+                    "border-gray-100 dark:border-gray-800",
+                    activeIndex === index ? "ring-2 ring-primary/20" : ""
+                  )}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <StarRating rating={review.rating} />
+                      <h3 className="mt-3 font-semibold text-lg text-gray-900">{review.name}</h3>
+                    </div>
+                    <span className="text-3xl leading-none text-indigo-200 font-serif">"</span>
+                  </div>
+                  
+                  <ScrollArea className="h-[120px] pr-4 overflow-auto">
+                    <p className="text-gray-600 italic leading-relaxed">
+                      {review.text}
+                    </p>
+                  </ScrollArea>
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                          {review.name.charAt(0)}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-gray-400">
+                            Verified Client
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <CarouselPrevious className="relative inset-0 translate-y-0 hover:bg-primary hover:text-white" />
+            <div className="flex gap-1">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    const carousel = document.querySelector('[role="region"]');
+                    if (carousel) {
+                      const api = (carousel as any).__embla;
+                      if (api) api.scrollTo(index);
+                    }
+                  }}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all",
+                    activeIndex === index 
+                      ? "bg-primary w-6" 
+                      : "bg-gray-300 hover:bg-gray-400"
+                  )}
+                />
+              ))}
+            </div>
+            <CarouselNext className="relative inset-0 translate-y-0 hover:bg-primary hover:text-white" />
+          </div>
+        </Carousel>
       </div>
     </section>
   );
