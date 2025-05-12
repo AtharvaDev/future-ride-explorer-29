@@ -11,7 +11,8 @@ import {
   orderBy,
   Timestamp,
   serverTimestamp,
-  DocumentData
+  DocumentData,
+  writeBatch
 } from 'firebase/firestore';
 import { Review } from '@/types/review';
 
@@ -91,7 +92,7 @@ export const deleteReview = async (id: string): Promise<void> => {
  */
 export const updateReviewsOrder = async (orderedReviews: { id: string; displayOrder: number }[]): Promise<void> => {
   try {
-    const batch = db.batch();
+    const batch = writeBatch(db);
     
     orderedReviews.forEach(item => {
       const reviewRef = doc(db, 'Reviews', item.id);

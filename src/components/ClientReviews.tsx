@@ -99,12 +99,15 @@ const ClientReviews = () => {
         </div>
       </div>
       
-      <style jsx>{`
-        .review-card.revealed {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      `}</style>
+      {/* Add CSS for animations using style tag instead of JSX style */}
+      <style>
+        {`
+          .review-card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        `}
+      </style>
     </section>
   );
 };

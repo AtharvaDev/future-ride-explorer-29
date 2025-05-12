@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllReviews, addReview, updateReview, deleteReview, updateReviewsOrder } from '@/services/reviewService';
@@ -50,7 +49,13 @@ const ReviewsManager = () => {
         await updateReview(data.id, data);
         return { ...data, id: data.id };
       } else {
-        const id = await addReview(data);
+        // Ensure all required fields are present when adding a new review
+        const newReview: Omit<Review, 'id'> = {
+          name: data.name,
+          rating: data.rating,
+          text: data.text,
+        };
+        const id = await addReview(newReview);
         return { ...data, id };
       }
     },
