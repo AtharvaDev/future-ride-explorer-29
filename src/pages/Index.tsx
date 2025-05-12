@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import FleetSection from '@/components/FleetSection';
+import ClientReviews from '@/components/ClientReviews';
 import Footer from '@/components/Footer';
 import { initPageAnimations } from '@/utils/animations';
 import { initScrollAnimations } from '@/utils/scroll-animations';
@@ -65,6 +66,9 @@ const Index = () => {
       
       {/* Show FleetSection with cars from Firestore */}
       <FleetSection cars={cars} />
+      
+      {/* Add Client Reviews Section */}
+      <ClientReviews />
       
       <Footer />
     </div>
