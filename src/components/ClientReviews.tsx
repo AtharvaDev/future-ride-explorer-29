@@ -1,8 +1,10 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Star, StarHalf, StarOff } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllReviews } from '@/services/reviewService';
+import { gsap } from '@/lib/gsap';
+import { cn } from '@/lib/utils';
 
 const StarRating = ({ rating }: { rating: number }) => {
   const renderStars = () => {
@@ -12,18 +14,18 @@ const StarRating = ({ rating }: { rating: number }) => {
     
     // Add full stars
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={`full-${i}`} className="text-primary fill-primary" />);
+      stars.push(<Star key={`full-${i}`} className="text-amber-400 fill-amber-400" />);
     }
     
     // Add half star if needed
     if (hasHalfStar) {
-      stars.push(<StarHalf key="half" className="text-primary fill-primary" />);
+      stars.push(<StarHalf key="half" className="text-amber-400 fill-amber-400" />);
     }
     
     // Add empty stars
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(<StarOff key={`empty-${i}`} className="text-muted-foreground" />);
+      stars.push(<StarOff key={`empty-${i}`} className="text-gray-300" />);
     }
     
     return stars;
@@ -42,72 +44,112 @@ const ClientReviews = () => {
     queryFn: getAllReviews
   });
   
+  const reviewsRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  
   useEffect(() => {
-    // Initialize animations for this section
-    const revealReviews = () => {
-      const reviewElements = document.querySelectorAll('.review-card');
-      reviewElements.forEach((el, i) => {
-        const delay = i * 0.2;
-        el.classList.add('revealed');
-        (el as HTMLElement).style.transitionDelay = `${delay}s`;
-      });
-    };
+    if (reviews.length === 0) return;
     
-    // Use IntersectionObserver to trigger animations when section is in view
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            revealReviews();
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.1 }
+    const reviewsContainer = reviewsRef.current;
+    const reviewElements = reviewsContainer?.querySelectorAll('.review-card');
+    const titleElement = titleRef.current;
+    
+    // Title animation
+    gsap.fromTo(
+      titleElement,
+      { opacity: 0, y: -30 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.8,
+        ease: "back.out(1.7)"
+      }
     );
     
-    const section = document.querySelector('.client-reviews-section');
-    if (section) {
-      observer.observe(section);
+    // Setup animations for each review card
+    if (reviewElements) {
+      gsap.set(reviewElements, { opacity: 0, y: 50 });
+      
+      // Create the scroll trigger
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const card = entry.target;
+              const index = Array.from(reviewElements).indexOf(card);
+              
+              gsap.to(card, {
+                opacity: 1,
+                y: 0,
+                duration: 0.7,
+                delay: index * 0.15,
+                ease: "power3.out",
+              });
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+      
+      reviewElements.forEach((card) => {
+        observer.observe(card);
+      });
+      
+      return () => {
+        if (reviewElements) {
+          reviewElements.forEach((card) => {
+            observer.unobserve(card);
+          });
+        }
+      };
     }
-    
-    return () => {
-      observer.disconnect();
-    };
   }, [reviews]);
-  
+
   if (isLoading || reviews.length === 0) {
     return null;
   }
   
   return (
-    <section className="client-reviews-section py-16 bg-slate-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">What Our Clients Say</h2>
+    <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4 relative">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-20 h-20 bg-blue-100 rounded-full opacity-40 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-100 rounded-full opacity-40 translate-x-1/2 translate-y-1/2"></div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviews.map((review) => (
+        <h2 ref={titleRef} className="text-4xl md:text-5xl font-bold text-center mb-3 text-gray-800 opacity-0">
+          Client <span className="text-primary">Testimonials</span>
+        </h2>
+        <p className="text-center text-gray-600 mb-16 max-w-xl mx-auto">
+          Don't just take our word for it — see what our clients have to say about their experience with us.
+        </p>
+        
+        <div ref={reviewsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {reviews.map((review, index) => (
             <div 
               key={review.id} 
-              className="review-card bg-white p-6 rounded-lg shadow-md transform transition-all duration-500 opacity-0 translate-y-8 hover:shadow-lg"
+              className={cn(
+                "review-card bg-white p-8 rounded-xl shadow-lg",
+                "hover:shadow-xl transition-all duration-300",
+                "border border-gray-100 relative z-10",
+                "backdrop-blur-sm bg-white/90"
+              )}
             >
-              <StarRating rating={review.rating} />
-              <p className="mt-4 text-gray-700 italic">{review.text}</p>
-              <p className="mt-4 font-semibold">- {review.name}</p>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -translate-x-5 -translate-y-5 z-0"></div>
+              
+              <div className="relative z-10">
+                <StarRating rating={review.rating} />
+                <p className="mt-6 text-gray-700 italic leading-relaxed">"{review.text}"</p>
+                <div className="mt-6 pt-6 border-t border-gray-100 flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-primary flex items-center justify-center text-white font-bold">
+                    {review.name.charAt(0)}
+                  </div>
+                  <p className="ml-3 font-medium text-gray-900">{review.name}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Add CSS for animations using style tag instead of JSX style */}
-      <style>
-        {`
-          .review-card.revealed {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        `}
-      </style>
     </section>
   );
 };
