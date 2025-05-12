@@ -58,6 +58,16 @@ export const ADMIN_STRINGS = {
     SUCCESS_DELETE: "Expense deleted successfully",
     CONFIRM_DELETE: "Are you sure you want to delete this expense?"
   },
+  REVIEWS: {
+    TITLE: "Client Reviews",
+    ADD_BUTTON: "Add Review",
+    NO_DATA: "No reviews yet",
+    ADD_ENTRY: "Add your first review using the button above",
+    SUCCESS_ADD: "Review added successfully",
+    SUCCESS_UPDATE: "Review updated successfully",
+    SUCCESS_DELETE: "Review deleted successfully",
+    CONFIRM_DELETE: "Are you sure you want to delete this review?"
+  },
   INSIGHTS: {
     TITLE: "Financial Insights",
     FILTER_TITLE: "Filter by Date Range",

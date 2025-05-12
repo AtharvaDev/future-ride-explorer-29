@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import gsap from 'gsap';
@@ -11,8 +11,11 @@ import CarReorderManager from '@/components/admin/CarReorderManager';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminLoading from '@/components/admin/AdminLoading';
 import AdminError from '@/components/admin/AdminError';
+import ReviewsManager from '@/components/admin/ReviewsManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminPage = () => {
+  const [activeTab, setActiveTab] = useState("vehicles");
   const {
     cars,
     isLoading,
@@ -67,7 +70,7 @@ const AdminPage = () => {
     return () => {
       tl.kill();
     };
-  }, []);
+  }, [activeTab]);
 
   if (isLoading) {
     return (
@@ -95,20 +98,35 @@ const AdminPage = () => {
       
       <main className="flex-grow pt-24">
         <div className="container mx-auto px-4 py-8">
-          <AdminHeader 
-            onAddCar={handleAddCar}
-            onResetCars={handleResetCars}
-            isResetPending={resetCarsMutation.isPending}
-            isSavePending={saveCarMutation.isPending}
-          />
+          <h1 className="admin-title text-3xl font-bold mb-8">Admin Dashboard</h1>
+          
+          <Tabs defaultValue="vehicles" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+              <TabsTrigger value="reviews">Client Reviews</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="vehicles" className="space-y-6">
+              <AdminHeader 
+                onAddCar={handleAddCar}
+                onResetCars={handleResetCars}
+                isResetPending={resetCarsMutation.isPending}
+                isSavePending={saveCarMutation.isPending}
+              />
 
-          <CarList 
-            cars={cars}
-            onEdit={handleEditCar}
-            onDelete={handleDeleteConfirm}
-            onReorder={handleOpenReorderDialog}
-            isLoading={saveCarMutation.isPending || deleteCarMutation.isPending || reorderCarsMutation.isPending}
-          />
+              <CarList 
+                cars={cars}
+                onEdit={handleEditCar}
+                onDelete={handleDeleteConfirm}
+                onReorder={handleOpenReorderDialog}
+                isLoading={saveCarMutation.isPending || deleteCarMutation.isPending || reorderCarsMutation.isPending}
+              />
+            </TabsContent>
+            
+            <TabsContent value="reviews" className="space-y-6">
+              <ReviewsManager />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
